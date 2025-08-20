@@ -1,0 +1,7 @@
+# Lock Face folder - prevent modifications
+Face/** -text
+Face/** merge=binary
+Face/** diff=binary
+
+# Make Face folder read-only
+Face/** -executable
