@@ -2,19 +2,19 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import {  ConversationListProps } from '@/constants/chat';
+import { ConversationListProps } from '@/constants/chat';
 
 export default function ConversationList({
   conversations,
   selectedConversation,
   onSelectConversation,
-  dancingScript
+  robotoCondensed
 }: ConversationListProps) {
   return (
     <Card variant="outlined" className="h-full">
       <div className="p-4 border-b border-border">
         <h2 
-          style={dancingScript}
+          style={robotoCondensed}
           className="text-2xl font-semibold text-primary"
         >
           Tin nhắn

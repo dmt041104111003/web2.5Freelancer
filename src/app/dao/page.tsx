@@ -7,7 +7,7 @@ import { Header } from '@/components/landing/header';
 import { Footer } from '@/components/landing/footer';
 import ProposalCard from '@/components/dao/ProposalCard';
 import DaoFilters from '@/components/dao/DaoFilters';
-import { MOCK_PROPOSALS, CATEGORIES } from '@/constants/dao';
+import { MOCK_PROPOSALS, CATEGORIES, Proposal } from '@/constants/dao';
 
 
 
@@ -54,11 +54,11 @@ export default function DaoPage() {
     }
   };
 
-  const calculateProgress = (proposal: any) => {
+  const calculateProgress = (proposal: Proposal) => {
     return (proposal.totalVotes / proposal.quorum) * 100;
   };
 
-  const calculateYesPercentage = (proposal: any) => {
+  const calculateYesPercentage = (proposal: Proposal) => {
     if (proposal.totalVotes === 0) return 0;
     return (proposal.yesVotes / proposal.totalVotes) * 100;
   };

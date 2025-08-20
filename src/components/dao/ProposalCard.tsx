@@ -24,7 +24,7 @@ export default function ProposalCard({
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge variant={getStatusColor(proposal.status) as any} size="sm">
+              <Badge variant={getStatusColor(proposal.status) as 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'live'} size="sm">
                 {getStatusText(proposal.status)}
               </Badge>
               <Badge variant="default" size="sm">

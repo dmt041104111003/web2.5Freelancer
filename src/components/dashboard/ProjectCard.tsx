@@ -16,7 +16,7 @@ export default function ProjectCard({ project, getStatusColor, getStatusText }: 
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <Badge variant={getStatusColor(project.status) as any} size="sm">
+          <Badge variant={getStatusColor(project.status) as 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'live'} size="sm">
             {getStatusText(project.status)}
           </Badge>
           {project.escrow && (

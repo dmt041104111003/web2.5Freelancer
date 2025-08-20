@@ -46,7 +46,7 @@ export interface ConversationListProps {
   conversations: Conversation[];
   selectedConversation: number;
   onSelectConversation: (id: number) => void;
-  dancingScript: React.CSSProperties;
+  robotoCondensed: React.CSSProperties;
 }
 
 export const MOCK_CONVERSATIONS = [

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Container } from '@/components/ui/container';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
