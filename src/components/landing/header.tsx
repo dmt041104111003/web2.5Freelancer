@@ -6,6 +6,9 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { NAVIGATION } from '@/constants/landing';
+import { useWallet } from '@/contexts/WalletContext';
+import { Wallet, LogOut, ChevronDown, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 // const dancingScript = {
 //   fontFamily: "'Dancing Script', cursive",
@@ -18,7 +21,10 @@ const robotoCondensed = {
   };
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showWalletMenu, setShowWalletMenu] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
   const pathname = usePathname();
+  const { account, isConnecting, connectWallet, disconnectWallet, aptosNetwork } = useWallet();
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -26,6 +32,40 @@ export function Header() {
     link.rel = 'stylesheet';
     document.head.appendChild(link);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showWalletMenu) {
+        setShowWalletMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showWalletMenu]);
+
+  useEffect(() => {
+    if (copiedAddress) {
+      const timer = setTimeout(() => {
+        setCopiedAddress(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedAddress]);
+
+  const handleCopyAddress = async () => {
+    if (!account) return;
+    
+    try {
+      await navigator.clipboard.writeText(account);
+      setCopiedAddress(true);
+      toast.success('Đã copy địa chỉ ví vào clipboard!');
+    } catch (error) {
+      toast.error('Không thể copy địa chỉ ví');
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -68,11 +108,83 @@ export function Header() {
            </nav>
 
           <div className="hidden md:flex items-center gap-4">
-      
-            <Button variant="outline" size="sm">
-              Đăng nhập ví
-            </Button>
-        
+            {!account ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={connectWallet}
+                disabled={isConnecting}
+                className="flex items-center gap-2"
+              >
+                <Wallet className="w-4 h-4" />
+                                 {isConnecting ? 'Đang kết nối...' : 'Kết nối ví Petra'}
+              </Button>
+            ) : (
+              <div className="relative">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowWalletMenu(!showWalletMenu)}
+                  className="flex items-center gap-2"
+                >
+                  <Wallet className="w-4 h-4" />
+                                     <span className="hidden sm:inline font-mono">
+                     {account.slice(0, 6)}...{account.slice(-4)}
+                   </span>
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+                
+                {showWalletMenu && (
+                                     <div className="absolute right-0 top-full mt-2 w-64 bg-background border border-border rounded-lg shadow-lg z-50">
+                     <div className="p-4 space-y-3">
+                       <div className="text-sm">
+                         <div className="font-medium flex items-center justify-between">
+                           Địa chỉ ví
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={handleCopyAddress}
+                             className="h-6 w-6 p-0 hover:bg-muted"
+                           >
+                             {copiedAddress ? (
+                               <Check className="w-3 h-3 text-green-600" />
+                             ) : (
+                               <Copy className="w-3 h-3" />
+                             )}
+                           </Button>
+                         </div>
+                         <div className="text-muted-foreground font-mono text-xs break-all">
+                           {account}
+                         </div>
+                       </div>
+                                             <div className="text-sm">
+                         <div className="font-medium">Mạng</div>
+                         <div className="flex items-center gap-2">
+                           <span className="text-muted-foreground">
+                             {aptosNetwork || 'Unknown'}
+                           </span>
+                           <div className={`w-2 h-2 rounded-full ${
+                             aptosNetwork === 'Testnet' ? 'bg-yellow-500' : 
+                             aptosNetwork === 'Mainnet' ? 'bg-green-500' : 'bg-gray-500'
+                           }`} />
+                         </div>
+                       </div>
+                      <div className="pt-2 border-t border-border">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={disconnectWallet}
+                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Ngắt kết nối
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="md:hidden flex items-center gap-2">
@@ -111,10 +223,50 @@ export function Header() {
                   );
                 })}
               <div className="flex flex-col gap-2 pt-4">
-                <Button variant="outline" size="sm" className="justify-start">
-                  Đăng nhập ví
-                </Button>
-           
+                {!account ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={connectWallet}
+                    disabled={isConnecting}
+                    className="justify-start"
+                  >
+                    <Wallet className="w-4 h-4 mr-2" />
+                                         {isConnecting ? 'Đang kết nối...' : 'Kết nối ví Petra'}
+                  </Button>
+                                 ) : (
+                   <div className="space-y-2">
+                     <div className="text-sm p-2 bg-muted rounded">
+                       <div className="font-medium flex items-center justify-between">
+                         Địa chỉ ví
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={handleCopyAddress}
+                           className="h-6 w-6 p-0 hover:bg-muted"
+                         >
+                           {copiedAddress ? (
+                             <Check className="w-3 h-3 text-green-600" />
+                           ) : (
+                             <Copy className="w-3 h-3" />
+                           )}
+                         </Button>
+                       </div>
+                       <div className="text-muted-foreground font-mono text-xs break-all">
+                         {account}
+                       </div>
+                     </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={disconnectWallet}
+                      className="w-full justify-start text-red-600"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Ngắt kết nối
+                    </Button>
+                  </div>
+                )}
               </div>
             </nav>
           </div>

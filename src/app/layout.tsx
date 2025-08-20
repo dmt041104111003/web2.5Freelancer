@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { WalletProvider } from "@/contexts/WalletContext";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,22 +74,26 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
         <ThemeProvider>
-          {/* Background watermark logo */}
-          <div 
-            className="fixed inset-0 z-0 opacity-20 pointer-events-none"
-            style={{
-              backgroundImage: `url('/images/landing/logo_full.png')`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'left center',
-              backgroundSize: '80vh',
-              backgroundAttachment: 'fixed'
-            }}
-          />
-          
-          {/* Main content */}
-          <div className="relative z-10 min-h-screen">
-            {children}
-          </div>
+          <WalletProvider>
+            {/* Background watermark logo */}
+            <div 
+              className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: `url('/images/landing/logo_full.png')`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'left center',
+                backgroundSize: '80vh',
+                backgroundAttachment: 'fixed'
+              }}
+            />
+            
+            {/* Main content */}
+            <div className="relative z-10 min-h-screen">
+              {children}
+            </div>
+            
+            <Toaster />
+          </WalletProvider>
         </ThemeProvider>
       </body>
     </html>
