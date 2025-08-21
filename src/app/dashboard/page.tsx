@@ -15,6 +15,7 @@ import { MOCK_STATS, MOCK_PROJECTS, MOCK_RECENT_ACTIVITIES } from '@/constants/d
 import { useWallet } from '@/contexts/WalletContext';
 import { Wallet, ArrowRight, Shield, BarChart3, Briefcase, Activity, User } from 'lucide-react';
 import ProfileDisplay from '@/components/profile/ProfileDisplay';
+import ProfileUpdateForm from '@/components/profile/ProfileUpdateForm';
 
 
 const robotoCondensed = {
@@ -141,6 +142,10 @@ export default function DashboardPage() {
                 <User className="h-4 w-4" />
                 DID Profile
               </TabsTrigger>
+              <TabsTrigger value="profile-settings" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Cập nhật hồ sơ
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -225,6 +230,9 @@ export default function DashboardPage() {
 
             <TabsContent value="profile" className="space-y-6">
               <ProfileDisplay userAddress={account} />
+            </TabsContent>
+            <TabsContent value="profile-settings" className="space-y-6">
+              <ProfileUpdateForm />
             </TabsContent>
           </Tabs>
         </Container>
