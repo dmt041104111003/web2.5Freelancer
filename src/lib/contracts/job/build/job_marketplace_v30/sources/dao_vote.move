@@ -9,7 +9,7 @@ module job_work_board::dao_vote {
     use aptos_framework::aptos_coin::AptosCoin;
     use aptos_framework::account::{Self};
     use job_work_board::job_marketplace_v30;
-    use did_addr_profile::web3_profiles_v30;
+    use did_addr_profile::web3_profiles_v31;
 
     const E_ALREADY_VOTED: u64 = 1;
     const E_INVALID_CANDIDATE: u64 = 2;
@@ -239,7 +239,7 @@ module job_work_board::dao_vote {
         let all_disputes = borrow_global_mut<AllDisputes>(DAO_STORAGE);
         assert!(simple_map::contains_key(&all_disputes.sessions, &dispute_id), E_DISPUTE_NOT_FOUND);
 
-        let trust_score = web3_profiles_v30::get_trust_score_by_address(voter_addr);
+        let trust_score = web3_profiles_v31::get_trust_score_by_address(voter_addr);
         assert!(trust_score >= 80, E_NOT_ENOUGH_TRUST_SCORE);
 
         let count_job = job_marketplace_v30::count_completed_jobs(voter_addr);
@@ -291,8 +291,8 @@ module job_work_board::dao_vote {
         let i = 0;
         while (i < len) {
             let addr = *vector::borrow(&all_wallets, i);
-            if(web3_profiles_v30::has_profile(addr)){
-                web3_profiles_v30::increase_trust_score_from_vote(addr);
+            if(web3_profiles_v31::has_profile(addr)){
+                web3_profiles_v31::increase_trust_score_from_vote(addr);
             };
             i = i + 1;
         };
@@ -312,7 +312,7 @@ module job_work_board::dao_vote {
 
             job_marketplace_v30::transfer_from_escrow(winner, amount);
 
-            web3_profiles_v30::update_trust_score_from_vote(
+            web3_profiles_v31::update_trust_score_from_vote(
                 session.candidates.freelancer_address,
                 session.candidates.client_address,
                 false

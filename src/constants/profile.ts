@@ -1,16 +1,8 @@
 export interface ProfileData {
-  did: string;
-  cccd_hash: string;
-  name_hash: string;
-  cid: string;
-  created_at: string;
-  face_verified: boolean;
-  distance: number;
-  is_real: boolean;
-  processing_time: number;
-  verify_message: string;
+  did_hash: string; 
+  cid: string; 
   trust_score: number;
-  verification_hash: string;
+  created_at: number; 
 }
 
 export interface ProfileDisplayProps {
@@ -20,6 +12,7 @@ export interface ProfileDisplayProps {
 export interface IDCardData {
   cccd: string;
   name: string;
+  cid?: string; 
 }
 
 export interface FaceVerificationResult {
