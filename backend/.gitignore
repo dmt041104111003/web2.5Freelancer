@@ -1,0 +1,50 @@
+# Environment
+.env
+.env.*
+
+# Virtual envs
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache/compiled
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Build artifacts
+build/
+dist/
+downloads/
+sdist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Caches & coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+coverage.xml
+htmlcov/
+.cache/
+
+# Logs & misc
+logs/
+*.log
+.DS_Store
+.idea/
+.vscode/
+.ipynb_checkpoints/
+
+# Data/media (if any)
+uploads/
+media/
+data/
+models/
+
+

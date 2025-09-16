@@ -8,8 +8,17 @@ const DID_MODULE = process.env.NEXT_PUBLIC_DID_MODULE as string;
 
 export interface WalletBlockchainService {
   registerDidOnChain(): Promise<string>;
-  registerProfileOnBlockchain(verificationCid: string, profileCid: string, cvCid: string, avatarCid: string): Promise<string>;
-  updateProfileAssets(profileCid: string, cvCid: string, avatarCid: string): Promise<string>;
+  registerProfileOnBlockchain(
+    verificationCid: string,
+    profileCid: string,
+    cvCid: string,
+    avatarCid: string
+  ): Promise<string>;
+  updateProfileAssets(
+    profileCid: string,
+    cvCid: string,
+    avatarCid: string
+  ): Promise<string>;
 }
 
 export class AptosWalletBlockchainService implements WalletBlockchainService {
@@ -30,21 +39,21 @@ export class AptosWalletBlockchainService implements WalletBlockchainService {
     try {
       const wallet = this.getWallet();
       const account = await this.getAccount();
-      
+
       console.log('Registering DID on chain for account:', account);
-      
+
       const transaction = {
         type: 'entry_function_payload',
         function: `${CONTRACT_ADDRESS}::${DID_MODULE}::register_did`,
         type_arguments: [],
-        arguments: [account]
+        arguments: [] as unknown[],
       };
 
       const response = await wallet.signAndSubmitTransaction(transaction);
-      
+
       console.log('DID registration transaction hash:', response.hash);
       toast.success('DID đã được đăng ký thành công trên blockchain!');
-      
+
       return response.hash;
     } catch (error) {
       console.error('Error registering DID on chain:', error);
@@ -55,18 +64,18 @@ export class AptosWalletBlockchainService implements WalletBlockchainService {
   }
 
   async registerProfileOnBlockchain(
-    verificationCid: string, 
-    profileCid: string, 
-    cvCid: string, 
+    verificationCid: string,
+    profileCid: string,
+    cvCid: string,
     avatarCid: string
   ): Promise<string> {
     try {
       const wallet = this.getWallet();
       const account = await this.getAccount();
-      
+
       console.log('Registering profile on blockchain for account:', account);
       console.log('Verification CID:', verificationCid);
-      
+
       const transaction = {
         type: 'entry_function_payload',
         function: `${CONTRACT_ADDRESS}::${PROFILE_MODULE}::register_profile`,
@@ -75,15 +84,15 @@ export class AptosWalletBlockchainService implements WalletBlockchainService {
           verificationCid,
           profileCid || '',
           cvCid || '',
-          avatarCid || ''
-        ]
+          avatarCid || '',
+        ],
       };
 
       const response = await wallet.signAndSubmitTransaction(transaction);
-      
+
       console.log('Profile registration transaction hash:', response.hash);
       toast.success('Profile đã được đăng ký thành công trên blockchain!');
-      
+
       return response.hash;
     } catch (error) {
       console.error('Error registering profile on blockchain:', error);
@@ -94,32 +103,28 @@ export class AptosWalletBlockchainService implements WalletBlockchainService {
   }
 
   async updateProfileAssets(
-    profileCid: string, 
-    cvCid: string, 
+    profileCid: string,
+    cvCid: string,
     avatarCid: string
   ): Promise<string> {
     try {
       const wallet = this.getWallet();
       const account = await this.getAccount();
-      
+
       console.log('Updating profile assets for account:', account);
-      
+
       const transaction = {
         type: 'entry_function_payload',
         function: `${CONTRACT_ADDRESS}::${PROFILE_MODULE}::update_profile_assets`,
         type_arguments: [],
-        arguments: [
-          profileCid,
-          cvCid,
-          avatarCid
-        ]
+        arguments: [profileCid, cvCid, avatarCid],
       };
 
       const response = await wallet.signAndSubmitTransaction(transaction);
-      
+
       console.log('Profile assets update transaction hash:', response.hash);
       toast.success('Profile assets đã được cập nhật thành công!');
-      
+
       return response.hash;
     } catch (error) {
       console.error('Error updating profile assets:', error);
@@ -142,8 +147,14 @@ declare global {
       network: () => Promise<string>;
       on?: (event: string, callback: (network: string) => void) => void;
       removeListener?: (event: string, callback: (network: string) => void) => void;
-      addEventListener?: (event: string, callback: (network: string) => void) => void;
-      removeEventListener?: (event: string, callback: (network: string) => void) => void;
+      addEventListener?: (
+        event: string,
+        callback: (network: string) => void
+      ) => void;
+      removeEventListener?: (
+        event: string,
+        callback: (network: string) => void
+      ) => void;
       signAndSubmitTransaction: (transaction: {
         type: string;
         function: string;
@@ -154,3 +165,5 @@ declare global {
     };
   }
 }
+
+

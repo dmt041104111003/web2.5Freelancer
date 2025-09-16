@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+backend/.env
+Face/**/.env
 
 # vercel
 .vercel
@@ -46,3 +48,25 @@ next-env.d.ts
 /Face/**/*.pyc
 /Face/**/*.pyo
 /Face/**/*.pyd
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.pyd
+
+# Large Face assets
+Face/Face_to_Fake_Real/resources/**
+!Face/Face_to_Fake_Real/resources/.gitkeep
+Face/Face_to_Fake_Real/saved_logs/**
+!Face/Face_to_Fake_Real/saved_logs/.gitkeep
+
+# Uploads/media (if any)
+uploads/
+!uploads/.gitkeep
+media/
+!media/.gitkeep
+data/
+!data/.gitkeep
+models/
+!models/.gitkeep

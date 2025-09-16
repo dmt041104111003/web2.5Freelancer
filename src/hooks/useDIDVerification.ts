@@ -8,7 +8,6 @@ import { VerificationStatus } from '@/constants/did-verification';
 import { IDCardData, FaceVerificationResult, BlockchainData } from '@/constants/profile';
 import { prepareBlockchainData } from '@/utils/hashUtils';
 
-const FACE_API_BASE_URL = process.env.NEXT_PUBLIC_FACE_API_BASE_URL;
 
 export function useDIDVerification(account: string | null) {
   const router = useRouter();

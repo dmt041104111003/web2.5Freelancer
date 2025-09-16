@@ -8,12 +8,25 @@ import { toast } from 'sonner';
 import { ProfileDisplayProps, ProfileData } from '@/constants/profile';
 
 export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
+  const safeParse = (text: string) => { try { return JSON.parse(text); } catch { return text; } };
+  const toPlainText = (obj: any) => {
+    if (!obj) return '';
+    try {
+      const entries = Object.entries(obj as Record<string, unknown>);
+      return entries.map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`).join('\n');
+    } catch {
+      return String(obj);
+    }
+  };
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [didDetails, setDidDetails] = useState<{ hasVerified: boolean; didHash: string; controller: string } | null>(null);
   const [latestEventTime, setLatestEventTime] = useState<number | null>(null);
-  const [offchain, setOffchain] = useState<Record<string, unknown> | null>(null);
+  const [offchainProfile, setOffchainProfile] = useState<Record<string, unknown> | null>(null);
+  const [offchainVerification, setOffchainVerification] = useState<Record<string, unknown> | null>(null);
+  const [profileCidBare, setProfileCidBare] = useState<string>('');
+  const [verificationCidBare, setVerificationCidBare] = useState<string>('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -25,10 +38,21 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
         ]);
         if (data) {
           setProfileData(data);
-          const cidSource = data.profile_cid || data.verification_cid;
-          if (cidSource) {
-            const json = await apiClient.getFromIPFS(cidSource);
-            if (json) setOffchain(json);
+          const pBare = (data.profile_cid || '').replace('ipfs://','');
+          const vBare = (data.verification_cid || '').replace('ipfs://','');
+          setProfileCidBare(pBare);
+          setVerificationCidBare(vBare);
+          if (pBare) {
+            try {
+              const json = await apiClient.getFromIPFS(pBare);
+              if (json) setOffchainProfile(typeof json === 'string' ? safeParse(json) : json);
+            } catch {}
+          }
+          if (vBare) {
+            try {
+              const jsonV = await apiClient.getFromIPFS(vBare);
+              if (jsonV) setOffchainVerification(typeof jsonV === 'string' ? safeParse(jsonV) : jsonV);
+            } catch {}
           }
           setDidDetails(did);
         } else {
@@ -75,7 +99,7 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
   return (
     <Card>
       <div className="p-6 space-y-4 text-foreground">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">DID Hash</label>
             <p 
@@ -89,55 +113,68 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
               {profileData.did_hash}
             </p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Trust Score</label>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{profileData.trust_score}</Badge>
-              <span className="text-xs text-muted-foreground">/ 100</span>
-            </div>
-          </div>
         </div>
 
-        {offchain && (
-          <div className="border-t border-border pt-4">
-            <h4 className="font-medium mb-3 text-foreground">Chi tiết off-chain (IPFS)</h4>
+        {offchainProfile && (
+          <div className="border-t border-border pt-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              {'name' in offchain && (
+              {'name' in offchainProfile && (
                 <div>
                   <label className="text-muted-foreground">Name</label>
-                  <p className="font-medium break-words">{String(offchain.name)}</p>
+                  <p className="font-medium break-words">{String(offchainProfile.name)}</p>
                 </div>
               )}
-              {'verification_message' in offchain && (
+              {'verification_message' in offchainProfile && (
                 <div>
                   <label className="text-muted-foreground">Verification Message</label>
-                  <p className="font-medium break-words">{String(offchain.verification_message)}</p>
+                  <p className="font-medium break-words">{String(offchainProfile.verification_message)}</p>
                 </div>
               )}
-              {'selfie_url' in offchain && (
+              {'selfie_url' in offchainProfile && (
                 <div>
                   <label className="text-muted-foreground">Selfie</label>
-                  <img src={offchain.selfie_url as string} alt="selfie" className="rounded border border-border max-h-40 object-cover" />
+                  <img src={offchainProfile.selfie_url as string} alt="selfie" className="rounded border border-border max-h-40 object-cover" />
                 </div>
               )}
-              {'id_card_front_url' in offchain && (
+              {'id_card_front_url' in offchainProfile && (
                 <div>
                   <label className="text-muted-foreground">ID Card (Front)</label>
-                  <img src={offchain.id_card_front_url as string} alt="id-front" className="rounded border border-border max-h-40 object-cover" />
+                  <img src={offchainProfile.id_card_front_url as string} alt="id-front" className="rounded border border-border max-h-40 object-cover" />
                 </div>
               )}
-              {'id_card_back_url' in offchain && (
+              {'id_card_back_url' in offchainProfile && (
                 <div>
                   <label className="text-muted-foreground">ID Card (Back)</label>
-                  <img src={offchain.id_card_back_url as string} alt="id-back" className="rounded border border-border max-h-40 object-cover" />
+                  <img src={offchainProfile.id_card_back_url as string} alt="id-back" className="rounded border border-border max-h-40 object-cover" />
                 </div>
               )}
             </div>
+     
+          </div>
+        )}
+
+        {offchainVerification && (
+          <div className="border-t border-border pt-4 space-y-2">
+            <div className="text-sm font-medium text-muted-foreground">Verification</div>
+            <pre className="whitespace-pre-wrap break-words bg-card border border-border rounded p-3 overflow-auto max-h-80">
+              {toPlainText(offchainVerification)}
+            </pre>
+            {verificationCidBare && (
+              <div>
+                <span className="text-muted-foreground">CID:</span>{' '}
+                <span
+                  className="font-mono cursor-pointer hover:underline"
+                  onClick={() => { navigator.clipboard.writeText(`ipfs://${verificationCidBare}`); toast.success('Verification CID đã copy'); }}
+                  title="Click để copy CID"
+                >
+                  ipfs://{verificationCidBare}
+                </span>
+              </div>
+            )}
           </div>
         )}
         {didDetails && (
           <div className="border-t border-border pt-4">
-            <h4 className="font-medium mb-3 text-foreground">Chi tiết DID on-chain</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">DID Verified:</span>
@@ -192,45 +229,7 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
                 {profileData.verification_cid}
               </p>
             </div>
-            <div>
-              <label className="text-muted-foreground">Profile CID</label>
-              <p 
-                className="font-mono bg-card text-card-foreground border border-border p-2 rounded text-sm break-all cursor-pointer hover:bg-accent/40 transition-colors"
-                onClick={() => {
-                  navigator.clipboard.writeText(profileData.profile_cid);
-                  toast.success('Profile CID đã được copy!');
-                }}
-                title="Click để copy Profile CID"
-              >
-                {profileData.profile_cid || '—'}
-              </p>
-            </div>
-            <div>
-              <label className="text-muted-foreground">Avatar CID</label>
-              <p 
-                className="font-mono bg-card text-card-foreground border border-border p-2 rounded text-sm break-all cursor-pointer hover:bg-accent/40 transition-colors"
-                onClick={() => {
-                  navigator.clipboard.writeText(profileData.avatar_cid);
-                  toast.success('Avatar CID đã được copy!');
-                }}
-                title="Click để copy Avatar CID"
-              >
-                {profileData.avatar_cid || '—'}
-              </p>
-            </div>
-            <div>
-              <label className="text-muted-foreground">CV CID</label>
-              <p 
-                className="font-mono bg-card text-card-foreground border border-border p-2 rounded text-sm break-all cursor-pointer hover:bg-accent/40 transition-colors"
-                onClick={() => {
-                  navigator.clipboard.writeText(profileData.cv_cid);
-                  toast.success('CV CID đã được copy!');
-                }}
-                title="Click để copy CV CID"
-              >
-                {profileData.cv_cid || '—'}
-              </p>
-            </div>
+
             {latestEventTime && (
               <div>
                 <label className="text-muted-foreground">Thời điểm đăng ký</label>
@@ -240,6 +239,25 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
               </div>
             )}
           </div>
+          {offchainProfile && (
+            <div className="mt-4 text-sm">
+              <pre className="whitespace-pre-wrap break-words bg-card border border-border rounded p-3 overflow-auto max-h-80">
+                {toPlainText(offchainProfile)}
+              </pre>
+              {profileCidBare && (
+                <div className="mt-2">
+                  <span className="text-muted-foreground">CID:</span>{' '}
+                  <span
+                    className="font-mono cursor-pointer hover:underline"
+                    onClick={() => { navigator.clipboard.writeText(`ipfs://${profileCidBare}`); toast.success('Profile CID đã copy'); }}
+                    title="Click để copy CID"
+                  >
+                    ipfs://{profileCidBare}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Card>

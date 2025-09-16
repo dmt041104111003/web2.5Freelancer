@@ -32,14 +32,14 @@ export function verifyDataIntegrity(data: VerificationData, storedHash: string):
 export function prepareBlockchainData(data: VerificationData) {
   return {
     did: data.did,
-    cccd_hash: hashCCCD(data.cccd), // Vẫn hash CCCD vì nhạy cảm
-    name_hash: data.name, // Gửi tên thật
+    cccd_hash: hashCCCD(data.cccd),
+    name_hash: data.name,
     cid: data.cid,
     face_verified: data.face_verified,
     distance: parseInt((data.distance * 1e6).toString()),
     is_real: data.is_real,
     processing_time: parseInt(data.processing_time.toString()),
     verify_message: data.verify_message,
-    verification_hash: data.verify_message // Gửi verify_message thật
+    verification_hash: data.verify_message 
   };
 }

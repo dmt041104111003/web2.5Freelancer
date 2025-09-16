@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
+import { walletBlockchainService } from '@/lib/blockchain-wallet';
 import { X, Plus } from 'lucide-react';
 import { useWallet } from '@/contexts/WalletContext';
 import { ProfileFormData } from '@/constants/auth';
@@ -42,16 +43,17 @@ export default function ProfileUpdateForm() {
       
       try {
         setIsLoadingProfile(true);
-        const profileData = await getProfileData(account);
+        const profileData = await apiClient.getProfileData(account);
         console.log('Profile data from blockchain:', profileData);
         
             if (profileData && (profileData.profile_cid || profileData.verification_cid)) {
            console.log('Found profile data:', profileData);
 
            let profileCid = '';
-           if (profileData.profile_cid) {
-             profileCid = profileData.profile_cid.replace('ipfs://', '');
-             console.log('Using new profile CID format:', profileCid);
+           const candidateCid = (profileData.profile_cid || profileData.verification_cid || '') as string;
+           if (candidateCid) {
+             profileCid = candidateCid.replace('ipfs://', '');
+             console.log('Using CID for off-chain fetch:', profileCid);
            }
            setExistingCids({
              profile: (profileData.profile_cid || '').replace('ipfs://', ''),
@@ -66,7 +68,14 @@ export default function ProfileUpdateForm() {
                 const data = await apiClient.getFromIPFS(profileCid);
                 if (data) {
                   console.log('Profile data from CID:', data);
-                  allData = { ...allData, ...data };
+                  // If backend returns raw string JSON, parse it
+                  let parsed: any = data;
+                  if (typeof data === 'string') {
+                    try { parsed = JSON.parse(data); } catch {}
+                  }
+                  if (parsed && typeof parsed === 'object') {
+                    allData = { ...allData, ...parsed };
+                  }
                 }
               } catch (error) {
                 console.log('Failed to fetch profile data from CID:', profileCid, error);
@@ -122,7 +131,7 @@ export default function ProfileUpdateForm() {
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     try {
       setIsUploading(true);
-      const cid = await apiClient.pinFileToIPFS(new FormData().append('file', file));
+      const cid = await apiClient.pinFileToIPFS(file, file.name);
       const fileUrl = `ipfs://${cid}`;
       setUploadedFiles(prev => ({ ...prev, [type]: fileUrl }));
       toast.success(`${type === 'avatar' ? 'Ảnh đại diện' : 'CV'} đã upload thành công!`);
@@ -154,9 +163,10 @@ export default function ProfileUpdateForm() {
       const profileBare = (cid || existingCids.profile || '').replace('ipfs://', '');
       const cvBare = ((uploadedFiles.cv || existingCids.cv) || '').replace('ipfs://', '');
       const avatarBare = ((uploadedFiles.avatar || existingCids.avatar) || '').replace('ipfs://', '');
-      // Note: updateProfileAssets should be called from client-side with wallet
-      // const hash = await updateProfileAssets(profileBare, cvBare, avatarBare);
-      const hash = 'mock-tx-hash'; // Placeholder
+      const exists = await apiClient.checkProfileExists(account!);
+      const hash = exists
+        ? await walletBlockchainService.updateProfileAssets(profileBare, cvBare, avatarBare)
+        : await walletBlockchainService.registerProfileOnBlockchain(profileBare, profileBare, cvBare, avatarBare);
       setTxHash(hash);
       toast.success('Cập nhật hồ sơ thành công!');
       

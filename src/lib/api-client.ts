@@ -2,7 +2,7 @@
 export class APIClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '/api') {
+  constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api') {
     this.baseUrl = baseUrl;
   }
 
@@ -33,7 +33,7 @@ export class APIClient {
       method: 'GET',
     });
     const data = await response.json();
-    return data;
+    return data.profileData;
   }
 
   async getDidDetails(userAddress: string) {
@@ -41,24 +41,31 @@ export class APIClient {
       method: 'GET',
     });
     const data = await response.json();
-    return data;
+    return data.didDetails;
   }
 
   async pinJsonToIPFS(jsonData: any): Promise<string> {
     const response = await fetch(`${this.baseUrl}/ipfs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: jsonData }),
+      body: JSON.stringify({ action: 'pinJson', data: jsonData }),
     });
     const data = await response.json();
     return data.cid;
   }
 
-  async pinFileToIPFS(fileData: FormData): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/ipfs`, {
+  async pinFileToIPFS(file: File, name?: string): Promise<string> {
+    const form = new FormData();
+    form.append('file', file);
+    if (name) form.append('name', name);
+    const response = await fetch(`${this.baseUrl}/ipfs/upload`, {
       method: 'POST',
-      body: fileData,
+      body: form,
     });
+    if (!response.ok) {
+      const t = await response.text().catch(() => '');
+      throw new Error(t || 'IPFS upload failed');
+    }
     const data = await response.json();
     return data.cid;
   }
@@ -73,7 +80,7 @@ export class APIClient {
     const formData = new FormData();
     formData.append('id_card', file);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_FACE_API_BASE_URL}/upload_id_card`, {
+    const response = await fetch(`${this.baseUrl}/face/upload_id_card`, {
       method: 'POST',
       body: formData,
     });
@@ -84,7 +91,7 @@ export class APIClient {
     const formData = new FormData();
     formData.append('webcam', file);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_FACE_API_BASE_URL}/verify_webcam`, {
+    const response = await fetch(`${this.baseUrl}/face/verify_webcam`, {
       method: 'POST',
       body: formData,
     });
