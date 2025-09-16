@@ -44,7 +44,7 @@ export class APIClient {
     return data.didDetails;
   }
 
-  async pinJsonToIPFS(jsonData: any): Promise<string> {
+  async pinJsonToIPFS(jsonData: unknown): Promise<string> {
     const response = await fetch(`${this.baseUrl}/ipfs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -159,7 +159,7 @@ export default function ProfileUpdateForm() {
          type: 'freelancer_profile'
        };
       
-      const cid = await apiClient.pinJsonToIPFS(profileJson);
+      const cid = await apiClient.pinJsonToIPFS(profileJson as unknown);
       const profileBare = (cid || existingCids.profile || '').replace('ipfs://', '');
       const cvBare = ((uploadedFiles.cv || existingCids.cv) || '').replace('ipfs://', '');
       const avatarBare = ((uploadedFiles.avatar || existingCids.avatar) || '').replace('ipfs://', '');

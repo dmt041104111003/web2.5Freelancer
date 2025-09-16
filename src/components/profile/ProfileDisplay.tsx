@@ -9,7 +9,7 @@ import { ProfileDisplayProps, ProfileData } from '@/constants/profile';
 
 export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
   const safeParse = (text: string) => { try { return JSON.parse(text); } catch { return text; } };
-  const toPlainText = (obj: any) => {
+  const toPlainText = (obj: unknown) => {
     if (!obj) return '';
     try {
       const entries = Object.entries(obj as Record<string, unknown>);
