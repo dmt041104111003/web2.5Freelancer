@@ -1,7 +1,6 @@
 export const NAVIGATION = [
   { name: 'Trang chủ', href: '/' },
   { name: 'Việc làm', href: '/jobs' },
-  { name: 'DAO', href: '/dao' },
   { name: 'Chat', href: '/chat' },
   { name: 'Dashboard', href: '/dashboard' }
 ];
@@ -40,7 +39,7 @@ export const PERSONAS = {
     benefits: [
       "Bảo vệ thanh toán 100% qua smart contract escrow",
       "Truy cập pool freelancer đã xác minh danh tính",
-      "Giải quyết tranh chấp nhanh chóng qua DAO",
+      "Giải quyết tranh chấp nhanh chóng qua Smart Contract",
       "Tiết kiệm thời gian tìm kiếm và sàng lọc"
     ],
     cta: "Đăng Job ngay",
@@ -87,7 +86,7 @@ export const FAQS = [
   },
   {
     question: "Escrow hoạt động như thế nào?",
-    answer: "Khi người thuê đăng job, họ sẽ nạp tiền vào smart contract escrow. Tiền chỉ được giải ngân khi công việc hoàn thành và được xác nhận. Nếu có tranh chấp, DAO sẽ can thiệp để giải quyết."
+    answer: "Khi người thuê đăng job, họ sẽ nạp tiền vào smart contract escrow. Tiền chỉ được giải ngân khi công việc hoàn thành và được xác nhận. Nếu có tranh chấp, Smart Contract sẽ tự động giải quyết."
   },
   {
     question: "Phí dịch vụ là bao nhiêu?",
@@ -95,7 +94,7 @@ export const FAQS = [
   },
   {
     question: "Làm sao để giải quyết tranh chấp?",
-    answer: "Khi có tranh chấp, hệ thống sẽ kích hoạt quy trình DAO. Cộng đồng sẽ bỏ phiếu để quyết định kết quả cuối cùng. Quyết định này được thực hiện tự động thông qua smart contract."
+    answer: "Khi có tranh chấp, hệ thống sẽ kích hoạt quy trình giải quyết tự động. Smart Contract sẽ phân tích các điều kiện và quyết định kết quả cuối cùng dựa trên logic được lập trình sẵn."
   },
   {
     question: "Có thể rút tiền khi nào?",

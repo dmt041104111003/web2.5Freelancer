@@ -51,7 +51,7 @@ export const MOCK_JOBS = [
     category: "Development",
     escrow: true,
     verified: true,
-    postedBy: "BlockchainDAO",
+    postedBy: "BlockchainCorp",
     postedDate: "1 ngày trước"
   },
   {

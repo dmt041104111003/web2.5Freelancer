@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getProfileData, getDidDetails, getProfileRegisteredEventsForUser } from '@/utils/blockchainService';
-import { fetchJsonFromCid } from '@/lib/api/ipfs';
+import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { ProfileDisplayProps, ProfileData } from '@/constants/profile';
 
@@ -20,25 +19,18 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const [data, did, events] = await Promise.all([
-          getProfileData(userAddress),
-          getDidDetails(userAddress),
-          getProfileRegisteredEventsForUser(userAddress, 1)
+        const [data, did] = await Promise.all([
+          apiClient.getProfileData(userAddress),
+          apiClient.getDidDetails(userAddress)
         ]);
         if (data) {
           setProfileData(data);
           const cidSource = data.profile_cid || data.verification_cid;
           if (cidSource) {
-            const json = await fetchJsonFromCid<Record<string, unknown>>(cidSource);
+            const json = await apiClient.getFromIPFS(cidSource);
             if (json) setOffchain(json);
           }
           setDidDetails(did);
-          if (Array.isArray(events) && events.length > 0) {
-            const event = events[0] as Record<string, unknown>;
-            const data = event?.data as Record<string, unknown>;
-            const t = Number(data?.time || 0);
-            setLatestEventTime(isNaN(t) ? null : t);
-          }
         } else {
           setError('Không tìm thấy profile');
         }
@@ -97,7 +89,13 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
               {profileData.did_hash}
             </p>
           </div>
-          
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Trust Score</label>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{profileData.trust_score}</Badge>
+              <span className="text-xs text-muted-foreground">/ 100</span>
+            </div>
+          </div>
         </div>
 
         {offchain && (

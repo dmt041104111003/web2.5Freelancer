@@ -57,7 +57,7 @@ export const MOCK_PROJECTS = [
   {
     id: 2,
     title: "Phát triển Smart Contract Aptos",
-    client: "BlockchainDAO",
+    client: "BlockchainCorp",
     budget: 8000,
     progress: 100,
     status: "completed",

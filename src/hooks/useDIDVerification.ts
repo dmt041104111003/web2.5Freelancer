@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { VerificationData } from '@/constants/auth';
-import { checkProfileExists, registerDidOnChain, registerProfileOnBlockchain } from '@/utils/blockchainService';
-import { pinVerificationJson } from '@/lib/api/ipfs/pinJson';
+import { apiClient } from '@/lib/api-client';
+import { walletBlockchainService } from '@/lib/blockchain-wallet';
 import { VerificationStatus } from '@/constants/did-verification';
 import { IDCardData, FaceVerificationResult, BlockchainData } from '@/constants/profile';
 import { prepareBlockchainData } from '@/utils/hashUtils';
@@ -42,10 +42,10 @@ export function useDIDVerification(account: string | null) {
       return;
     }
     try {
-      const exists = await checkProfileExists(account);
+      const exists = await apiClient.checkProfileExists(account);
       if (exists) { toast.error('Profile đã tồn tại trên blockchain!'); return; }
       try {
-        const { cid: realCid } = await pinVerificationJson({
+        const realCid = await apiClient.pinJsonToIPFS({
           name: idCardData.name,
           verification_message: faceVerificationResult.message,
           did: `did:aptos:${account}`,
@@ -95,12 +95,16 @@ export function useDIDVerification(account: string | null) {
       loadingToast = toast.loading('Đang đăng ký DID & profile trên blockchain...');
       if (!window.aptos) { toast.error('Ví Petra không được kết nối'); return; }
 
-      try { await registerDidOnChain(); } catch { }
+      try { 
+        await walletBlockchainService.registerDidOnChain(); 
+      } catch (error) {
+        console.log('DID registration skipped or failed:', error);
+      }
 
       // Use pre-pinned CID if available; otherwise pin now
       let cid = idCardData.cid || '';
       if (!cid) {
-        const { cid: realCid } = await pinVerificationJson({
+        const realCid = await apiClient.pinJsonToIPFS({
           name: verificationData.name,
           verification_message: verificationData.verify_message,
           did: verificationData.did,
@@ -122,7 +126,9 @@ export function useDIDVerification(account: string | null) {
       
       verificationData.cid = cid;
 
-      const txHash = await registerProfileOnBlockchain(cid, '', '', ''); 
+
+      // Register profile on blockchain with wallet
+      const txHash = await walletBlockchainService.registerProfileOnBlockchain(cid, '', '', ''); 
 
       toast.dismiss(loadingToast);
       setTransactionHash(txHash);
@@ -141,9 +147,7 @@ export function useDIDVerification(account: string | null) {
     try {
       const formData = new FormData();
       formData.append('id_card', file);
-      const response = await fetch(`${FACE_API_BASE_URL}/upload_id_card`, { method: 'POST', body: formData });
-      if (!response.ok) { throw new Error('Upload ID card failed'); }
-      const data = await response.json();
+      const data = await apiClient.uploadIdCard(file);
       setIdCardData(data);
       toast.success('Upload căn cước thành công!');
       return data;
@@ -158,9 +162,7 @@ export function useDIDVerification(account: string | null) {
     setIsFaceApiLoading(true);
     try {
       const formData = new FormData(); formData.append('webcam', file);
-      const response = await fetch(`${FACE_API_BASE_URL}/verify_webcam`, { method: 'POST', body: formData });
-      if (!response.ok) { throw new Error('Face verification failed'); }
-      const data = await response.json(); setFaceVerificationResult(data);
+      const data = await apiClient.verifyWebcam(file); setFaceVerificationResult(data);
       if (data.success) { toast.success('Xác minh khuôn mặt thành công!'); return data; }
       toast.error(data.message || 'Xác minh khuôn mặt thất bại'); throw new Error(data.message);
     } catch (error) {

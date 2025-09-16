@@ -152,6 +152,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 };
 
+// Type definitions for window.aptos
 declare global {
   interface Window {
     aptos?: {
@@ -173,3 +174,4 @@ declare global {
     };
   }
 }
+

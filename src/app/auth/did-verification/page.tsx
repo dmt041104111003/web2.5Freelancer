@@ -6,7 +6,7 @@ import DIDVerificationLayout from '@/components/auth/DIDVerificationLayout';
 import DIDVerificationSteps from '@/components/auth/DIDVerificationSteps';
 import { useDIDVerification } from '@/hooks/useDIDVerification';
 import DIDVerifiedStatus from '@/components/auth/DIDVerifiedStatus';
-import { getDidDetails } from '@/utils/blockchainService';
+import { apiClient } from '@/lib/api-client';
 
 export default function DIDVerificationPage() {
   const { account } = useWallet();
@@ -46,7 +46,7 @@ export default function DIDVerificationPage() {
     const run = async () => {
       if (!account) { setChecked(true); setHasVerified(false); return; }
       try {
-        const res = await getDidDetails(account);
+        const res = await apiClient.getDidDetails(account);
         setHasVerified(res.hasVerified);
       } finally { setChecked(true); }
     };
