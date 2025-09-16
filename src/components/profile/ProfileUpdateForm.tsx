@@ -68,8 +68,7 @@ export default function ProfileUpdateForm() {
                 const data = await apiClient.getFromIPFS(profileCid);
                 if (data) {
                   console.log('Profile data from CID:', data);
-                  // If backend returns raw string JSON, parse it
-                  let parsed: any = data;
+                  let parsed: unknown = data;
                   if (typeof data === 'string') {
                     try { parsed = JSON.parse(data); } catch {}
                   }
