@@ -16,28 +16,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Web2.5 Freelancer | Nền tảng freelancer phi tập trung",
+  title: "Marketplace2vn | Nền tảng freelancer phi tập trung",
   description: "Nền tảng freelancer phi tập trung với xác minh danh tính DID và escrow tự động trên Aptos blockchain",
   keywords: "freelancer, blockchain, DID, escrow, Aptos, Web3, phi tập trung",
-  authors: [{ name: "Web2.5 Freelancer Team" }],
-  creator: "Web2.5 Freelancer",
-  publisher: "Web2.5 Freelancer",
+  authors: [{ name: "Marketplace2vn Team" }],
+  creator: "Marketplace2vn",
+  publisher: "Marketplace2vn",
   icons: {
     icon: "/images/landing/logo_full.png",
     shortcut: "/images/landing/logo_full.png",
     apple: "/images/landing/logo_full.png",
   },
   openGraph: {
-    title: "Web2.5 Freelancer | Nền tảng freelancer phi tập trung",
+    title: "Marketplace2vn | Nền tảng freelancer phi tập trung",
     description: "Nền tảng freelancer phi tập trung với xác minh danh tính DID và escrow tự động trên Aptos blockchain",
-    url: "https://web25freelancer.com",
-    siteName: "Web2.5 Freelancer",
+    url: "https://marketplace2vn.com",
+    siteName: "Marketplace2vn",
     images: [
       {
         url: "/images/landing/logo_full.png",
         width: 1200,
         height: 630,
-        alt: "Web2.5 Freelancer",
+        alt: "Marketplace2vn",
       },
     ],
     locale: "vi_VN",
@@ -45,10 +45,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Web2.5 Freelancer | Nền tảng freelancer phi tập trung",
+    title: "Marketplace2vn | Nền tảng freelancer phi tập trung",
     description: "Nền tảng freelancer phi tập trung với xác minh danh tính DID và escrow tự động trên Aptos blockchain",
     images: ["/images/landing/logo_full.png"],
-    creator: "@web25freelancer",
+    creator: "@marketplace2vn",
   },
   robots: {
     index: true,

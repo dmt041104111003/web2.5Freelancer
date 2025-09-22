@@ -40,7 +40,7 @@ export function FAQ() {
             style={robotoCondensed}
             className="text-lg text-text-secondary max-w-2xl mx-auto"
           >
-            Những câu hỏi phổ biến về nền tảng Web2.5 Freelancer
+            Những câu hỏi phổ biến về nền tảng Marketplace2vn
           </p>
         </div>
         

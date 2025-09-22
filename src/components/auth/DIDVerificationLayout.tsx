@@ -15,7 +15,7 @@ const robotoCondensed = {
 export default function DIDVerificationLayout({ 
   children, 
   title = "Xác minh Danh tính (DID)",
-  subtitle = "Xác minh danh tính của bạn để tham gia nền tảng Web2.5 Freelancer"
+  subtitle = "Xác minh danh tính của bạn để tham gia nền tảng Marketplace2vn"
 }: DIDVerificationLayoutProps) {
   const { account, connectWallet, isConnecting } = useWallet();
 

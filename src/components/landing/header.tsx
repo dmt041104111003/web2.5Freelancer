@@ -75,14 +75,14 @@ export function Header() {
             <Link href="/" className="flex items-center gap-3">
               <img 
                 src="/images/landing/logo_full.png" 
-                alt="Web2.5 Freelancer Logo" 
+                alt="Marketplace2vn Logo" 
                 className="h-8 object-contain"
               />
               <span 
                 style={robotoCondensed}
                 className="text-xl text-primary"
               >
-                Web2.5 Freelancer
+                Marketplace2vn
               </span>
             </Link>
 

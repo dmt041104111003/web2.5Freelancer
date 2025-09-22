@@ -23,16 +23,16 @@ export function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
               <div className="flex items-center gap-3 mb-4">
-               <img 
-                 src="/images/landing/logo_full.png" 
-                 alt="Web2.5 Freelancer Logo" 
+              <img 
+                src="/images/landing/logo_full.png" 
+                alt="Marketplace2vn Logo" 
                  className="h-8 object-contain"
                />
               <span 
                 style={robotoCondensed}
                 className="text-xl text-primary"
               >
-                Web2.5 Freelancer
+                Marketplace2vn
               </span>
              </div>
                 <p 
