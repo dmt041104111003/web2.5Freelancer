@@ -14,29 +14,28 @@ export const authOptions: NextAuthOptions = {
       name: "Aptos Wallet",
       credentials: {
         address: { label: "address", type: "text" },
-        message: { label: "message", type: "text", optional: true as any },
-        signature: { label: "signature", type: "text", optional: true as any },
-        nonce: { label: "nonce", type: "text", optional: true as any },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials) return null;
         const { address } = credentials as Record<string, string>;
         if (!address) return null;
-        // Trust wallet connect flow: connect = login (no signature)
-        return { id: address, address } as any;
+        return { id: address, address } as { id: string; address: string };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.address = (user as any).address;
-        token.sub = (user as any).address;
+        const u = user as { address?: string };
+        if (u.address) {
+          (token as { address?: string }).address = u.address;
+          token.sub = u.address;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      (session as any).address = token.address;
+      // Keep default session shape; address is in token if needed
       return session;
     },
   },
@@ -44,10 +43,13 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const authHandler = NextAuth(authOptions);
+const authHandler = NextAuth(authOptions) as unknown as (
+  req: Request,
+  ctx: { params: { nextauth: string[] } }
+) => Promise<Response>;
 
 export async function GET(request: Request, context: { params: { nextauth: string[] } }) {
-  return (authHandler as any)(request, context);
+  return authHandler(request, context);
 }
 
 export const POST = authHandler;
