@@ -1,9 +1,10 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
+import type { AuthOptions, SessionStrategy } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-export const authOptions: NextAuthOptions = {
+const options: AuthOptions = {
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
     maxAge: 60 * 60 * 24,
   },
   jwt: {
@@ -24,26 +25,18 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        const u = user as { address?: string };
-        if (u.address) {
-          (token as { address?: string }).address = u.address;
-          token.sub = u.address;
-        }
-      }
-      return token;
+    async jwt(params) {
+      return params.token;
     },
-    async session({ session, token }) {
-      // Keep default session shape; address is in token if needed
-      return session;
+    async session(params) {
+      return params.session;
     },
   },
   pages: {},
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const authHandler = NextAuth(authOptions) as unknown as (
+const authHandler = NextAuth(options) as unknown as (
   req: Request,
   ctx: { params: { nextauth: string[] } }
 ) => Promise<Response>;
