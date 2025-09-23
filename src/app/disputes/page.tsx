@@ -47,11 +47,11 @@ export default function DisputesPage() {
           <div className="mb-8">
             <h1 className="text-4xl lg:text-6xl font-bold text-text-primary mb-4 leading-tight">
               <span style={robotoCondensed} className=" text-primary block">
-                Tranh chấp
+                Event Dispute
               </span>
             </h1>
             <p style={robotoCondensed} className="text-xl lg:text-2xl text-text-secondary max-w-2xl">
-              Danh sách sự kiện tranh chấp và quản lý góp ý tham gia.
+              Nơi xem sự kiện tranh chấp công khai và gửi góp ý/tham luận của bạn.
             </p>
           </div>
 
@@ -73,7 +73,7 @@ export default function DisputesPage() {
               </TabsTrigger>
               <TabsTrigger value="suggestions" className="flex items-center gap-2">
                 <MessageSquareMore className="h-4 w-4" />
-                Quản lý góp ý & sự kiện tham gia
+                Góp ý sự kiện tranh chấp
               </TabsTrigger>
             </TabsList>
 
@@ -92,11 +92,11 @@ export default function DisputesPage() {
             <TabsContent value="suggestions" className="space-y-6">
               <Card variant="outlined" className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-text-primary">Góp ý của tôi</h2>
+                  <h2 className="text-xl font-semibold text-text-primary">Góp ý sự kiện tranh chấp</h2>
                   <Button variant="outline" size="sm">Thêm góp ý</Button>
                 </div>
                 <div className="text-sm text-muted-foreground mb-6">
-                  Quản lý góp ý đã gửi và các sự kiện bạn đã tham gia.
+                  Theo dõi góp ý bạn đã gửi và các sự kiện tranh chấp bạn đã tham gia.
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">

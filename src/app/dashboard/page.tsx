@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   const TOP_LEVEL_TABS = ["overview", "projects", "activity", "profile", "profile-settings"] as const
   const [activeTab, setActiveTab] = useState<string>("overview")
-  const PROJECT_SUB_TABS = ["post-job", "posted-jobs", "accepted-jobs"] as const
+  const PROJECT_SUB_TABS = ["post-job", "posted-jobs", "accepted-jobs", "disputes"] as const
   const [projectSubTab, setProjectSubTab] = useState<string>("post-job")
 
   useEffect(() => {
@@ -255,6 +255,10 @@ export default function DashboardPage() {
                     <CheckCircle className="h-4 w-4" />
                     Quản lý Job đã nhận
                   </TabsTrigger>
+                  <TabsTrigger value="disputes" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Quản lý tranh chấp
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="post-job" className="space-y-6">
@@ -310,6 +314,26 @@ export default function DashboardPage() {
                           getStatusText={getStatusText}
                         />
                       ))}
+                    </div>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="disputes" className="space-y-6">
+                  <Card variant="outlined" className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-semibold text-text-primary">Quản lý tranh chấp</h2>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card variant="outlined" className="p-4">
+                        <h3 className="font-semibold mb-2">Tạo tranh chấp</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Khởi tạo tranh chấp cho một Job khi phát sinh vấn đề.</p>
+                        <Button size="sm" onClick={() => console.log('create dispute')}>Tạo tranh chấp</Button>
+                      </Card>
+                      <Card variant="outlined" className="p-4">
+                        <h3 className="font-semibold mb-2">Danh sách tranh chấp</h3>
+                        <p className="text-sm text-muted-foreground mb-3">Theo dõi các tranh chấp bạn đã tạo hoặc tham gia.</p>
+                        <Button variant="outline" size="sm" onClick={() => console.log('view disputes')}>Xem danh sách</Button>
+                      </Card>
                     </div>
                   </Card>
                 </TabsContent>
