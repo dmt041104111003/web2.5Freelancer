@@ -30,63 +30,63 @@ export interface JobFiltersProps {
 export const MOCK_JOBS = [
   {
     id: 1,
-    title: "Thiết kế UI/UX cho ứng dụng mobile",
-    description: "Cần thiết kế giao diện người dùng cho ứng dụng fintech với focus vào trải nghiệm người dùng.",
+    title: "Design UI/UX for mobile application",
+    description: "Need to design UI/UX for mobile fintech application with focus on user experience.",
     budget: "2,000 - 5,000 USD",
-    duration: "2-4 tuần",
+    duration: "2-4 weeks",
     skills: ["Figma", "Adobe XD", "UI/UX Design", "Mobile Design"],
     category: "Design",
     escrow: true,
     verified: true,
     postedBy: "TechCorp Inc.",
-    postedDate: "2 ngày trước"
+    postedDate: "2 days ago"
   },
   {
     id: 2,
-    title: "Phát triển Smart Contract trên Aptos",
-    description: "Xây dựng smart contract cho hệ thống escrow và quản lý thanh toán freelancer.",
+    title: "Develop Smart Contract on Aptos",
+    description: "Build smart contract for escrow system and manage freelancer payments.",
     budget: "3,000 - 8,000 USD",
-    duration: "4-6 tuần",
+    duration: "4-6 weeks",
     skills: ["Move", "Aptos", "Smart Contracts", "Web3"],
     category: "Development",
     escrow: true,
     verified: true,
     postedBy: "BlockchainDAO",
-    postedDate: "1 ngày trước"
+    postedDate: "1 day ago"
   },
   {
     id: 3,
-    title: "Viết content marketing cho dự án Web3",
-    description: "Tạo nội dung marketing chất lượng cao cho dự án blockchain, bao gồm blog, social media và whitepaper.",
+    title: "Write content marketing for Web3 project",
+    description: "Create high-quality content marketing for blockchain project, including blog, social media and whitepaper.",
     budget: "1,500 - 3,000 USD",
-    duration: "3-5 tuần",
+    duration: "3-5 weeks",
     skills: ["Content Writing", "Marketing", "Web3", "SEO"],
     category: "Marketing",
     escrow: false,
     verified: false,
     postedBy: "CryptoStartup",
-    postedDate: "3 ngày trước"
+    postedDate: "3 days ago"
   },
   {
     id: 4,
-    title: "Phát triển Frontend React/Next.js",
-    description: "Xây dựng giao diện web responsive với React và Next.js cho nền tảng freelancer.",
+    title: "Develop Frontend React/Next.js",
+    description: "Build responsive web interface with React and Next.js for freelancer platform.",
     budget: "2,500 - 6,000 USD",
-    duration: "3-4 tuần",
+    duration: "3-4 weeks",
     skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
     category: "Development",
     escrow: true,
     verified: true,
     postedBy: "WebStudio",
-    postedDate: "5 ngày trước"
+    postedDate: "5 days ago"
   }
 ];
 
 export const CATEGORIES = [
-  { value: "all", label: "Tất cả" },
-  { value: "development", label: "Phát triển" },
-  { value: "design", label: "Thiết kế" },
+    { value: "all", label: "All" },
+  { value: "development", label: "Development" },
+  { value: "design", label: "Design" },
   { value: "marketing", label: "Marketing" },
-  { value: "writing", label: "Viết lách" },
-  { value: "translation", label: "Dịch thuật" }
+  { value: "writing", label: "Writing" },
+  { value: "translation", label: "Translation" }
 ];

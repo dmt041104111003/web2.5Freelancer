@@ -31,7 +31,7 @@ export default function DIDVerifiedStatus() {
   useEffect(() => {
     const run = async () => {
       if (!account) {
-        setState((s) => ({ ...s, loading: false, error: 'Vui lòng kết nối ví Petra' }));
+        setState((s) => ({ ...s, loading: false, error: 'Please connect Petra wallet' }));
         return;
       }
       try {
@@ -41,7 +41,7 @@ export default function DIDVerifiedStatus() {
         const data = await res.json();
         setState({ loading: false, error: null, hasVerified: data.hasVerified, didHash: data.didHash, controller: data.controller });
       } catch (e) {
-        setState((s) => ({ ...s, loading: false, error: 'Không thể kiểm tra trạng thái DID' }));
+        setState((s) => ({ ...s, loading: false, error: 'Cannot check DID status' }));
       }
     };
     run();
@@ -51,7 +51,7 @@ export default function DIDVerifiedStatus() {
     return (
       <Card>
         <div className="p-6 flex items-center justify-center">
-          <LoadingInline text="Đang kiểm tra trạng thái DID..." />
+          <LoadingInline text="Checking DID status..." />
         </div>
       </Card>
     );
@@ -61,7 +61,7 @@ export default function DIDVerifiedStatus() {
     return (
       <Card>
         <div className="p-6 space-y-4">
-          <h3 className="text-lg font-semibold">Trạng thái DID</h3>
+          <h3 className="text-lg font-semibold">DID status</h3>
           <p className="text-sm text-muted-foreground">{state.error}</p>
         </div>
       </Card>
@@ -73,7 +73,7 @@ export default function DIDVerifiedStatus() {
       <Card>
         <div className="p-8 flex flex-col items-center justify-center text-center gap-3">
           <CheckCircle className="h-14 w-14 text-green-600" />
-          <h3 className="text-lg font-semibold">Đã xác minh DID</h3>
+          <h3 className="text-lg font-semibold">DID verified</h3>
         </div>
       </Card>
     );
@@ -83,15 +83,15 @@ export default function DIDVerifiedStatus() {
     <Card>
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Trạng thái DID</h3>
+          <h3 className="text-lg font-semibold">DID status</h3>
           <Badge variant={state.hasVerified ? 'success' : 'danger'}>
-            {state.hasVerified ? 'Đã xác minh' : 'Chưa xác minh'}
+            {state.hasVerified ? 'Verified' : 'Not verified'}
           </Badge>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <label className="text-muted-foreground">Ví hiện tại</label>
+            <label className="text-muted-foreground">Current wallet</label>
             <p className="font-mono break-all">{account || '—'}</p>
           </div>
           <div>
@@ -107,7 +107,7 @@ export default function DIDVerifiedStatus() {
         {!state.hasVerified && (
           <div className="pt-2">
             <Link href="/auth/did-verification">
-              <Button>Tiến hành xác minh DID</Button>
+              <Button>Proceed to DID verification</Button>
             </Link>
           </div>
         )}

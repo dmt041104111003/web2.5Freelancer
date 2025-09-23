@@ -41,10 +41,10 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
             setLatestEventTime(isNaN(t) ? null : t);
           }
         } else {
-          setError('Không tìm thấy profile');
+          setError('Profile not found');
         }
       } catch (err) {
-        setError('Lỗi khi tải profile');
+        setError('Error loading profile');
         console.error('Error fetching profile:', err);
       } finally {
         setLoading(false);
@@ -60,7 +60,7 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
     return (
       <Card>
         <div className="p-6 flex items-center justify-center">
-          <LoadingInline text="Đang tải profile..." />
+          <LoadingInline text="Loading profile..." />
         </div>
       </Card>
     );
@@ -71,7 +71,7 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
       <Card>
         <div className="p-6">
           <div className="text-center text-red-600">
-            <p>{error || 'Không tìm thấy profile'}</p>
+            <p>{error || 'Profile not found'}</p>
           </div>
         </div>
       </Card>
@@ -90,7 +90,7 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
         </div>
 
         {offchain && (
-          <Section title="Chi tiết off-chain (IPFS)">
+          <Section title="Off-chain details (IPFS)">
               {'name' in offchain && (
                 <div>
                   <label className="text-muted-foreground">Name</label>
@@ -125,12 +125,12 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
         )}
         {didDetails && (
           <div className="border-t border-border pt-4">
-            <h4 className="font-medium mb-3 text-foreground">Chi tiết DID on-chain</h4>
+            <h4 className="font-medium mb-3 text-foreground">On-chain DID details</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">DID Verified:</span>
                 <Badge variant={didDetails.hasVerified ? 'default' : 'danger'}>
-                  {didDetails.hasVerified ? 'Đã xác minh' : 'Chưa xác minh'}
+                  {didDetails.hasVerified ? 'Verified' : 'Not verified'}
                 </Badge>
               </div>
               <div>
@@ -139,9 +139,9 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
                   className="font-mono bg-card text-card-foreground border border-border p-2 rounded text-sm break-all cursor-pointer hover:bg-accent/40 transition-colors"
                   onClick={() => {
                     navigator.clipboard.writeText(didDetails.controller || '');
-                    toast.success('Controller address đã được copy!');
+                    toast.success('Controller address copied!');
                   }}
-                  title="Click để copy Controller"
+                  title="Click to copy Controller"
                 >
                   {didDetails.controller || '—'}
                 </p>
@@ -159,12 +159,12 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
         )}
 
         <div className="border-t border-border pt-4">
-          <h4 className="font-medium mb-3 text-foreground">Thông tin hồ sơ</h4>
+          <h4 className="font-medium mb-3 text-foreground">Profile information</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <label className="text-muted-foreground">Ngày tạo</label>
+              <label className="text-muted-foreground">Created at</label>
               <p className="font-medium">
-                {new Date(Number(profileData.created_at) * 1000).toLocaleDateString('vi-VN')}
+                {new Date(Number(profileData.created_at) * 1000).toLocaleDateString('en-US')}
               </p>
             </div>
             <CidDisplay label="Verification CID" cid={profileData.verification_cid} />
@@ -173,9 +173,9 @@ export default function ProfileDisplay({ userAddress }: ProfileDisplayProps) {
             <CidDisplay label="CV CID" cid={profileData.cv_cid} />
             {latestEventTime && (
               <div>
-                <label className="text-muted-foreground">Thời điểm đăng ký</label>
+                <label className="text-muted-foreground">Registration time</label>
                 <p className="font-medium">
-                  {new Date(latestEventTime * 1000).toLocaleString('vi-VN')}
+                  {new Date(latestEventTime * 1000).toLocaleString('en-US')}
                 </p>
               </div>
             )}

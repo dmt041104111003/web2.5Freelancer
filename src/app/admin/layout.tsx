@@ -29,14 +29,14 @@ export default function AdminLayout({
         <div className="mb-6 flex items-center justify-between gap-2">
           <div className="min-w-0">
             <h2 className={`text-xl font-semibold ${isCollapsed ? 'hidden' : ''}`}>Admin</h2>
-            <p className={`text-sm text-muted-foreground ${isCollapsed ? 'hidden' : ''}`}>Quản trị hệ thống</p>
+            <p className={`text-sm text-muted-foreground ${isCollapsed ? 'hidden' : ''}`}>System management</p>
           </div>
           <button
             type="button"
             aria-label="Toggle sidebar"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-sm px-2 py-1 rounded border border-border hover:bg-muted"
-            title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
+            title={isCollapsed ? 'Expand' : 'Collapse'}
           >
             {isCollapsed ? '»' : '«'}
           </button>
@@ -46,25 +46,25 @@ export default function AdminLayout({
         </div>
         <nav className="flex flex-col gap-2">
           <Link className={linkClass('/admin')} href="/admin">
-            <span className={isCollapsed ? 'hidden' : ''}>Tổng quan</span>
+            <span className={isCollapsed ? 'hidden' : ''}>Overview</span>
           </Link>
           <Link className={linkClass('/admin/users')} href="/admin/users">
-            <span className={isCollapsed ? 'hidden' : ''}>Người dùng</span>
+            <span className={isCollapsed ? 'hidden' : ''}>Users</span>
           </Link>
           <Link className={linkClass('/admin/jobs')} href="/admin/jobs">
-            <span className={isCollapsed ? 'hidden' : ''}>Việc làm</span>
+            <span className={isCollapsed ? 'hidden' : ''}>Jobs</span>
           </Link>
           <Link className={linkClass('/admin/disputes')} href="/admin/disputes">
-            <span className={isCollapsed ? 'hidden' : ''}>Tranh chấp</span>
+            <span className={isCollapsed ? 'hidden' : ''}>Disputes</span>
           </Link>
           <Link className={linkClass('/admin/profiles')} href="/admin/profiles">
-            <span className={isCollapsed ? 'hidden' : ''}>Hồ sơ</span>
+            <span className={isCollapsed ? 'hidden' : ''}>Profiles</span>
           </Link>
           <Link className={linkClass('/admin/settings')} href="/admin/settings">
-            <span className={isCollapsed ? 'hidden' : ''}>Cài đặt</span>
+            <span className={isCollapsed ? 'hidden' : ''}>Settings</span>
           </Link>
           <Link className="hover:text-primary mt-2" href="/">
-            <span className={isCollapsed ? 'hidden' : ''}>← Về trang chủ</span>
+            <span className={isCollapsed ? 'hidden' : ''}>← Back to home</span>
           </Link>
         </nav>
       </aside>
@@ -87,13 +87,13 @@ export default function AdminLayout({
           {isMobileMenuOpen && (
             <div className="py-3 border-t border-border">
               <nav className="flex flex-col gap-2 px-4 pb-3">
-                <Link className={linkClass('/admin')} href="/admin" onClick={() => setIsMobileMenuOpen(false)}>Tổng quan</Link>
-                <Link className={linkClass('/admin/users')} href="/admin/users" onClick={() => setIsMobileMenuOpen(false)}>Người dùng</Link>
-                <Link className={linkClass('/admin/jobs')} href="/admin/jobs" onClick={() => setIsMobileMenuOpen(false)}>Việc làm</Link>
-                <Link className={linkClass('/admin/disputes')} href="/admin/disputes" onClick={() => setIsMobileMenuOpen(false)}>Tranh chấp</Link>
-                <Link className={linkClass('/admin/profiles')} href="/admin/profiles" onClick={() => setIsMobileMenuOpen(false)}>Hồ sơ</Link>
-                <Link className={linkClass('/admin/settings')} href="/admin/settings" onClick={() => setIsMobileMenuOpen(false)}>Cài đặt</Link>
-                <Link className="hover:text-primary" href="/" onClick={() => setIsMobileMenuOpen(false)}>← Về trang chủ</Link>
+                <Link className={linkClass('/admin')} href="/admin" onClick={() => setIsMobileMenuOpen(false)}>Overview</Link>
+                <Link className={linkClass('/admin/users')} href="/admin/users" onClick={() => setIsMobileMenuOpen(false)}>Users</Link>
+                <Link className={linkClass('/admin/jobs')} href="/admin/jobs" onClick={() => setIsMobileMenuOpen(false)}>Jobs</Link>
+                <Link className={linkClass('/admin/disputes')} href="/admin/disputes" onClick={() => setIsMobileMenuOpen(false)}>Disputes</Link>
+                <Link className={linkClass('/admin/profiles')} href="/admin/profiles" onClick={() => setIsMobileMenuOpen(false)}>Profiles</Link>
+                <Link className={linkClass('/admin/settings')} href="/admin/settings" onClick={() => setIsMobileMenuOpen(false)}>Settings</Link>
+                <Link className="hover:text-primary" href="/" onClick={() => setIsMobileMenuOpen(false)}>← Back to home</Link>
               </nav>
             </div>
           )}

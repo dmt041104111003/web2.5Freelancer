@@ -16,7 +16,7 @@ export default function JobFilters({
     <div className="mb-8 space-y-4">
       <div className="grid md:grid-cols-3 gap-4">
         <Input
-          placeholder="Tìm kiếm công việc..."
+          placeholder="Search jobs..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -24,7 +24,7 @@ export default function JobFilters({
           options={categories}
           value={selectedCategory}
           onChange={setSelectedCategory}
-          placeholder="Chọn danh mục"
+          placeholder="Select category"
         />
         <div className="flex items-center">
           <label className="flex items-center space-x-2 cursor-pointer">
@@ -34,7 +34,7 @@ export default function JobFilters({
               onChange={(e) => setShowEscrowOnly(e.target.checked)}
               className="rounded border-border"
             />
-            <span className="text-text-primary">Chỉ hiển thị có Escrow</span>
+            <span className="text-text-primary">Show escrow only</span>
           </label>
         </div>
       </div>

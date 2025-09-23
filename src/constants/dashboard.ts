@@ -80,28 +80,28 @@ export const MOCK_RECENT_ACTIVITIES = [
   {
     id: 1,
     type: "payment",
-    message: "Nhận thanh toán $2,500 cho dự án Smart Contract",
+    message: "Receive $2,500 payment for Smart Contract project",
     timestamp: "2 giờ trước",
     amount: 2500
   },
   {
     id: 2,
     type: "project",
-    message: "Dự án UI/UX đã được cập nhật tiến độ 75%",
+    message: "UI/UX project updated to 75% progress",
     timestamp: "1 ngày trước",
     amount: null
   },
   {
     id: 3,
     type: "escrow",
-    message: "Escrow được kích hoạt cho dự án Content Marketing",
+    message: "Escrow activated for Content Marketing project",
     timestamp: "2 ngày trước",
     amount: 3000
   },
   {
     id: 4,
     type: "completion",
-    message: "Dự án Smart Contract đã hoàn thành",
+    message: "Smart Contract project completed",
     timestamp: "3 ngày trước",
     amount: 8000
   }
@@ -138,8 +138,8 @@ export const MOCK_POSTED_JOBS = [
     cancel_request: null,
     unlock_confirm_poster: false,
     unlock_confirm_worker: false,
-    title: "Thiết kế logo cho startup fintech",
-    description: "Cần thiết kế logo hiện đại, đơn giản cho startup fintech",
+    title: "Design logo for startup fintech",
+    description: "Need to design a modern, simple logo for startup fintech",
     skills: ["Design", "Logo", "Branding"],
     category: "Design"
   },
@@ -173,8 +173,8 @@ export const MOCK_POSTED_JOBS = [
     cancel_request: null,
     unlock_confirm_poster: false,
     unlock_confirm_worker: false,
-    title: "Phát triển website e-commerce",
-    description: "Xây dựng website bán hàng với React và Node.js",
+    title: "Develop e-commerce website",
+    description: "Build e-commerce website with React and Node.js",
     skills: ["React", "Node.js", "E-commerce"],
     category: "Development"
   }
@@ -211,8 +211,8 @@ export const MOCK_ACCEPTED_JOBS = [
     cancel_request: null,
     unlock_confirm_poster: false,
     unlock_confirm_worker: false,
-    title: "Thiết kế UI/UX cho ứng dụng mobile",
-    description: "Thiết kế giao diện người dùng cho ứng dụng mobile fintech",
+    title: "Design UI/UX for mobile application",
+    description: "Design UI/UX for mobile fintech application",
     skills: ["UI/UX", "Mobile", "Figma"],
     category: "Design",
     client: "TechCorp Inc.",
@@ -249,8 +249,8 @@ export const MOCK_ACCEPTED_JOBS = [
     cancel_request: null,
     unlock_confirm_poster: false,
     unlock_confirm_worker: false,
-    title: "Phát triển Smart Contract Aptos",
-    description: "Xây dựng smart contract cho DeFi protocol",
+    title: "Develop Smart Contract Aptos",
+    description: "Build smart contract for DeFi protocol",
     skills: ["Move", "Aptos", "DeFi"],
     category: "Blockchain",
     client: "BlockchainDAO",

@@ -101,21 +101,21 @@ export default function ProfileUpdateForm() {
                   setUploadedFiles(prev => ({ ...prev, cv: allData.cv_url as string }));
                 }
                
-               toast.success('Đã tải thông tin hồ sơ hiện tại');
+               toast.success('Loaded current profile information');
              } else {
                console.log('Data structure not recognized:', allData);
-               toast.info('Không tìm thấy thông tin hồ sơ freelancer, có thể bạn chưa tạo hồ sơ');
+               toast.info('No freelancer profile info found, you may not have created one');
              }
            } else {
              console.log('No data returned from any CID');
-             toast.info('Không tìm thấy thông tin hồ sơ, có thể bạn chưa tạo hồ sơ');
+             toast.info('No profile information found, you may not have created one');
            }
         } else {
           console.log('No profile data or CID found');
         }
       } catch (error) {
         console.error('Error loading existing profile:', error);
-        toast.error('Không thể tải thông tin hồ sơ hiện tại');
+        toast.error('Unable to load current profile information');
       } finally {
         setIsLoadingProfile(false);
       }
@@ -135,10 +135,10 @@ export default function ProfileUpdateForm() {
       const { cid } = await res.json() as { cid: string };
       const fileUrl = `ipfs://${cid}`;
       setUploadedFiles(prev => ({ ...prev, [type]: fileUrl }));
-      toast.success(`${type === 'avatar' ? 'Ảnh đại diện' : 'CV'} đã upload thành công!`);
+      toast.success(`${type === 'avatar' ? 'Avatar' : 'CV'} uploaded successfully!`);
     } catch (err) {
       console.error(err);
-      toast.error(`Upload ${type === 'avatar' ? 'ảnh' : 'CV'} thất bại`);
+      toast.error(`Upload ${type === 'avatar' ? 'avatar' : 'CV'} failed`);
     } finally {
       setIsUploading(false);
     }
@@ -146,8 +146,8 @@ export default function ProfileUpdateForm() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isUploading) { toast.info('Đang upload, vui lòng đợi...'); return; }
-    if (!formData.headline.trim()) { toast.error('Vui lòng nhập Headline'); return; }
+    if (isUploading) { toast.info('Uploading, please wait...'); return; }
+    if (!formData.headline.trim()) { toast.error('Please enter a Headline'); return; }
     
     try {
       setLoading(true);
@@ -172,11 +172,11 @@ export default function ProfileUpdateForm() {
       const avatarBare = ((uploadedFiles.avatar || existingCids.avatar) || '').replace('ipfs://', '');
       const hash = await updateProfileAssets(profileBare, cvBare, avatarBare);
       setTxHash(hash);
-      toast.success('Cập nhật hồ sơ thành công!');
+      toast.success('Profile updated successfully!');
       
     } catch (err) {
       console.error(err);
-      toast.error('Cập nhật hồ sơ thất bại');
+      toast.error('Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -192,9 +192,9 @@ export default function ProfileUpdateForm() {
     <Card>
       <form onSubmit={onSubmit} className="p-6 space-y-4 text-foreground">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Cập nhật hồ sơ freelancer</h3>
+          <h3 className="text-lg font-semibold">Update freelancer profile</h3>
           {isLoadingProfile && (
-            <div className="text-sm text-muted-foreground">Đang tải thông tin hiện tại...</div>
+            <div className="text-sm text-muted-foreground">Loading current information...</div>
           )}
         </div>
         
@@ -206,22 +206,22 @@ export default function ProfileUpdateForm() {
           />
         </FormField>
 
-        <FormField label="Tóm tắt">
+        <FormField label="Summary">
           <Textarea 
             value={formData.summary}
             onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
-            placeholder="Mô tả ngắn gọn về bản thân và chuyên môn..."
+            placeholder="Briefly describe yourself and your expertise..."
             rows={3}
           />
         </FormField>
 
                  <div className="space-y-2">
-           <label className="text-sm font-medium text-muted-foreground">Kỹ năng</label>
+          <label className="text-sm font-medium text-muted-foreground">Skills</label>
            <div className="flex gap-2">
              <Input 
                value={skillInput} 
                onChange={(e) => setSkillInput(e.target.value)}
-               placeholder="Nhập kỹ năng..." 
+              placeholder="Enter a skill..." 
                onKeyPress={(e) => {
                  if (e.key === 'Enter') {
                    e.preventDefault();
@@ -261,20 +261,20 @@ export default function ProfileUpdateForm() {
            </div>
          </div>
 
-        <FormField label="Kinh nghiệm">
+        <FormField label="Experience">
           <Textarea 
             value={formData.experience}
             onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
-            placeholder="Mô tả kinh nghiệm làm việc..."
+            placeholder="Describe your work experience..."
             rows={4}
           />
         </FormField>
 
-        <FormField label="Học vấn">
+        <FormField label="Education">
           <Textarea 
             value={formData.education}
             onChange={(e) => setFormData(prev => ({ ...prev, education: e.target.value }))}
-            placeholder="Thông tin học vấn..."
+            placeholder="Education details..."
             rows={3}
           />
         </FormField>
@@ -327,8 +327,8 @@ export default function ProfileUpdateForm() {
            </div>
          </div>
 
-        <Section title="Tài sản hồ sơ">
-          <FileUploadInput label="Ảnh đại diện" accept="image/*" onFile={(f) => handleFileUpload(f, 'avatar')} />
+        <Section title="Profile assets">
+          <FileUploadInput label="Avatar" accept="image/*" onFile={(f) => handleFileUpload(f, 'avatar')} />
           {uploadedFiles.avatar && (
             <CidDisplay label="Avatar CID" cid={uploadedFiles.avatar} />
           )}
@@ -341,11 +341,11 @@ export default function ProfileUpdateForm() {
 
         <div className="flex gap-3 pt-4">
           <Button type="submit" disabled={loading || isUploading}>
-            {loading || isUploading ? 'Đang cập nhật...' : 'Cập nhật hồ sơ'}
+            {loading || isUploading ? 'Updating...' : 'Update profile'}
           </Button>
           {txHash && (
             <Button type="button" variant="outline" onClick={openExplorer}>
-              Xem giao dịch
+              View transaction
             </Button>
           )}
         </div>

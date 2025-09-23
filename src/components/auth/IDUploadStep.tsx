@@ -41,7 +41,7 @@ export default function IDUploadStep({
           setUploadedFront(true);
         } catch (error) {
           console.error('Upload front image error:', error);
-          setUploadError('Upload thất bại. Vui lòng thử lại với ảnh khác.');
+          setUploadError('Upload failed. Please try again with a different image.');
           setUploadedFront(false);
           setTimeout(() => {
             resetUpload();
@@ -62,9 +62,9 @@ export default function IDUploadStep({
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
-          <label className="block text-sm font-medium">Ảnh mặt trước CCCD/Hộ chiếu</label>
+          <label className="block text-sm font-medium">Front Image of CCCD/ID Card</label>
           <div className="relative">
-            <FileUploadInput label="Chọn ảnh" accept="image/*" onFile={handleFrontImageUpload} />
+            <FileUploadInput label="Choose Image" accept="image/*" onFile={handleFrontImageUpload} />
             {isApiLoading && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -82,7 +82,7 @@ export default function IDUploadStep({
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 text-red-600" />
                 <div>
-                  <p className="text-sm text-red-800 font-medium">Upload thất bại</p>
+                  <p className="text-sm text-red-800 font-medium">Upload failed</p>
                   <p className="text-xs text-red-600">{uploadError}</p>
                 </div>
               </div>
@@ -93,28 +93,28 @@ export default function IDUploadStep({
                 className="mt-2"
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
-                Thử lại
+                Try again
               </Button>
             </div>
           )}
           
           {idCardData && !uploadError && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">Thông tin đọc được:</h4>
+              <h4 className="text-sm font-medium text-blue-900 mb-2">Readable Information:</h4>
               <div className="space-y-1 text-xs text-blue-800">
-                <p><span className="font-medium">CCCD:</span> {idCardData.cccd || 'Không đọc được'}</p>
-                <p><span className="font-medium">Họ tên:</span> {idCardData.name || 'Không đọc được'}</p>
+                <p><span className="font-medium">CCCD:</span> {idCardData.cccd || 'Cannot read'}</p>
+                <p><span className="font-medium">Name:</span> {idCardData.name || 'Cannot read'}</p>
               </div>
             </div>
           )}
         </div>
         
         <div className="space-y-3">
-          <label className="block text-sm font-medium">Ảnh mặt sau CCCD/Hộ chiếu</label>
+          <label className="block text-sm font-medium">Back Image of CCCD/Hộ chiếu</label>
           <FileUploadInput label="Chọn ảnh" accept="image/*" onFile={handleBackImageUpload} />
           {backImage && !uploadError && (
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <p className="text-sm text-gray-600">✓ Đã chọn ảnh mặt sau</p>
+              <p className="text-sm text-gray-600">✓ Selected back image</p>
             </div>
           )}
         </div>
@@ -129,12 +129,12 @@ export default function IDUploadStep({
           {isApiLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Đang xử lý...
+              Processing...
             </>
           ) : (
             <>
               <Upload className="w-4 h-4 mr-2" />
-              Tiếp tục
+              Continue
             </>
           )}
         </Button>

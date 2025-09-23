@@ -37,7 +37,7 @@ export default function ProjectCard({ project, getStatusColor, getStatusText }: 
           duration={800}
         />
         <div className="flex justify-between text-sm text-text-muted">
-          <span>Hạn chót</span>
+          <span>Due Date</span>
           <span>{project.dueDate}</span>
         </div>
       </div>

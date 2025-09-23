@@ -25,7 +25,7 @@ export default function ChallengeSignStep({
       {verificationStatus === 'processing' && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span>Đang xác minh...</span>
+            <span>Verifying...</span>
             <span>{progress}%</span>
           </div>
           <Progress value={progress} className="w-full" />
@@ -38,7 +38,7 @@ export default function ChallengeSignStep({
           disabled={verificationStatus === 'processing'}
         >
           <Upload className="w-4 h-4 mr-2" />
-          Ký Challenge
+          Sign Challenge
         </Button>
       </div>
     </div>

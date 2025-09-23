@@ -41,32 +41,32 @@ export interface DIDVerificationLayoutProps {
 export const VERIFICATION_STEPS: VerificationStep[] = [
   {
     id: 1,
-    title: 'Upload CCCD/Hộ chiếu',
-    description: 'Tải lên ảnh căn cước công dân hoặc hộ chiếu',
+    title: 'Upload CCCD/ID Card',
+    description: 'Upload image of CCCD/ID Card',
     status: 'pending'
   },
   {
     id: 2,
-    title: 'Xác minh Khuôn mặt Real-time',
-    description: 'Chụp ảnh selfie để xác minh danh tính',
+    title: 'Real-time Face Verification',
+    description: 'Take selfie to verify identity',
     status: 'pending'
   },
   {
     id: 3,
-    title: 'Đăng ký trên Blockchain',
-    description: 'Lưu thông tin xác minh lên blockchain',
+    title: 'Register on Blockchain',
+    description: 'Save verification information on blockchain',
     status: 'pending'
   },
-  {
+  { 
     id: 4,
-    title: 'Hoàn thành',
-    description: 'Xác minh DID thành công',
+    title: 'Completed',
+    description: 'Verify DID successfully',
     status: 'pending'
   }
 ];
 
 export const VERIFICATION_MESSAGES = {
-  CAMERA_ERROR: 'Không thể truy cập camera',
-  SUCCESS: 'DID của bạn đã được xác minh và ghi nhận on-chain',
-  CHALLENGE_SIGN: 'Vui lòng ký challenge bằng ví của bạn để xác minh quyền sở hữu'
+  CAMERA_ERROR: 'Cannot access camera',
+  SUCCESS: 'DID of yours has been verified and recorded on-chain',
+  CHALLENGE_SIGN: 'Please sign challenge with your wallet to verify ownership'
 } as const;

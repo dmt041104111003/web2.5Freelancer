@@ -52,10 +52,10 @@ export default function JobCard({ job }: JobCardProps) {
 
         <div className="flex flex-col gap-2 lg:items-end">
           <Button size="lg" className="w-full lg:w-auto">
-            Ứng tuyển ngay
+            Apply now
           </Button>
           <Button variant="outline" size="sm" className="w-full lg:w-auto">
-            Xem chi tiết
+            View details
           </Button>
         </div>
       </div>

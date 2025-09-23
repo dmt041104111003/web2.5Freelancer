@@ -31,13 +31,13 @@ export function PersonaSwitcher() {
             style={robotoCondensed}
             className="text-4xl lg:text-5xl text-primary mb-4"
           >
-            Bạn là ai?
+            Who are you?
           </h2>
           <p 
             style={robotoCondensed}
             className="text-lg text-text-secondary max-w-2xl mx-auto"
           >
-            Chọn vai trò của bạn để xem những lợi ích phù hợp
+            Choose your role to see tailored benefits
           </p>
         </div>
         
@@ -49,7 +49,7 @@ export function PersonaSwitcher() {
                 size="md"
                 className="px-6"
               >
-                Người thuê việc
+                Client
               </Button>
               <Button
                 onClick={() => setActivePersona('freelancer')}

@@ -1,8 +1,8 @@
 export default function AdminUsersPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-4">Quản lý người dùng</h1>
-      <p className="text-muted-foreground">Trang quản lý người dùng sẽ hiển thị danh sách, tìm kiếm, khóa/mở khóa.</p>
+      <h1 className="text-2xl font-semibold mb-4">User management</h1>
+      <p className="text-muted-foreground">This page will list users, support search and ban/unban actions.</p>
     </div>
   );
 }

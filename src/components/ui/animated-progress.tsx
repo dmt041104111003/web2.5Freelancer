@@ -58,7 +58,7 @@ export function AnimatedProgress({
     <div className={`w-full ${className}`}>
       {showLabel && (
         <div className="flex justify-between text-sm text-text-muted mb-2">
-          <span>Tiến độ</span>
+          <span>Progress</span>
           <span className="font-medium">{Math.round(displayValue)}%</span>
         </div>
       )}

@@ -98,7 +98,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
     e.preventDefault();
     
     if (formData.milestones.length === 0) {
-      alert('Vui lòng thêm ít nhất một milestone');
+      alert('Please add at least one milestone');
       return;
     }
     
@@ -138,19 +138,19 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
     <Card variant="outlined" className="p-6">
       <div className="flex items-center gap-2 mb-6">
         <Plus className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold text-text-primary">Đăng Job Mới</h2>
+        <h2 className="text-xl font-semibold text-text-primary">Post a new Job</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Job Title */}
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            Tiêu đề công việc *
+            Job title *
           </label>
           <Input
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
-            placeholder="Ví dụ: Thiết kế logo cho startup fintech"
+            placeholder="e.g. Design a logo for a fintech startup"
             required
           />
         </div>
@@ -158,12 +158,12 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
         {/* Description */}
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            Mô tả chi tiết *
+            Detailed description *
           </label>
           <Textarea
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="Mô tả chi tiết về công việc, yêu cầu kỹ thuật, timeline..."
+            placeholder="Describe the job, technical requirements, timeline..."
             rows={4}
             required
           />
@@ -173,16 +173,16 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             <Tag className="inline h-4 w-4 mr-1" />
-            Danh mục *
+            Category *
           </label>
           <select
             value={formData.category}
             onChange={(e) => handleInputChange('category', e.target.value)}
             required
-            title="Chọn danh mục công việc"
+            title="Select a category"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <option value="">Chọn danh mục</option>
+            <option value="">Select category</option>
             {categories.map(category => (
               <option key={category} value={category}>{category}</option>
             ))}
@@ -193,7 +193,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             <Calendar className="inline h-4 w-4 mr-1" />
-            Hạn nộp đơn ứng tuyển *
+            Application deadline *
           </label>
           <Input
             type="datetime-local"
@@ -217,7 +217,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
                     Milestone {index + 1}: {(amount / 100000000).toFixed(2)} APT
                   </span>
                   <span className="text-xs text-text-muted ml-2">
-                    ({Math.floor(formData.milestoneDurations[index] / 86400)} ngày)
+                    ({Math.floor(formData.milestoneDurations[index] / 86400)} days)
                   </span>
                 </div>
                 <Button
@@ -227,7 +227,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
                   size="sm"
                   className="text-red-600 hover:text-red-700"
                 >
-                  Xóa
+                  Remove
                 </Button>
               </div>
             ))}
@@ -237,7 +237,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
                 type="number"
                 value={formData.newMilestoneAmount}
                 onChange={(e) => handleInputChange('newMilestoneAmount', e.target.value)}
-                placeholder="Số APT"
+                placeholder="APT amount"
                 min="0"
                 step="0.01"
                 className="flex-1"
@@ -246,12 +246,12 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
                 type="number"
                 value={formData.newMilestoneDuration}
                 onChange={(e) => handleInputChange('newMilestoneDuration', e.target.value)}
-                placeholder="Số ngày"
+                placeholder="Days"
                 min="1"
                 className="flex-1"
               />
               <Button type="button" onClick={handleAddMilestone} variant="outline">
-                Thêm
+                Add
               </Button>
             </div>
           </div>
@@ -261,13 +261,13 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
             <FileText className="inline h-4 w-4 mr-1" />
-            Kỹ năng yêu cầu
+            Required skills
           </label>
           <div className="flex gap-2 mb-3">
             <Input
               value={formData.newSkill}
               onChange={(e) => handleInputChange('newSkill', e.target.value)}
-              placeholder="Thêm kỹ năng..."
+              placeholder="Add skill..."
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -276,7 +276,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
               }}
             />
             <Button type="button" onClick={handleAddSkill} variant="outline">
-              Thêm
+              Add
             </Button>
           </div>
           {formData.skills.length > 0 && (
@@ -300,10 +300,10 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
         {/* Submit Button */}
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline">
-            Hủy
+            Cancel
           </Button>
           <Button type="submit" className="min-w-[120px]">
-            Đăng Job
+            Post Job
           </Button>
         </div>
       </form>

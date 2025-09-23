@@ -51,7 +51,7 @@ export default function DisputesPage() {
               </span>
             </h1>
             <p style={robotoCondensed} className="text-xl lg:text-2xl text-text-secondary max-w-2xl">
-              Nơi xem sự kiện tranh chấp công khai và gửi góp ý/tham luận của bạn.
+              Public view of dispute events and send your suggestions/comments.
             </p>
           </div>
 
@@ -69,22 +69,22 @@ export default function DisputesPage() {
             <TabsList className="flex w-full mb-6">
               <TabsTrigger value="list" className="flex items-center gap-2">
                 <ListChecks className="h-4 w-4" />
-                Danh sách
+                List
               </TabsTrigger>
               <TabsTrigger value="suggestions" className="flex items-center gap-2">
                 <MessageSquareMore className="h-4 w-4" />
-                Góp ý sự kiện tranh chấp
+                Suggestions/Comments
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="list" className="space-y-6">
               <Card variant="outlined" className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-text-primary">Sự kiện tranh chấp đang diễn ra</h2>
-                  <Button variant="outline" size="sm">Làm mới</Button>
+                  <h2 className="text-xl font-semibold text-text-primary">Dispute events are ongoing</h2>
+                  <Button variant="outline" size="sm">Refresh</Button>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Chưa có dữ liệu. Kết nối API/on-chain để hiển thị danh sách tranh chấp.
+                  No data. Connect API/on-chain to display the dispute list.
                 </div>
               </Card>
             </TabsContent>
@@ -92,21 +92,21 @@ export default function DisputesPage() {
             <TabsContent value="suggestions" className="space-y-6">
               <Card variant="outlined" className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-text-primary">Góp ý sự kiện tranh chấp</h2>
-                  <Button variant="outline" size="sm">Thêm góp ý</Button>
+                    <h2 className="text-xl font-semibold text-text-primary">Suggestions/Comments</h2>
+                  <Button variant="outline" size="sm">Add Suggestions</Button>
                 </div>
                 <div className="text-sm text-muted-foreground mb-6">
-                  Theo dõi góp ý bạn đã gửi và các sự kiện tranh chấp bạn đã tham gia.
+                  Track your suggestions and the dispute events you have participated in.
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <Card variant="outlined" className="p-4">
-                    <div className="font-medium mb-1">Góp ý đã gửi</div>
-                    <div className="text-sm text-muted-foreground">Chưa có góp ý.</div>
+                    <div className="font-medium mb-1">Suggestions</div>
+                    <div className="text-sm text-muted-foreground">No suggestions.</div>
                   </Card>
                   <Card variant="outlined" className="p-4">
-                    <div className="font-medium mb-1">Sự kiện đã tham gia</div>
-                    <div className="text-sm text-muted-foreground">Chưa tham gia sự kiện nào.</div>
+                    <div className="font-medium mb-1">Dispute Events</div>
+                    <div className="text-sm text-muted-foreground">No dispute events.</div>
                   </Card>
                 </div>
               </Card>

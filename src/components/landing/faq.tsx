@@ -34,13 +34,13 @@ export function FAQ() {
             style={robotoCondensed}
             className="text-4xl lg:text-5xl text-primary mb-4"
           >
-            Câu hỏi thường gặp
+            Frequently asked questions
           </h2>
           <p 
             style={robotoCondensed}
             className="text-lg text-text-secondary max-w-2xl mx-auto"
           >
-            Những câu hỏi phổ biến về nền tảng Marketplace2vn
+            Common questions about the Marketplace2vn platform
           </p>
         </div>
         

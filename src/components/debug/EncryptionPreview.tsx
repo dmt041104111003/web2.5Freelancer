@@ -18,10 +18,10 @@ export default function EncryptionPreview({ verificationData, onConfirm, onBack 
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(fieldName);
-      toast.success(`${fieldName} đã được copy!`);
+      toast.success(`${fieldName} copied!`);
       setTimeout(() => setCopiedField(null), 1500);
     } catch (err) {
-      toast.error('Không thể copy vào clipboard');
+      toast.error('Cannot copy to clipboard');
     }
   };
 
@@ -49,8 +49,8 @@ export default function EncryptionPreview({ verificationData, onConfirm, onBack 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 select-none">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-4">Xem trước dữ liệu trước khi lưu</h2>
-        <p className="text-muted-foreground">Kiểm tra thông tin trước khi đăng ký trên blockchain</p>
+        <h2 className="text-3xl font-bold text-foreground mb-4">Preview data before saving</h2>
+        <p className="text-muted-foreground">Check information before registering on the blockchain</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -58,13 +58,13 @@ export default function EncryptionPreview({ verificationData, onConfirm, onBack 
           <div className="p-6">
             <div className="flex items-center gap-2 mb-4 select-none">
               <Eye className="h-5 w-5 text-primary" />
-              <h3 className="text-xl font-semibold text-foreground">Thông tin gốc</h3>
+              <h3 className="text-xl font-semibold text-foreground">Original Information</h3>
             </div>
             <div className="space-y-4">
               <Block label="DID" value={verificationData.did} />
               <Block label="Tên" value={verificationData.name} />
               <Block label="CCCD" value={verificationData.cccd} />
-              <Block label="CID" value={verificationData.cid || 'Sẽ được tạo sau khi pin lên IPFS'} />
+              <Block label="CID" value={verificationData.cid || 'Will be created after pinning to IPFS'} />
             </div>
           </div>
         </Card>
@@ -72,13 +72,13 @@ export default function EncryptionPreview({ verificationData, onConfirm, onBack 
           <div className="p-6">
             <div className="flex items-center gap-2 mb-4 select-none">
               <Shield className="h-5 w-5 text-primary" />
-              <h3 className="text-xl font-semibold text-foreground">Dữ liệu blockchain</h3>
+              <h3 className="text-xl font-semibold text-foreground">Blockchain Data</h3>
             </div>
 
             <div className="space-y-4">
               <div className="select-none">
                 <label className="block text-sm font-medium text-foreground/80 mb-1">
-                  CCCD (Encrypted)
+                      CCCD (Encrypted)
                   <Badge variant="secondary" className="ml-2">SHA256</Badge>
                 </label>
                 <div
@@ -164,8 +164,8 @@ export default function EncryptionPreview({ verificationData, onConfirm, onBack 
       </div>
 
       <div className="flex justify-between pt-6 select-none">
-        <Button variant="outline" onClick={onBack} className="px-8">Quay lại</Button>
-        <Button variant="primary" onClick={onConfirm} className="px-8">Xác nhận & Lưu trên Blockchain</Button>
+        <Button variant="outline" onClick={onBack} className="px-8">Back</Button>
+        <Button variant="primary" onClick={onConfirm} className="px-8">Confirm & Save on Blockchain</Button>
       </div>
     </div>
   );

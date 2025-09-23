@@ -28,13 +28,13 @@ export function HowItWorks() {
             style={robotoCondensed}
             className="text-4xl lg:text-5xl text-primary mb-4"
           >
-            Cách thức hoạt động
+            How it works
           </h2>
           <p 
             style={robotoCondensed}
             className="text-lg text-text-secondary max-w-2xl mx-auto"
           >
-            Quy trình đơn giản 4 bước để bắt đầu công việc freelancer an toàn và minh bạch
+            A simple 4-step process to start safe and transparent freelancing
           </p>
         </div>
         

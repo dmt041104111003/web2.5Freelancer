@@ -49,14 +49,14 @@ export default function JobsPage() {
                 style={robotoCondensed}
                 className=" text-primary block"
               >
-                Tìm việc làm
+                Find a job
               </span>
             </h1>
             <p 
               style={robotoCondensed}
               className="text-xl lg:text-2xl text-text-secondary max-w-2xl"
             >
-              Khám phá các cơ hội việc làm chất lượng cao với bảo vệ escrow
+              Discover high-quality job opportunities with escrow protection
             </p>
           </div>
 
@@ -79,7 +79,7 @@ export default function JobsPage() {
           {filteredJobs.length === 0 && (
             <div className="text-center py-12">
               <p className="text-text-secondary text-lg">
-                Không tìm thấy công việc phù hợp với bộ lọc của bạn
+                No jobs found matching your filters
               </p>
             </div>
           )}

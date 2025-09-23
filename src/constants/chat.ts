@@ -52,9 +52,9 @@ export interface ConversationListProps {
 export const MOCK_CONVERSATIONS = [
   {
     id: 1,
-    title: "Thiết kế UI/UX cho ứng dụng mobile",
-    lastMessage: "Tôi đã gửi file design mới nhất, bạn xem qua nhé!",
-    lastMessageTime: "2 phút trước",
+    title: "Design UI/UX for mobile application",
+    lastMessage: "I have sent the latest design file, please review it!",
+    lastMessageTime: "2 minutes ago",
     unreadCount: 2,
     participants: [
       { name: "Dao Manh Tung", avatar: "/api/avatar/1", online: true },
@@ -64,9 +64,9 @@ export const MOCK_CONVERSATIONS = [
   },
   {
     id: 2,
-    title: "Phát triển Smart Contract Aptos",
-    lastMessage: "Smart contract đã được deploy thành công trên testnet",
-    lastMessageTime: "1 giờ trước",
+    title: "Develop Smart Contract Aptos",
+    lastMessage: "Smart contract deployed successfully on testnet",
+    lastMessageTime: "1 hour ago",
     unreadCount: 0,
     participants: [
       { name: "Dao Minh Quan", avatar: "/api/avatar/3", online: true },
@@ -76,9 +76,9 @@ export const MOCK_CONVERSATIONS = [
   },
   {
     id: 3,
-    title: "Content Marketing cho Web3",
-    lastMessage: "Bài viết đã được review và approved",
-    lastMessageTime: "3 giờ trước",
+    title: "Content Marketing for Web3",
+    lastMessage: "Article reviewed and approved",
+    lastMessageTime: "3 hours ago",
     unreadCount: 0,
     participants: [
       { name: "Dao Minh Tuan", avatar: "/api/avatar/5", online: false },
@@ -92,35 +92,35 @@ export const MOCK_MESSAGES = [
   {
     id: 1,
     sender: "Dao Manh Tung",
-    message: "Chào bạn! Tôi đã xem qua yêu cầu thiết kế UI/UX cho ứng dụng mobile. Bạn có thể cho tôi biết thêm về target audience không?",
+    message: "Hello! I have reviewed the UI/UX design request for the mobile application. Can you tell me more about the target audience?",
     timestamp: "10:30 AM",
     isOwn: false
   },
   {
     id: 2,
     sender: "You",
-    message: "Chào Alice! Target audience chính là người dùng 25-40 tuổi, có thu nhập trung bình trở lên, quan tâm đến fintech.",
+    message: "Hello Alice! The target audience is 25-40 years old, with an average income, and interested in fintech.",
     timestamp: "10:32 AM",
     isOwn: true
   },
   {
     id: 3,
     sender: "Dao Manh Tung",
-    message: "Cảm ơn thông tin! Tôi sẽ bắt đầu với wireframe và gửi cho bạn xem qua. Bạn có preference về màu sắc không?",
+    message: "Thank you for the information! I will start with the wireframe and send it to you. Do you have any preferences for the color scheme?",
     timestamp: "10:35 AM",
     isOwn: false
   },
   {
     id: 4,
     sender: "You",
-    message: "Tôi thích palette màu xanh dương và trắng, tạo cảm giác tin cậy và chuyên nghiệp.",
+    message: "I like the blue and white palette, it creates a professional and trustworthy feel.",
     timestamp: "10:37 AM",
     isOwn: true
   },
   {
     id: 5,
     sender: "Dao Manh Tung",
-    message: "Tuyệt vời! Tôi đã gửi file design mới nhất, bạn xem qua nhé!",
+    message: "Great! I have sent the latest design file, please review it!",
     timestamp: "10:40 AM",
     isOwn: false
   }

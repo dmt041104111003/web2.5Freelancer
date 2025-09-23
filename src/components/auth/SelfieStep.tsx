@@ -22,7 +22,7 @@ export default function SelfieStep({
 
   useEffect(() => {
     if (!idCardData) {
-      onError('Vui lòng upload CCCD trước khi xác minh khuôn mặt');
+      onError('Please upload your ID card before face verification');
     }
   }, [idCardData, onError]);
 
@@ -41,7 +41,7 @@ export default function SelfieStep({
       }
     } catch (err) {
       console.error('Camera access error:', err);
-      onError('Không thể truy cập camera');
+      onError('Cannot access camera');
     }
   };
 
@@ -99,10 +99,10 @@ export default function SelfieStep({
     <div className="space-y-6">
       {idCardData && (
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">Thông tin CCCD đã upload:</h4>
+          <h4 className="text-sm font-medium text-blue-900 mb-2">Uploaded ID card info:</h4>
           <div className="space-y-1 text-xs text-blue-800">
-            <p><span className="font-medium">CCCD:</span> {idCardData.cccd || 'Không đọc được'}</p>
-            <p><span className="font-medium">Họ tên:</span> {idCardData.name || 'Không đọc được'}</p>
+            <p><span className="font-medium">ID:</span> {idCardData.cccd || 'Unreadable'}</p>
+            <p><span className="font-medium">Full name:</span> {idCardData.name || 'Unreadable'}</p>
           </div>
         </div>
       )}
@@ -123,12 +123,12 @@ export default function SelfieStep({
             {!isCameraActive ? (
               <Button onClick={startCamera} variant="outline" className="w-full max-w-xs">
                 <Camera className="w-4 h-4 mr-2" />
-                Bật Camera
+                Turn on Camera
               </Button>
             ) : (
               <Button onClick={captureAndVerify} className="w-full max-w-xs">
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Chụp Ảnh
+                Capture Photo
               </Button>
             )}
           </div>
@@ -146,14 +146,14 @@ export default function SelfieStep({
           <div className="flex justify-center space-x-4">
             <Button onClick={retakePhoto} variant="outline">
               <RotateCcw className="w-4 h-4 mr-2" />
-              Chụp lại
+              Retake
             </Button>
           </div>
           
           {isApiLoading && (
             <div className="flex items-center justify-center space-x-2 text-blue-600">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Đang xác minh khuôn mặt...</span>
+              <span>Verifying face...</span>
             </div>
           )}
         </div>
@@ -173,21 +173,21 @@ export default function SelfieStep({
             )}
             <div>
               <p className="font-medium">
-                {verificationResult.success ? '✓ Xác minh thành công' : '✗ Xác minh thất bại'}
+                {verificationResult.success ? '✓ Verification successful' : '✗ Verification failed'}
               </p>
               <p className="text-xs mt-1">{verificationResult.message}</p>
               {verificationResult.distance && (
                 <div className="text-xs mt-1 space-y-1">
                   <p>
-                    Độ tương đồng: {((1 - verificationResult.distance) * 100).toFixed(1)}% 
-                    (Khoảng cách: {verificationResult.distance.toFixed(3)})
+                    Similarity: {((1 - verificationResult.distance) * 100).toFixed(1)}% 
+                    (Distance: {verificationResult.distance.toFixed(3)})
                   </p>
                   <p className="text-gray-600">
-                    Ngưỡng chấp nhận: ≤ 0.6 (≥ 40% tương đồng)
+                    Acceptance threshold: ≤ 0.6 (≥ 40% similarity)
                   </p>
                   {verificationResult.processing_time && (
                     <p className="text-gray-500">
-                      Thời gian xử lý: {verificationResult.processing_time.toFixed(2)}s
+                      Processing time: {verificationResult.processing_time.toFixed(2)}s
                     </p>
                   )}
                 </div>
@@ -200,12 +200,12 @@ export default function SelfieStep({
       <div className="flex justify-between pt-4">
         <Button onClick={goBack} variant="outline" size="sm">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Quay lại
+          Back
         </Button>
         
         {verificationResult?.success && (
           <Button onClick={proceedToNext} className="ml-auto">
-            Tiếp tục
+            Continue
             <CheckCircle className="w-4 h-4 ml-2" />
           </Button>
         )}

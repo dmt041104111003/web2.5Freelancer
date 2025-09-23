@@ -13,7 +13,7 @@ export function CidDisplay({ label, cid, className }: CidDisplayProps) {
   return (
     <div className={cn('space-y-1', className)}>
       <label className="text-muted-foreground text-sm">{label}</label>
-      <CopyableMono value={cid || '—'} label={`${label} đã được copy!`} />
+      <CopyableMono value={cid || '—'} label={`${label} copied!`} />
     </div>
   );
 }

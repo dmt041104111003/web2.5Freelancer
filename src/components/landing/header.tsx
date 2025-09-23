@@ -64,10 +64,10 @@ export function Header() {
     try {
       await navigator.clipboard.writeText(account);
       setCopiedAddress(true);
-      toast.success('Đã copy địa chỉ ví vào clipboard!');
+      toast.success('Wallet address copied to clipboard!');
     } catch (err) {
       console.error('Copy address error:', err);
-      toast.error('Không thể copy địa chỉ ví');
+      toast.error('Unable to copy wallet address');
     }
   };
 
@@ -123,7 +123,7 @@ export function Header() {
                 className="flex items-center gap-2"
               >
                 <Wallet className="w-4 h-4" />
-                                 {isConnecting ? 'Đang kết nối...' : 'Kết nối ví Petra'}
+                                {isConnecting ? 'Connecting...' : 'Connect Petra wallet'}
               </Button>
             ) : (
               <div className="relative">
@@ -191,9 +191,9 @@ export function Header() {
                   </Button>
                                  ) : (
                    <div className="space-y-2">
-                     <div className="text-sm p-2 bg-muted rounded">
+                    <div className="text-sm p-2 bg-muted rounded">
                        <div className="font-medium flex items-center justify-between">
-                         Địa chỉ ví
+                        Wallet address
                          <Button
                            variant="ghost"
                            size="sm"
@@ -211,14 +211,14 @@ export function Header() {
                          {account}
                        </div>
                      </div>
-                                         <Link href="/auth/did-verification" onClick={() => setIsMobileMenuOpen(false)}>
+                                        <Link href="/auth/did-verification" onClick={() => setIsMobileMenuOpen(false)}>
                        <Button 
                          variant="ghost" 
                          size="sm" 
                          className="w-full justify-start text-primary"
                        >
                          <Shield className="w-4 h-4 mr-2" />
-                         Xác minh DID
+                        DID verification
                          <ExternalLink className="w-3 h-3 ml-auto" />
                        </Button>
                      </Link>
@@ -226,10 +226,10 @@ export function Header() {
                        variant="ghost" 
                        size="sm" 
                        onClick={disconnectWallet}
-                       className="w-full justify-start text-red-600"
+                      className="w-full justify-start text-red-600"
                      >
                        <LogOut className="w-4 h-4 mr-2" />
-                       Ngắt kết nối
+                      Disconnect
                      </Button>
                   </div>
                 )}
@@ -244,7 +244,7 @@ export function Header() {
           <div className="p-4 space-y-3">
             <div className="text-sm">
               <div className="font-medium flex items-center justify-between">
-                Địa chỉ ví
+                Wallet address
                 <Button
                   variant="ghost"
                   size="sm"
@@ -263,7 +263,7 @@ export function Header() {
               </div>
             </div>
             <div className="text-sm">
-              <div className="font-medium">Mạng</div>
+              <div className="font-medium">Network</div>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">
                   {aptosNetwork || 'Unknown'}
@@ -282,7 +282,7 @@ export function Header() {
                   className="w-full justify-start text-primary hover:text-primary/80 hover:bg-primary/10"
                 >
                   <Shield className="w-4 h-4 mr-2" />
-                  Xác minh DID
+                  DID verification
                   <ExternalLink className="w-3 h-3 ml-auto" />
                 </Button>
               </Link>
@@ -293,7 +293,7 @@ export function Header() {
                 className="w-full justify-start hover:text-primary/80 hover:bg-primary/10"
               >
                 <Shield className="w-4 h-4 mr-2" />
-                Đăng ký vai trò
+                Register role
                 <ExternalLink className="w-3 h-3 ml-auto" />
               </Button>
               <Button 
@@ -303,7 +303,7 @@ export function Header() {
                 className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Ngắt kết nối
+                Disconnect
               </Button>
             </div>
           </div>

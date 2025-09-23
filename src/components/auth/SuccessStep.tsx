@@ -8,16 +8,16 @@ export default function SuccessStep() {
       <div className="flex justify-center">
         <CheckCircle className="w-16 h-16 text-green-500" />
       </div>
-      <h3 className="text-xl font-semibold">Xác minh thành công!</h3>
+      <h3 className="text-xl font-semibold">Verification successful!</h3>
       <p className="text-muted-foreground">
         {VERIFICATION_MESSAGES.SUCCESS}
       </p>
       <div className="flex justify-center space-x-4">
         <Button onClick={() => window.location.href = '/dashboard'}>
-          Đi đến Dashboard
+          Go to Dashboard
         </Button>
         <Button variant="outline" onClick={() => window.location.href = '/profile'}>
-          Tạo Hồ sơ
+          Create Profile
         </Button>
       </div>
     </div>

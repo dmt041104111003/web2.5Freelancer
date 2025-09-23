@@ -28,7 +28,7 @@ export function Progress({
     <div className={`w-full ${className}`}>
       {showLabel && (
         <div className="flex justify-between text-sm text-text-muted mb-2">
-          <span>Tiến độ</span>
+          <span>Progress</span>
           <span>{Math.round(percentage)}%</span>
         </div>
       )}

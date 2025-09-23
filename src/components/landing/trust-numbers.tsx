@@ -48,13 +48,13 @@ export function TrustNumbers() {
             style={robotoCondensed}
             className="text-4xl lg:text-5xl text-primary mb-4"
           >
-            Số liệu đáng tin cậy
+            Trust numbers
           </h2>
           <p 
             style={robotoCondensed}
             className="text-lg text-text-secondary max-w-2xl mx-auto"
           >
-            Những con số minh bạch được lưu trữ trên blockchain
+            Transparent metrics stored on-chain
           </p>
         </div>
         
@@ -88,7 +88,7 @@ export function TrustNumbers() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
           >
-            Xem trên Block Explorer
+            View on Block Explorer
           </a>
         </div>
       </Container>

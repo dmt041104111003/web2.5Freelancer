@@ -55,14 +55,14 @@ export default function JobManagementCard({
 
 
   const getStatusTextLocal = (job: PostedJob | AcceptedJob) => {
-    if (job.completed) return 'Hoàn thành';
-    if (job.job_expired) return 'Hết hạn';
-    if (job.locked) return 'Bị khóa';
-    if (job.approved && job.active) return 'Đang thực hiện';
-    if (job.approved && !job.active) return 'Đã duyệt';
-    if (job.worker && !job.approved) return 'Có ứng viên';
-    if (!job.worker && job.active) return 'Đang mở';
-    return 'Không xác định';
+    if (job.completed) return 'Completed';
+    if (job.job_expired) return 'Expired';
+    if (job.locked) return 'Locked';
+    if (job.approved && job.active) return 'In progress';
+    if (job.approved && !job.active) return 'Approved';
+    if (job.worker && !job.approved) return 'Has applicant';
+    if (!job.worker && job.active) return 'Open';
+    return 'Unknown';
   };
 
   const getStatusColorClass = (job: PostedJob | AcceptedJob) => {
@@ -77,7 +77,7 @@ export default function JobManagementCard({
   };
 
   const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('vi-VN');
+    return new Date(timestamp * 1000).toLocaleDateString('en-US');
   };
 
   const formatAmount = (amount: number) => {
@@ -104,12 +104,12 @@ export default function JobManagementCard({
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  Đăng: {formatTimestamp(postedJob.start_time)}
+                  Posted: {formatTimestamp(postedJob.start_time)}
                 </span>
                 {postedJob.worker && (
                   <span className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    Có ứng viên
+                    Has applicant
                   </span>
                 )}
               </div>
@@ -122,7 +122,7 @@ export default function JobManagementCard({
               <div className="flex items-center gap-4 text-xs text-text-muted">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  Nhận: {formatTimestamp(acceptedJob.approve_time || acceptedJob.start_time)}
+                  Accepted: {formatTimestamp(acceptedJob.approve_time || acceptedJob.start_time)}
                 </span>
                 <span className="flex items-center gap-1">
                   <FileText className="h-3 w-3" />
@@ -163,7 +163,7 @@ export default function JobManagementCard({
             duration={800}
           />
           <div className="text-xs text-text-muted">
-            Milestone hiện tại: {acceptedJob.current_milestone + 1}/{acceptedJob.milestones.length}
+            Current milestone: {acceptedJob.current_milestone + 1}/{acceptedJob.milestones.length}
           </div>
         </div>
       )}
@@ -172,16 +172,16 @@ export default function JobManagementCard({
       {isPostedJob && (
         <div className="space-y-2 mb-3">
           <div className="text-sm text-text-muted">
-            <span className="font-medium">Milestones:</span> {postedJob.milestones.length} giai đoạn
+            <span className="font-medium">Milestones:</span> {postedJob.milestones.length} phases
           </div>
           <div className="flex justify-between items-center text-sm text-text-muted">
             <span className="flex items-center gap-1">
               <DollarSign className="h-3 w-3" />
-              Tổng: {formatAmount(postedJob.escrowed_amount)}
+              Total: {formatAmount(postedJob.escrowed_amount)}
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              Hạn ứng tuyển: {formatTimestamp(postedJob.application_deadline)}
+              Application deadline: {formatTimestamp(postedJob.application_deadline)}
             </span>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function JobManagementCard({
           onClick={() => onView?.(job.job_id)}
         >
           <Eye className="h-3 w-3 mr-1" />
-          Xem
+          View
         </Button>
         
         {isPostedJob && !job.worker && job.active && (
@@ -205,7 +205,7 @@ export default function JobManagementCard({
             onClick={() => onEdit?.(job.job_id)}
           >
             <Edit className="h-3 w-3 mr-1" />
-            Sửa
+            Edit
           </Button>
         )}
         
@@ -217,7 +217,7 @@ export default function JobManagementCard({
             className="text-red-600 hover:text-red-700"
           >
             <Trash2 className="h-3 w-3 mr-1" />
-            Hủy
+            Cancel
           </Button>
         )}
         
@@ -229,7 +229,7 @@ export default function JobManagementCard({
             className="text-green-600 hover:text-green-700"
           >
             <CheckCircle className="h-3 w-3 mr-1" />
-            Duyệt
+            Approve
           </Button>
         )}
       </div>
