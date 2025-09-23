@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { NAVIGATION } from '@/constants/landing';
 import { useWallet } from '@/contexts/WalletContext';
 import { Wallet, LogOut, ChevronDown, Copy, Check, Shield, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRoleModal } from '@/contexts/RoleModalContext';
 
 // const dancingScript = {
 //   fontFamily: "'Dancing Script', cursive",
@@ -23,6 +25,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showWalletMenu, setShowWalletMenu] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const roleModal = useRoleModal();
   const pathname = usePathname();
   const { account, isConnecting, connectWallet, disconnectWallet, aptosNetwork } = useWallet();
 
@@ -66,6 +69,11 @@ export function Header() {
       console.error('Copy address error:', err);
       toast.error('Không thể copy địa chỉ ví');
     }
+  };
+
+  const openRoleModal = () => {
+    setShowWalletMenu(false);
+    roleModal.open(null);
   };
 
   return (
@@ -135,66 +143,7 @@ export function Header() {
                   <ChevronDown className="w-4 h-4" />
                 </Button>
                 
-                {showWalletMenu && (
-                                     <div className="absolute right-0 top-full mt-2 w-64 bg-background border border-border rounded-lg shadow-lg z-50">
-                     <div className="p-4 space-y-3">
-                       <div className="text-sm">
-                         <div className="font-medium flex items-center justify-between">
-                           Địa chỉ ví
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={handleCopyAddress}
-                             className="h-6 w-6 p-0 hover:bg-muted"
-                           >
-                             {copiedAddress ? (
-                               <Check className="w-3 h-3 text-green-600" />
-                             ) : (
-                               <Copy className="w-3 h-3" />
-                             )}
-                           </Button>
-                         </div>
-                         <div className="text-muted-foreground font-mono text-xs break-all">
-                           {account}
-                         </div>
-                       </div>
-                                             <div className="text-sm">
-                         <div className="font-medium">Mạng</div>
-                         <div className="flex items-center gap-2">
-                           <span className="text-muted-foreground">
-                             {aptosNetwork || 'Unknown'}
-                           </span>
-                           <div className={`w-2 h-2 rounded-full ${
-                             aptosNetwork === 'Testnet' ? 'bg-yellow-500' : 
-                             aptosNetwork === 'Mainnet' ? 'bg-green-500' : 'bg-gray-500'
-                           }`} />
-                         </div>
-                       </div>
-                                             <div className="pt-2 border-t border-border space-y-1">
-                         <Link href="/auth/did-verification" onClick={() => setShowWalletMenu(false)}>
-                           <Button 
-                             variant="ghost" 
-                             size="sm" 
-                             className="w-full justify-start text-primary hover:text-primary/80 hover:bg-primary/10"
-                           >
-                             <Shield className="w-4 h-4 mr-2" />
-                             Xác minh DID
-                             <ExternalLink className="w-3 h-3 ml-auto" />
-                           </Button>
-                         </Link>
-                         <Button 
-                           variant="ghost" 
-                           size="sm" 
-                           onClick={disconnectWallet}
-                           className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                         >
-                           <LogOut className="w-4 h-4 mr-2" />
-                           Ngắt kết nối
-                         </Button>
-                       </div>
-                    </div>
-                  </div>
-                )}
+                {showWalletMenu && null}
               </div>
             )}
           </div>
@@ -295,6 +244,80 @@ export function Header() {
           </div>
         )}
       </Container>
+      {/* Dropdown portal (solid background, no blur) */}
+      {showWalletMenu && typeof window !== 'undefined' && createPortal(
+        <div className="fixed right-4 top-16 mt-2 w-64 bg-card border border-border rounded-lg shadow-lg z-[60] backdrop-blur-none">
+          <div className="p-4 space-y-3">
+            <div className="text-sm">
+              <div className="font-medium flex items-center justify-between">
+                Địa chỉ ví
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyAddress}
+                  className="h-6 w-6 p-0 hover:bg-muted"
+                >
+                  {copiedAddress ? (
+                    <Check className="w-3 h-3 text-green-600" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                </Button>
+              </div>
+              <div className="text-muted-foreground font-mono text-xs break-all">
+                {account}
+              </div>
+            </div>
+            <div className="text-sm">
+              <div className="font-medium">Mạng</div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">
+                  {aptosNetwork || 'Unknown'}
+                </span>
+                <div className={`w-2 h-2 rounded-full ${
+                  aptosNetwork === 'Testnet' ? 'bg-yellow-500' : 
+                  aptosNetwork === 'Mainnet' ? 'bg-green-500' : 'bg-gray-500'
+                }`} />
+              </div>
+            </div>
+            <div className="pt-2 border-t border-border space-y-1">
+              <Link href="/auth/did-verification" onClick={() => setShowWalletMenu(false)}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start text-primary hover:text-primary/80 hover:bg-primary/10"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Xác minh DID
+                  <ExternalLink className="w-3 h-3 ml-auto" />
+                </Button>
+              </Link>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={openRoleModal}
+                className="w-full justify-start hover:text-primary/80 hover:bg-primary/10"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Đăng ký vai trò
+                <ExternalLink className="w-3 h-3 ml-auto" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={disconnectWallet}
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Ngắt kết nối
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Role modal mounted globally via RoleModalProvider */}
     </header>
   );
 }
