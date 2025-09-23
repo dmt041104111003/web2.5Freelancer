@@ -11,9 +11,11 @@ import { Footer } from '@/components/landing/footer';
 import StatsCard from '@/components/dashboard/StatsCard';
 import ProjectCard from '@/components/dashboard/ProjectCard';
 import ActivityItem from '@/components/dashboard/ActivityItem';
-import { MOCK_STATS, MOCK_PROJECTS, MOCK_RECENT_ACTIVITIES } from '@/constants/dashboard';
+import JobPostForm from '@/components/dashboard/JobPostForm';
+import JobManagementCard from '@/components/dashboard/JobManagementCard';
+import { MOCK_STATS, MOCK_PROJECTS, MOCK_RECENT_ACTIVITIES, MOCK_POSTED_JOBS, MOCK_ACCEPTED_JOBS } from '@/constants/dashboard';
 import { useWallet } from '@/contexts/WalletContext';
-import { Wallet, ArrowRight, Shield, BarChart3, Briefcase, Activity, User } from 'lucide-react';
+import { Wallet, ArrowRight, Shield, BarChart3, Briefcase, Activity, User, Plus, FileText, CheckCircle } from 'lucide-react';
 import ProfileDisplay from '@/components/profile/ProfileDisplay';
 import ProfileUpdateForm from '@/components/profile/ProfileUpdateForm';
 
@@ -190,25 +192,79 @@ export default function DashboardPage() {
             </TabsContent>
 
             <TabsContent value="projects" className="space-y-6">
-              <Card variant="outlined" className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-text-primary">Dự án đang thực hiện</h2>
-                  <Button variant="outline" size="sm">
-                    Xem tất cả
-                  </Button>
-                </div>
-                
-                <div className="space-y-4">
-                  {MOCK_PROJECTS.map((project) => (
-                    <ProjectCard 
-                      key={project.id} 
-                      project={project}
-                      getStatusColor={getStatusColor}
-                      getStatusText={getStatusText}
-                    />
-                  ))}
-                </div>
-              </Card>
+              <Tabs defaultValue="post-job" className="w-full">
+                <TabsList className="flex w-full mb-6">
+                  <TabsTrigger value="post-job" className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Đăng Job
+                  </TabsTrigger>
+                  <TabsTrigger value="posted-jobs" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Quản lý Job đã đăng
+                  </TabsTrigger>
+                  <TabsTrigger value="accepted-jobs" className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Quản lý Job đã nhận
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="post-job" className="space-y-6">
+                  <JobPostForm 
+                    onSubmit={(jobData) => {
+                      console.log('New job posted:', jobData);
+                      // Handle job posting logic here
+                    }}
+                  />
+                </TabsContent>
+
+                <TabsContent value="posted-jobs" className="space-y-6">
+                  <Card variant="outlined" className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-semibold text-text-primary">Job đã đăng</h2>
+                      <Button variant="outline" size="sm">
+                        Xem tất cả
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {MOCK_POSTED_JOBS.map((job) => (
+                        <JobManagementCard 
+                          key={job.job_id} 
+                          job={job}
+                          type="posted"
+                          onView={(jobId) => console.log('View job:', jobId)}
+                          onEdit={(jobId) => console.log('Edit job:', jobId)}
+                          onDelete={(jobId) => console.log('Delete job:', jobId)}
+                        />
+                      ))}
+                    </div>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="accepted-jobs" className="space-y-6">
+                  <Card variant="outlined" className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-semibold text-text-primary">Job đã nhận</h2>
+                      <Button variant="outline" size="sm">
+                        Xem tất cả
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {MOCK_ACCEPTED_JOBS.map((job) => (
+                        <JobManagementCard 
+                          key={job.job_id} 
+                          job={job}
+                          type="accepted"
+                          onView={(jobId) => console.log('View job:', jobId)}
+                          getStatusColor={getStatusColor}
+                          getStatusText={getStatusText}
+                        />
+                      ))}
+                    </div>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </TabsContent>
 
             <TabsContent value="activity" className="space-y-6">
