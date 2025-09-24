@@ -10,19 +10,27 @@ export async function GET(request: Request) {
     const cursor = searchParams.get('cursor') || undefined
     const q = (searchParams.get('q') || '').trim()
     const includeDetails = searchParams.get('include') === 'details'
+    const verified = searchParams.get('verified')
 
     const users = await prisma.user.findMany({
       take: take + 1,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
-      where: q
+      where: {
+        AND: [
+          q
         ? {
-            OR: [
-              { address: { contains: q, mode: 'insensitive' } },
-              { headline: { contains: q, mode: 'insensitive' } },
-            ],
-          }
-        : undefined,
+              OR: [
+                { address: { contains: q, mode: 'insensitive' } },
+                { headline: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {},
+          typeof verified === 'string'
+            ? { isVerifiedDid: verified === 'true' }
+            : {},
+        ],
+      },
       select: {
         id: true,
         address: true,

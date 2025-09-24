@@ -40,6 +40,11 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   lastLoginAt      DateTime?
+
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([address])
+  @@index([headline])
 }
 
 

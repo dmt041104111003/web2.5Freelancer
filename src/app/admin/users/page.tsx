@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type AdminUser = {
@@ -29,6 +29,15 @@ export default function AdminUsersPage() {
   const [query, setQuery] = useState<string>("");
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [showCids, setShowCids] = useState<boolean>(true);
+  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const TTL_MS = 30000; 
+
+  const debouncedQuery = useMemo(() => {
+    const q = query.trim();
+    if (!q) return '';
+    return q;
+  }, [query]);
 
   const shorten = (addr: string) => (addr?.length > 12 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr);
   const copy = async (text: string) => {
@@ -44,20 +53,43 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
       try {
         const params = new URLSearchParams();
         params.set('limit', '50');
-        if (query.trim()) params.set('q', query.trim());
+        if (debouncedQuery) params.set('q', debouncedQuery);
+        if (verifiedOnly) params.set('verified', 'true');
         if (showDetails) params.set('include', 'details');
-        const res = await fetch(`/api/admin/users?${params.toString()}`, { cache: "no-store" });
+        const cacheKey = `adminUsers:${params.toString()}`;
+        const cachedRaw = sessionStorage.getItem(cacheKey);
+        if (cachedRaw) {
+          try {
+            const cached = JSON.parse(cachedRaw) as { ts: number; users: AdminUser[] };
+            if (Date.now() - cached.ts < TTL_MS) {
+              setUsers(cached.users);
+              return; 
+            }
+          } catch {  }
+        }
+
+        const res = await fetch(`/api/admin/users?${params.toString()}`, { cache: "no-store", signal: abortRef.current.signal });
         const data = await res.json();
-        setUsers(data.users || []);
+        const nextUsers = (data.users || []) as AdminUser[];
+        setUsers(nextUsers);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), users: nextUsers }));
+        } catch {  }
       } finally {
         setLoading(false);
       }
     };
-    fetchUsers();
-  }, [query, showDetails]);
+    const id = setTimeout(fetchUsers, 300);
+    return () => {
+      clearTimeout(id);
+      abortRef.current?.abort();
+    };
+  }, [debouncedQuery, showDetails, verifiedOnly]);
 
   return (
     <div>
@@ -77,6 +109,10 @@ export default function AdminUsersPage() {
           <label className="text-sm flex items-center gap-2">
             <input type="checkbox" checked={showCids} onChange={(e) => setShowCids(e.target.checked)} />
             Show CIDs
+          </label>
+          <label className="text-sm flex items-center gap-2">
+            <input type="checkbox" checked={verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} />
+            Verified only
           </label>
         </div>
       </div>
