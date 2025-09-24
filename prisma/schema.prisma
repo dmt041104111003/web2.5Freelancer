@@ -10,38 +10,36 @@ generator client {
 }
 
 
-model User {
-  id            String   @id @default(cuid())
-  walletAddress String   @unique
-  did           String   @unique
-  name          String?
-  email         String?  @unique
-  image         String?
-  status        String? 
-  role          String? 
-  sessionToken  String?  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  verifications Verification[]
+enum Role {
+  USER
+  FREELANCER
+  POSTER
+  ADMIN
 }
 
-
-model Verification {
+model User {
   id               String   @id @default(cuid())
-  userId           String
-  hoTen            String 
-  cccdHash         String 
-  ketQua           String 
-  thoiGianXacMinh  DateTime @default(now())
-  evidenceCid      String?
-  providerRef      String? 
-  txHash           String? 
-  explorerUrl      String?  
+  address          String   @unique
+  role             Role     @default(USER)
 
-  user             User     @relation(fields: [userId], references: [id])
-  @@index([cccdHash])
-  @@index([userId])
+  // Profile
+  headline         String?
+  summary          String?
+  skills           String[] @default([])
+  experience       String?
+  education        String?
+  links            String[] @default([])
+
+
+  didHash          String?
+  verificationCid  String?
+  profileCid       String?
+  cvCid            String?
+  avatarCid        String?
+  isVerifiedDid    Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  lastLoginAt      DateTime?
 }
 
 

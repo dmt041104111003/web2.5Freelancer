@@ -192,25 +192,15 @@ export function Header() {
                                  ) : (
                    <div className="space-y-2">
                     <div className="text-sm p-2 bg-muted rounded">
-                       <div className="font-medium flex items-center justify-between">
-                        Wallet address
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={handleCopyAddress}
-                           className="h-6 w-6 p-0 hover:bg-muted"
-                         >
-                           {copiedAddress ? (
-                             <Check className="w-3 h-3 text-green-600" />
-                           ) : (
-                             <Copy className="w-3 h-3" />
-                           )}
-                         </Button>
-                       </div>
-                       <div className="text-muted-foreground font-mono text-xs break-all">
-                         {account}
-                       </div>
-                     </div>
+                      <div className="font-medium">Wallet address</div>
+                      <div 
+                        className="text-muted-foreground font-mono text-xs break-all cursor-pointer hover:bg-background/50 rounded px-1 py-0.5"
+                        onClick={handleCopyAddress}
+                        title="Click to copy"
+                      >
+                        {account}
+                      </div>
+                    </div>
                                         <Link href="/auth/did-verification" onClick={() => setIsMobileMenuOpen(false)}>
                        <Button 
                          variant="ghost" 
@@ -238,27 +228,16 @@ export function Header() {
           </div>
         )}
       </Container>
-      {/* Dropdown portal (solid background, no blur) */}
       {showWalletMenu && typeof window !== 'undefined' && createPortal(
         <div className="fixed right-4 top-16 mt-2 w-64 bg-card border border-border rounded-lg shadow-lg z-[60] backdrop-blur-none">
           <div className="p-4 space-y-3">
             <div className="text-sm">
-              <div className="font-medium flex items-center justify-between">
-                Wallet address
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCopyAddress}
-                  className="h-6 w-6 p-0 hover:bg-muted"
-                >
-                  {copiedAddress ? (
-                    <Check className="w-3 h-3 text-green-600" />
-                  ) : (
-                    <Copy className="w-3 h-3" />
-                  )}
-                </Button>
-              </div>
-              <div className="text-muted-foreground font-mono text-xs break-all">
+              <div className="font-medium">Wallet address</div>
+              <div 
+                className="text-muted-foreground font-mono text-xs break-all cursor-pointer hover:bg-background/50 rounded px-1 py-0.5"
+                onClick={handleCopyAddress}
+                title="Click to copy"
+              >
                 {account}
               </div>
             </div>
@@ -311,7 +290,7 @@ export function Header() {
         document.body
       )}
 
-      {/* Role modal mounted globally via RoleModalProvider */}
+
     </header>
   );
 }

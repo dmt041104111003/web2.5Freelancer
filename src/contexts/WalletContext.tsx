@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 type WalletContextType = {
@@ -31,6 +32,7 @@ const WalletContext = createContext<WalletContextType>({
 export const useWallet = () => useContext(WalletContext);
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const router = useRouter();
   const [account, setAccount] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [accountType, setAccountType] = useState<'aptos' | null>(null);
@@ -119,10 +121,14 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             if (!result || result.error) {
               throw new Error(result?.error || 'Login failed');
             }
+            router.push('/auth/did-verification');
           } catch (e) {
             console.error('NextAuth sign-in failed', e);
             toast.error('Login failed');
           }
+        } else {
+          // If already logged in, still redirect to verification
+          router.push('/auth/did-verification');
         }
         toast.success(`Connected to Petra wallet successfully! Address: ${acc.address.slice(0, 6)}...${acc.address.slice(-4)}`);
       } catch (err) {

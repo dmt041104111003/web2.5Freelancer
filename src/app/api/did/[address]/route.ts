@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,12 @@ export async function GET(_req: Request, context: { params: Promise<{ address: s
     });
     const controller = ctrlRes.ok ? ((await ctrlRes.json() as unknown[])[0] as string) : '';
     const hasVerified = !!controller && controller.toLowerCase() === address.toLowerCase();
+
+    await prisma.user.updateMany({
+      where: { address: address },
+      data: { didHash: didHash ?? '0x', isVerifiedDid: hasVerified },
+    });
+
     return NextResponse.json({ hasVerified, didHash, controller });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

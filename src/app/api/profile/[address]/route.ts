@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +65,63 @@ export async function GET(_req: Request, context: { params: Promise<{ address: s
       avatar_cid: (raw.avatar_cid as string) || '',
       created_at: Number(raw.created_at)
     });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+
+export async function PUT(req: Request, context: { params: Promise<{ address: string }> }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !(session as any).address) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { address } = await context.params;
+    const sessionAddress = (session as any).address as string;
+    if (!address || sessionAddress.toLowerCase() !== address.toLowerCase()) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const data: any = {};
+    if (typeof body.headline === 'string') data.headline = body.headline;
+    if (typeof body.summary === 'string') data.summary = body.summary;
+    if (Array.isArray(body.skills)) data.skills = body.skills.map((s: unknown) => String(s));
+    if (typeof body.experience === 'string') data.experience = body.experience;
+    if (typeof body.education === 'string') data.education = body.education;
+    if (Array.isArray(body.links)) data.links = body.links.map((l: unknown) => String(l));
+
+    if (typeof body.verificationCid === 'string') data.verificationCid = body.verificationCid;
+    if (typeof body.profileCid === 'string') data.profileCid = body.profileCid;
+    if (typeof body.cvCid === 'string') data.cvCid = body.cvCid;
+    if (typeof body.avatarCid === 'string') data.avatarCid = body.avatarCid;
+    if (typeof body.didHash === 'string') data.didHash = body.didHash;
+    if (typeof body.isVerifiedDid === 'boolean') data.isVerifiedDid = body.isVerifiedDid;
+
+    const updated = await prisma.user.update({
+      where: { address: sessionAddress },
+      data,
+      select: {
+        address: true,
+        role: true,
+        headline: true,
+        summary: true,
+        skills: true,
+        experience: true,
+        education: true,
+        links: true,
+        verificationCid: true,
+        profileCid: true,
+        cvCid: true,
+        avatarCid: true,
+        didHash: true,
+        isVerifiedDid: true,
+        updatedAt: true,
+      },
+    });
+    return NextResponse.json(updated);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });

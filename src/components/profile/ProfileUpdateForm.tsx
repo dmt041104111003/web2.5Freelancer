@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { FileUploadInput } from '@/components/ui/file-upload-input';
@@ -18,6 +19,9 @@ import { ProfileFormData } from '@/constants/auth';
 
 export default function ProfileUpdateForm() {
   const { account } = useWallet();
+  const router = useRouter();
+  const [checked, setChecked] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
     headline: '',
     summary: '',
@@ -34,6 +38,24 @@ export default function ProfileUpdateForm() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [existingCids, setExistingCids] = useState<{ profile?: string; avatar?: string; cv?: string }>({});
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    const verify = async () => {
+      if (!account) { setChecked(true); setIsVerified(false); return; }
+      try {
+        const res = await fetch(`/api/did/${account}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsVerified(Boolean(data?.hasVerified));
+        } else {
+          setIsVerified(false);
+        }
+      } finally {
+        setChecked(true);
+      }
+    };
+    verify();
+  }, [account]);
 
   useEffect(() => {
     const loadExistingProfile = async () => {
@@ -121,8 +143,10 @@ export default function ProfileUpdateForm() {
       }
     };
 
-    loadExistingProfile();
-  }, [account]);
+    if (isVerified) {
+      loadExistingProfile();
+    }
+  }, [account, isVerified]);
 
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     try {
@@ -187,6 +211,29 @@ export default function ProfileUpdateForm() {
     const url = `https://explorer.aptoslabs.com/txn/${txHash}?network=testnet`;
     window.open(url, '_blank');
   };
+
+  if (!checked || !isVerified) {
+    return (
+      <Card>
+        <div className="p-6 space-y-4 text-foreground">
+          {!checked ? (
+            <>
+              <h3 className="text-lg font-semibold">Checking verification...</h3>
+              <p className="text-sm text-muted-foreground">Please wait while we verify your DID status.</p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold">Verification required</h3>
+              <p className="text-sm text-muted-foreground">You need to complete DID verification before updating your freelancer profile.</p>
+              <Button onClick={() => router.push('/auth/did-verification')}>
+                Go to verification
+              </Button>
+            </>
+          )}
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card>
