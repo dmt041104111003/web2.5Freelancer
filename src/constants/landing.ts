@@ -3,8 +3,7 @@ export const NAVIGATION = [
   { name: 'Jobs', href: '/jobs' },
   { name: 'Chat', href: '/chat' },
   { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Event Dispute', href: '/disputes' },
-  { name: 'Admin', href: '/admin' }
+  { name: 'Event Dispute', href: '/disputes' }
 ];
 
 export const HOW_IT_WORKS_STEPS = [

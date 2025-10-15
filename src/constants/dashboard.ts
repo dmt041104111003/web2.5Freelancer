@@ -275,7 +275,7 @@ export interface PostedJob {
   escrow_address: string;
   approve_time: number | null;
   poster_did: string;
-  poster_profile_cid: string;
+  // poster_profile_cid removed in DID-only mode
   completed: boolean;
   rejected_count: number;
   job_expired: boolean;

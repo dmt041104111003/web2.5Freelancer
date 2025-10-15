@@ -21,4 +21,17 @@ export function CopyableMono({ value, className, label }: CopyableProps) {
   );
 }
 
+export function CopyableInline({ value, className, label }: CopyableProps) {
+  const text = value || '';
+  return (
+    <span
+      className={cn('cursor-pointer truncate max-w-[220px] inline-block align-middle', className)}
+      title={text}
+      onClick={() => { navigator.clipboard.writeText(text); toast.success(`${label || 'Đã copy!'}`); }}
+    >
+      {text}
+    </span>
+  );
+}
+
 
