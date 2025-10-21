@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [jobResult, setJobResult] = useState<string>('')
   const [profileStatus, setProfileStatus] = useState<string>('')
   const [isProfileVerified, setIsProfileVerified] = useState<boolean | null>(null)
+  const [canPostJobs, setCanPostJobs] = useState<boolean>(false)
   
   // State cho skills và milestones
   const [skillsList, setSkillsList] = useState<string[]>([])
@@ -89,34 +90,50 @@ export default function DashboardPage() {
     try {
       setProfileStatus('🔄 Đang kiểm tra profile...')
       
-      // Check if user has verified profile
-      const profileCheck = await fetch('/api/did/check-profile', {
+      // Generate commitment from account
+      const userCommitment = await sha256Hex(account || '');
+      
+      // Check if user has verified profile using the correct API
+      const profileCheck = await fetch(`/api/ipfs/get?type=profile&commitment=${userCommitment}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
       
       const profileData = await profileCheck.json();
-      if (!profileData.success) throw new Error(profileData.error);
+      console.log('Profile check response:', profileData);
       
-      if (profileData.verified) {
+      if (!profileData.success) {
+        setProfileStatus('❌ Profile chưa được verify! Vào /auth/did-verification để tạo profile.');
+        setIsProfileVerified(false);
+        return;
+      }
+      
+      // Check if profile exists and has data
+      const hasProfile = profileData.profile_data && Object.keys(profileData.profile_data).length > 0;
+      
+      if (hasProfile) {
         // Check if user has Poster role (role 2)
-        const hasPosterRole = profileData.roleTypes && profileData.roleTypes.includes(2);
+        const hasPosterRole = profileData.blockchain_roles && profileData.blockchain_roles.includes(2);
         
         if (hasPosterRole) {
           setProfileStatus('✅ Profile đã được verify với role Poster! Bạn có thể đăng job.');
           setIsProfileVerified(true);
+          setCanPostJobs(true);
         } else {
           setProfileStatus('❌ Profile đã verify nhưng không có role Poster! Vào /auth/did-verification để cập nhật role.');
           setIsProfileVerified(false);
+          setCanPostJobs(false);
         }
       } else {
         setProfileStatus('❌ Profile chưa được verify! Vào /auth/did-verification để tạo profile.');
         setIsProfileVerified(false);
+        setCanPostJobs(false);
       }
       
     } catch (e: any) {
       setProfileStatus(`❌ Lỗi kiểm tra profile: ${e?.message || 'thất bại'}`);
       setIsProfileVerified(false);
+      setCanPostJobs(false);
     }
   }
 
@@ -273,9 +290,9 @@ export default function DashboardPage() {
                       value={jobTitle}
                       onChange={(e) => setJobTitle(e.target.value)}
                       placeholder="Ví dụ: Phát triển smart contract"
-                      disabled={isProfileVerified === false}
+                      disabled={!canPostJobs}
                       className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        isProfileVerified === false 
+                        !canPostJobs 
                           ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                           : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                       }`}
@@ -293,9 +310,9 @@ export default function DashboardPage() {
                       onChange={(e) => setJobDescription(e.target.value)}
                       placeholder="Mô tả chi tiết về dự án, yêu cầu và mục tiêu..."
                       rows={4}
-                      disabled={isProfileVerified === false}
+                      disabled={!canPostJobs}
                       className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-                        isProfileVerified === false 
+                        !canPostJobs 
                           ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                           : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                       }`}
@@ -314,14 +331,14 @@ export default function DashboardPage() {
                         onChange={(e) => setCurrentSkill(e.target.value)}
                         placeholder="Thêm kỹ năng..."
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                        disabled={isProfileVerified === false}
+                        disabled={!canPostJobs}
                         className={`flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          isProfileVerified === false 
+                          !canPostJobs 
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                             : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                         }`}
                       />
-                      <Button type="button" onClick={addSkill} variant="outline" disabled={isProfileVerified === false}>
+                      <Button type="button" onClick={addSkill} variant="outline" disabled={!canPostJobs}>
                         +
                       </Button>
                     </div>
@@ -357,18 +374,18 @@ export default function DashboardPage() {
                         value={jobDuration}
                         onChange={(e) => setJobDuration(e.target.value)}
                         placeholder="7"
-                        disabled={isProfileVerified === false}
+                        disabled={!canPostJobs}
                         className={`w-24 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          isProfileVerified === false 
+                          !canPostJobs 
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                             : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                         }`}
                       />
                       <select 
-                        disabled={isProfileVerified === false}
+                        disabled={!canPostJobs}
                         title="Chọn đơn vị thời gian"
                         className={`px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          isProfileVerified === false 
+                          !canPostJobs 
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                             : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                         }`}
@@ -397,9 +414,9 @@ export default function DashboardPage() {
                           value={currentMilestone.amount}
                           onChange={(e) => setCurrentMilestone({...currentMilestone, amount: e.target.value})}
                           placeholder="Số tiền (APT)"
-                          disabled={isProfileVerified === false}
+                          disabled={!canPostJobs}
                           className={`flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            isProfileVerified === false 
+                            !canPostJobs 
                               ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                           }`}
@@ -409,9 +426,9 @@ export default function DashboardPage() {
                           value={currentMilestone.duration}
                           onChange={(e) => setCurrentMilestone({...currentMilestone, duration: e.target.value})}
                           placeholder="Thời gian"
-                          disabled={isProfileVerified === false}
+                          disabled={!canPostJobs}
                           className={`w-32 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            isProfileVerified === false 
+                            !canPostJobs 
                               ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                           }`}
@@ -419,10 +436,10 @@ export default function DashboardPage() {
                         <select
                           value={currentMilestone.unit}
                           onChange={(e) => setCurrentMilestone({...currentMilestone, unit: e.target.value})}
-                          disabled={isProfileVerified === false}
+                          disabled={!canPostJobs}
                           title="Chọn đơn vị thời gian cho milestone"
                           className={`px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            isProfileVerified === false 
+                            !canPostJobs 
                               ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
                           }`}
@@ -432,7 +449,7 @@ export default function DashboardPage() {
                           <option>tháng</option>
                         </select>
                       </div>
-                      <Button type="button" onClick={addMilestone} variant="outline" className="w-full" disabled={isProfileVerified === false}>
+                      <Button type="button" onClick={addMilestone} variant="outline" className="w-full" disabled={!canPostJobs}>
                         + Thêm cột mốc
                       </Button>
                       {milestonesList.length > 0 && (
@@ -473,9 +490,9 @@ export default function DashboardPage() {
                         type="submit"
                         size="lg"
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
-                        disabled={milestonesList.length === 0 || isProfileVerified === false}
+                        disabled={milestonesList.length === 0 || !canPostJobs}
                       >
-                        {isProfileVerified === false ? '🔒 Cần verify profile trước' : '🚀 Đăng dự án'}
+                        {!canPostJobs ? '🔒 Cần verify profile và có role Poster' : '🚀 Đăng dự án'}
                       </Button>
 
                   {/* Result */}

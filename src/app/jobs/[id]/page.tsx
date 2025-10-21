@@ -43,20 +43,23 @@ export default function JobDetailPage() {
           shouldShowApply: jobData.job.status === 'active' && !jobData.job.worker_commitment
         });
         
-        // Fetch job details from IPFS using jobId
+        // Fetch job details from IPFS using CID
         if (jobData.job.cid) {
-          console.log(`🔄 Fetching job details from IPFS for job ${jobId}`);
+          console.log(`🔄 Fetching job details from IPFS using CID: ${jobData.job.cid}`);
           
-          const ipfsResponse = await fetch(`/api/ipfs/get?type=job&jobId=${jobId}`);
-          const ipfsData = await ipfsResponse.json();
-          
-          console.log('📋 IPFS response:', ipfsData);
-          
-          if (ipfsData.success && ipfsData.job_data) {
-            setJobDetails(ipfsData.job_data);
-            console.log('✅ Job details loaded:', ipfsData.job_data);
-          } else {
-            console.warn('⚠️ No job details found in IPFS');
+          try {
+            const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs';
+            const ipfsResponse = await fetch(`${ipfsGateway}/${jobData.job.cid}`);
+            
+            if (ipfsResponse.ok) {
+              const jobDetailsData = await ipfsResponse.json();
+              setJobDetails(jobDetailsData);
+              console.log('✅ Job details loaded from IPFS:', jobDetailsData);
+            } else {
+              console.warn('⚠️ Failed to fetch job details from IPFS:', ipfsResponse.status);
+            }
+          } catch (ipfsError) {
+            console.warn('⚠️ Error fetching job details from IPFS:', ipfsError);
           }
         }
         
@@ -91,9 +94,57 @@ export default function JobDetailPage() {
         throw new Error('Please connect your wallet first.');
       }
       
-      // Generate commitment from account
-      const crypto = await import('crypto');
-      const userCommitment = crypto.createHash('sha256').update(account).digest('hex');
+      // Ensure account is a string
+      const accountAddress = typeof account === 'string' ? account : account.address;
+      if (!accountAddress) {
+        throw new Error('Invalid account format. Please reconnect your wallet.');
+      }
+      
+      console.log('🔍 Current account:', accountAddress);
+      console.log('🔍 Note: 0xf7e8b7c8a891170206aa1d343af88e33907cadbe39268ac7e5b45d643eb650bf is the POSTER account (job creator), not your account');
+      
+      // Generate commitment from account (same format as when creating profile)
+      const sha256Hex = async (s: string): Promise<string> => {
+        const enc = new TextEncoder();
+        const data = enc.encode(s);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        const bytes = Array.from(new Uint8Array(hash));
+        return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+      };
+      
+      // Use the same commitment format as when creating profile (hash of account address)
+      const userCommitment = await sha256Hex(accountAddress);
+      console.log('🔍 Generated commitment:', userCommitment);
+      
+      // Check if user has verified profile before applying
+      console.log('🔍 Checking user profile before apply...');
+      const profileCheck = await fetch(`/api/ipfs/get?type=profile&commitment=${userCommitment}`);
+      const profileData = await profileCheck.json();
+      
+      if (!profileData.success || !profileData.profile_data) {
+        console.log('❌ Profile check failed:', profileData);
+        console.log('🔍 This means you need to create a profile with your current account first.');
+        console.log('🔍 Current account:', accountAddress);
+        console.log('🔍 Generated commitment:', userCommitment);
+        console.log('🔍 Expected commitment (from different account): 0x307866376538623763386138393131373032303661613164333433616638386533333930376361646265333932363861633765356234356436343365623635306266');
+        
+        throw new Error(`No profile found for account ${accountAddress}. 
+
+You have two options:
+1. Create a new profile with your current account: Go to /auth/did-verification
+2. Switch to the account that already has a profile
+
+Current account: ${accountAddress}
+Generated commitment: ${userCommitment}`);
+      }
+      
+      // Check if user has freelancer role
+      const hasFreelancerRole = profileData.blockchain_roles && profileData.blockchain_roles.includes(1);
+      if (!hasFreelancerRole) {
+        throw new Error('You need to have freelancer role to apply for jobs. Please update your profile to include freelancer role.');
+      }
+      
+      console.log('✅ User profile verified, proceeding with application...');
       
       // Call job actions API
       const response = await fetch('/api/job/actions', {
@@ -102,7 +153,7 @@ export default function JobDetailPage() {
         body: JSON.stringify({
           action: 'apply',
           job_id: parseInt(jobId as string),
-          user_address: account,
+          user_address: accountAddress,
           user_commitment: userCommitment
         })
       });
