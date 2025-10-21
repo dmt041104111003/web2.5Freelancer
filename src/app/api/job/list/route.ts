@@ -47,10 +47,12 @@ export async function GET(request: NextRequest) {
       const cid = jobView.cid || '';
       const milestones = jobView.milestones || [];
       const workerCommitment = jobView.worker_commitment;
+      const posterCommitment = jobView.poster_commitment;
       const approved = jobView.approved || false;
       const active = jobView.active || false;
       const completed = jobView.completed || false;
       const applicationDeadline = parseInt(jobView.application_deadline) || 0;
+      const currentMilestone = jobView.current_milestone;
       
       console.log(`📊 Parsed job ${i}:`, {
         cid,
@@ -110,6 +112,7 @@ export async function GET(request: NextRequest) {
         cid: cidString,
         milestones: milestonesNumbers,
         worker_commitment: workerCommitmentValue,
+        poster_commitment: posterCommitment,
         
         // Status fields
         approved,
@@ -121,6 +124,7 @@ export async function GET(request: NextRequest) {
         
         // Timeline fields
         application_deadline: applicationDeadline,
+        current_milestone: currentMilestone,
         
         // Computed fields
         status,

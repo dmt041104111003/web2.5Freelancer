@@ -16,6 +16,8 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
+  const [milestoneExpired, setMilestoneExpired] = useState(false);
+  const [userInfo, setUserInfo] = useState<{address: string, commitment: string} | null>(null);
 
   // Fetch job details
   useEffect(() => {
@@ -42,6 +44,25 @@ export default function JobDetailPage() {
           worker_commitment: jobData.job.worker_commitment,
           shouldShowApply: jobData.job.status === 'active' && !jobData.job.worker_commitment
         });
+        
+        // Check if current milestone is expired
+        if (jobData.job.worker_commitment && jobData.job.approved) {
+          console.log('🔍 Checking milestone expiry...');
+          try {
+            const currentMilestone = parseInt(jobData.job.current_milestone) || 0;
+            console.log('🔍 Current milestone index:', currentMilestone);
+            
+            const expiryCheck = await fetch(`/api/job/check-expiry?job_id=${jobId}&milestone_index=${currentMilestone}`);
+            const expiryData = await expiryCheck.json();
+            
+            if (expiryData.success && expiryData.is_expired) {
+              console.log('⚠️ Milestone expired, job should be reset');
+              setMilestoneExpired(true);
+            }
+          } catch (expiryError) {
+            console.warn('⚠️ Error checking milestone expiry:', expiryError);
+          }
+        }
         
         // Fetch job details from IPFS using CID
         if (jobData.job.cid) {
@@ -75,6 +96,7 @@ export default function JobDetailPage() {
       fetchJobDetails();
     }
   }, [jobId]);
+
 
   // Handle job application
   const handleApply = async () => {
@@ -116,6 +138,9 @@ export default function JobDetailPage() {
       const userCommitment = await sha256Hex(accountAddress);
       console.log('🔍 Generated commitment:', userCommitment);
       
+      // Store user info for later use
+      setUserInfo({ address: accountAddress, commitment: userCommitment });
+      
       // Check if user has verified profile before applying
       console.log('🔍 Checking user profile before apply...');
       const profileCheck = await fetch(`/api/ipfs/get?type=profile&commitment=${userCommitment}`);
@@ -144,7 +169,16 @@ Generated commitment: ${userCommitment}`);
         throw new Error('You need to have freelancer role to apply for jobs. Please update your profile to include freelancer role.');
       }
       
-      console.log('✅ User profile verified, proceeding with application...');
+      // Check if user is banned from this job
+      console.log('🔍 Checking if user is banned from this job...');
+      const bannedCheck = await fetch(`/api/job/check-banned?job_id=${jobId}&worker_commitment=${userCommitment}`);
+      const bannedData = await bannedCheck.json();
+      
+      if (bannedData.success && bannedData.is_banned) {
+        throw new Error('You are banned from this job. You cannot apply again.');
+      }
+      
+      console.log('✅ User profile verified and not banned, proceeding with application...');
       
       // Call job actions API
       const response = await fetch('/api/job/actions', {
@@ -183,6 +217,141 @@ Generated commitment: ${userCommitment}`);
     } catch (err: any) {
       console.error('❌ Application failed:', err);
       toast.error(`Application failed: ${err.message}`);
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  // Handle milestone submission
+  const handleSubmitMilestone = async () => {
+    try {
+      setApplying(true);
+      
+      console.log(`🔄 Submitting milestone for job ${jobId}...`);
+      
+      // Get current milestone index
+      console.log('🔍 Full job object:', job);
+      console.log('🔍 Current milestone from job:', job.current_milestone);
+      
+      let milestoneIndex = parseInt(job.current_milestone);
+      console.log('🔍 Parsed milestone index:', milestoneIndex);
+      
+      if (isNaN(milestoneIndex)) {
+        // Fallback: try to get milestone from job data or default to 0
+        console.log('⚠️ Milestone index is NaN, trying fallback...');
+        const fallbackMilestone = job.current_milestone || '0';
+        milestoneIndex = parseInt(fallbackMilestone);
+        console.log('🔍 Fallback milestone:', fallbackMilestone, 'parsed:', milestoneIndex);
+        
+        if (isNaN(milestoneIndex)) {
+          throw new Error('Invalid milestone index. Please refresh the page and try again.');
+        }
+        
+        console.log('✅ Using fallback milestone index:', milestoneIndex);
+      }
+      
+      // Create milestone data
+      const milestoneData = {
+        milestone_index: milestoneIndex,
+        description: `Milestone ${milestoneIndex + 1} submission`,
+        timestamp: new Date().toISOString(),
+        worker_commitment: job.worker_commitment
+      };
+      
+      // Upload milestone data to IPFS
+      const uploadResponse = await fetch('/api/ipfs/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...milestoneData,
+          type: 'milestone'
+        })
+      });
+      
+      const uploadData = await uploadResponse.json();
+      
+      if (!uploadData.success) {
+        throw new Error(uploadData.error || 'Failed to upload milestone data');
+      }
+      
+      const milestoneCid = uploadData.ipfsHash;
+      console.log(`✅ Milestone data uploaded to IPFS: ${milestoneCid}`);
+      console.log('📋 Upload response:', uploadData);
+      
+      // Get user info from wallet (same logic as in handleApply)
+      const wallet = (window as any).aptos;
+      if (!wallet) {
+        throw new Error('Wallet not found. Please connect your wallet first.');
+      }
+      
+      const account = await wallet.account();
+      if (!account) {
+        throw new Error('Please connect your wallet first.');
+      }
+      
+      // Ensure account is a string
+      const accountAddress = typeof account === 'string' ? account : account.address;
+      if (!accountAddress) {
+        throw new Error('Invalid account format. Please reconnect your wallet.');
+      }
+      
+      // Generate commitment from account (same format as when creating profile)
+      const sha256Hex = async (s: string): Promise<string> => {
+        const enc = new TextEncoder();
+        const data = enc.encode(s);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        const bytes = Array.from(new Uint8Array(hash));
+        return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+      };
+      
+      // Use the same commitment format as when creating profile (hash of account address)
+      const userCommitment = await sha256Hex(accountAddress);
+      console.log('🔍 Generated commitment for milestone submission:', userCommitment);
+      
+      // Submit milestone to blockchain
+      const submitData = {
+        action: 'submit',
+        user_address: accountAddress,
+        user_commitment: userCommitment,
+        job_id: parseInt(jobId as string),
+        milestone_index: milestoneIndex,
+        cid: milestoneCid
+      };
+      
+      console.log('🔍 Submitting milestone data:', submitData);
+      
+      const response = await fetch('/api/job/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData)
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to submit milestone');
+      }
+      
+      console.log('✅ Milestone submission prepared:', data);
+      
+      // Sign and submit transaction
+      const tx = await wallet.signAndSubmitTransaction(data.payload);
+      const hash = tx?.hash || '';
+      
+      if (hash) {
+        console.log(`✅ Milestone submitted! TX: ${hash}`);
+        toast.success(`Milestone submitted successfully! Transaction: ${hash}`);
+        
+        // Refresh job data
+        window.location.reload();
+      } else {
+        console.log('✅ Milestone transaction sent');
+        toast.success('Milestone submitted successfully!');
+      }
+      
+    } catch (err: any) {
+      console.error('❌ Milestone submission failed:', err);
+      toast.error(`Milestone submission failed: ${err.message}`);
     } finally {
       setApplying(false);
     }
@@ -352,6 +521,21 @@ Generated commitment: ${userCommitment}`);
                   </div>
                 )}
 
+                {/* Milestone Expired Notice */}
+                {milestoneExpired && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">Milestone Expired</span>
+                    </div>
+                    <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                      The current milestone deadline has passed. The job will be reset and reopened for new applications.
+                    </p>
+                  </div>
+                )}
+
                 {/* Apply Button */}
                 {(job.status === 'active' || job.status === 'pending_approval') && !job.worker_commitment && (
                   <button 
@@ -368,6 +552,26 @@ Generated commitment: ${userCommitment}`);
                       <span className="flex items-center justify-center gap-2">
                 
                         Apply for Job
+                      </span>
+                    )}
+                  </button>
+                )}
+
+                {/* Submit Milestone Button */}
+                {job.worker_commitment && job.status === 'in_progress' && (
+                  <button 
+                    onClick={handleSubmitMilestone}
+                    disabled={applying}
+                    className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg border-2 border-green-500 hover:shadow-xl hover:from-green-700 hover:to-teal-700 hover:border-green-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {applying ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Submitting...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        Submit Milestone
                       </span>
                     )}
                   </button>

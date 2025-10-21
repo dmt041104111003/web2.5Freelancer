@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       description, 
       requirements, 
       user_commitment, // ZKP commitment thay vì địa chỉ
-      type = 'job' // 'job' or 'profile'
+      type = 'job' // 'job', 'profile', or 'milestone'
     } = body;
     
     // ✅ VALIDATE USER BASED ON TYPE
@@ -40,6 +40,12 @@ export async function POST(request: NextRequest) {
       // Check user's DID profile and role using view functions
       try {
         console.log('Checking DID profile for job creation:', user_commitment);
+        console.log('Commitment type:', typeof user_commitment);
+        console.log('Commitment length:', user_commitment.length);
+        
+        // Use same commitment processing as get API
+        const hexEncodedCommitment = '0x' + Buffer.from(user_commitment, 'utf8').toString('hex');
+        console.log('Hex encoded commitment for upload:', hexEncodedCommitment);
         
         const roleResponse = await fetch(`${APTOS_NODE_URL}/v1/view`, {
           method: 'POST',
@@ -47,7 +53,7 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             function: DID.GET_ROLE_TYPES_BY_COMMITMENT,
             type_arguments: [],
-            arguments: [user_commitment]
+            arguments: [hexEncodedCommitment]
           })
         });
         
@@ -71,13 +77,13 @@ export async function POST(request: NextRequest) {
           if (typeof item === 'number') {
             userRoles.push(item);
           } else if (typeof item === 'string') {
-            if (item.startsWith('0x')) {
+            if (item.startsWith('0x') && item.length > 2) { // Only process non-empty hex
               const hex = item.slice(2);
               for (let i = 0; i < hex.length; i += 2) {
                 const byteHex = hex.slice(i, i + 2);
                 if (byteHex.length === 2) userRoles.push(parseInt(byteHex, 16));
               }
-            } else {
+            } else if (item !== '0x' && item !== '') { // Skip empty hex strings
               const n = parseInt(item);
               if (!Number.isNaN(n)) userRoles.push(n);
             }
@@ -143,6 +149,9 @@ export async function POST(request: NextRequest) {
       
       // Store role types for later use
       body.userRoles = roleTypes;
+    } else if (type === 'milestone') {
+      // For milestone submission, NO DID check needed (worker is submitting milestone)
+      console.log('✅ Milestone submission - no DID validation needed');
     }
     // Create metadata based on type
     let metadata: any;
@@ -153,7 +162,7 @@ export async function POST(request: NextRequest) {
       metadata = {
         title,
         description,
-        requirements,
+        requirements: Array.isArray(requirements) ? requirements : [requirements], // Ensure requirements is array
         created_at: new Date().toISOString(),
         version: "1.0.0",
         type: "job"
@@ -168,14 +177,14 @@ export async function POST(request: NextRequest) {
       };
       
       // Get role types and profile data from request body
-      const { skills, about, experience, roleTypes } = body;
+      const { skills, about, experience, roleTypes, freelancerAbout, posterAbout } = body;
       
       // Handle multiple roles - don't use else if
       if (roleTypes && roleTypes.includes(1)) { // Freelancer
         profileData = { 
           ...profileData, 
           skills: skills || '', 
-          about: about || '', 
+          freelancerAbout: freelancerAbout || about || '', 
           experience: experience || '' 
         };
       }
@@ -183,28 +192,42 @@ export async function POST(request: NextRequest) {
       if (roleTypes && roleTypes.includes(2)) { // Poster
         profileData = { 
           ...profileData, 
-          about: about || '' 
+          posterAbout: posterAbout || about || '' 
         };
       }
       
       // If user has both roles, we need to handle the about field properly
       if (roleTypes && roleTypes.includes(1) && roleTypes.includes(2)) {
-        // User is both Freelancer and Poster - use the same about for both
+        // User is both Freelancer and Poster - use role-specific about fields
         profileData = { 
           ...profileData, 
           skills: skills || '', 
-          about: about || '', 
+          freelancerAbout: freelancerAbout || about || '', 
+          posterAbout: posterAbout || about || '', 
           experience: experience || '' 
         };
       }
       
       metadata = profileData;
       fileName = 'profile-metadata.json';
+    } else if (type === 'milestone') {
+      // Create milestone metadata
+      const { milestone_index, description, timestamp, worker_commitment } = body;
+      metadata = {
+        milestone_index,
+        description,
+        timestamp,
+        worker_commitment,
+        created_at: new Date().toISOString(),
+        version: "1.0.0",
+        type: "milestone"
+      };
+      fileName = 'milestone-metadata.json';
     } else {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Invalid type. Must be "job" or "profile"' 
+          error: 'Invalid type. Must be "job", "profile", or "milestone"' 
         },
         { status: 400 }
       );

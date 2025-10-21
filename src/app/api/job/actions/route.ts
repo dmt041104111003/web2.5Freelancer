@@ -51,6 +51,7 @@ async function postJob(params: any) {
     user_commitment, 
     job_details_cid, 
     milestones, 
+    milestone_durations,
     application_deadline 
   } = params;
   
@@ -77,6 +78,11 @@ async function postJob(params: any) {
     // Convert milestones to vector<u64> format expected by contract
     // Contract expects: milestones: vector<u64> (array of amounts in micro-APT)
     const milestonesAmounts = milestones.map((milestone: any) => {
+      // If milestone is already a number (from dashboard conversion), use it directly
+      if (typeof milestone === 'number') {
+        return milestone;
+      }
+      // If milestone is an object, extract amount and convert
       const amount = parseFloat(milestone.amount || '0');
       return Math.floor(amount * 100_000_000); // Convert APT to micro-APT
     });
@@ -94,6 +100,7 @@ async function postJob(params: any) {
         [], // cid (not used for post)
         job_details_cid, // job_details_cid
         milestonesAmounts, // milestones as vector<u64>
+        milestone_durations || [], // milestone_durations as vector<u64>
         application_deadline // application_deadline
       ]
     };
@@ -149,6 +156,7 @@ async function applyJob(params: any) {
         [], // cid (not used for apply)
         [], // job_details_cid (not used for apply)
         [], // milestones (not used for apply)
+        [], // milestone_durations (not used for apply)
         0 // application_deadline (not used for apply)
       ]
     };
@@ -197,6 +205,7 @@ async function approveJob(params: any) {
         [], // cid (not used for approve)
         [], // job_details_cid (not used for approve)
         [], // milestones (not used for approve)
+        [], // milestone_durations (not used for approve)
         0 // application_deadline (not used for approve)
       ]
     };
@@ -247,6 +256,7 @@ async function submitMilestone(params: any) {
         cid, // cid (milestone submission proof)
         [], // job_details_cid (not used for submit)
         [], // milestones (not used for submit)
+        [], // milestone_durations (not used for submit)
         0 // application_deadline (not used for submit)
       ]
     };
@@ -297,6 +307,7 @@ async function acceptMilestone(params: any) {
         cid, // cid (milestone acceptance proof)
         [], // job_details_cid (not used for accept)
         [], // milestones (not used for accept)
+        [], // milestone_durations (not used for accept)
         0 // application_deadline (not used for accept)
       ]
     };
@@ -345,6 +356,7 @@ async function completeJob(params: any) {
         [], // cid (not used for complete)
         [], // job_details_cid (not used for complete)
         [], // milestones (not used for complete)
+        [], // milestone_durations (not used for complete)
         0 // application_deadline (not used for complete)
       ]
     };
@@ -393,6 +405,7 @@ async function claimJob(params: any) {
         [], // cid (not used for claim)
         [], // job_details_cid (not used for claim)
         [], // milestones (not used for claim)
+        [], // milestone_durations (not used for claim)
         0 // application_deadline (not used for claim)
       ]
     };
@@ -441,6 +454,7 @@ async function cancelJob(params: any) {
         [], // cid (not used for cancel)
         [], // job_details_cid (not used for cancel)
         [], // milestones (not used for cancel)
+        [], // milestone_durations (not used for cancel)
         0 // application_deadline (not used for cancel)
       ]
     };

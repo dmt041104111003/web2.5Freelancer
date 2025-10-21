@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
       application_deadline: parseInt(jobView.application_deadline) || 0,
       budget: totalBudgetAPT,
       status,
+      current_milestone: jobView.current_milestone,
       created_at: new Date().toISOString()
     };
     

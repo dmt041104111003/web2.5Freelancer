@@ -29,6 +29,7 @@ module did_addr_profile::escrow {
     const EJOB_NOT_COMPLETED: u64 = 33;
 
     const ONE_APT: u64 = 100_000_000;
+    const MIN_APT: u64 = 100_000; // 0.001 APT (minimum amount)
 
     const ACTION_POST: u8 = 1;
     const ACTION_APPLY: u8 = 2;
@@ -38,11 +39,13 @@ module did_addr_profile::escrow {
     const ACTION_COMPLETE: u8 = 6;
     const ACTION_CLAIM: u8 = 7;
     const ACTION_CANCEL: u8 = 8;
+    const ACTION_AUTO_RETURN_STAKE: u8 = 9;
 
     struct Job has key, store, copy, drop {
         poster_commitment: vector<u8>,
         cid: vector<u8>,
         milestones: vector<u64>,
+        milestone_durations: vector<u64>, 
         worker_commitment: Option<vector<u8>>,
         approved: bool,
         active: bool,
@@ -54,6 +57,7 @@ module did_addr_profile::escrow {
         cancel_requested: bool,
         cancel_approved_poster: bool,
         cancel_approved_worker: bool,
+        banned_workers: vector<vector<u8>>, // List of banned worker commitments
     }
 
     struct Jobs has key {
@@ -137,6 +141,7 @@ module did_addr_profile::escrow {
         cid: vector<u8>,
         job_details_cid: vector<u8>,
         milestones: vector<u64>,
+        milestone_durations: vector<u64>,
         application_deadline: u64
     ) acquires Jobs, Events, MarketplaceCapability {
         assert!(exists<Jobs>(@did_addr_profile), EMODULE_NOT_INITIALIZED);
@@ -155,7 +160,7 @@ module did_addr_profile::escrow {
         let i = 0;
             while (i < vector::length(&milestones)) {
             let amount = *vector::borrow(&milestones, i);
-            assert!(amount > 0, EINVALID_AMOUNT);
+            assert!(amount >= MIN_APT, EINVALID_AMOUNT);
                 total_amount = total_amount + amount;
             i = i + 1;
         };
@@ -171,6 +176,7 @@ module did_addr_profile::escrow {
                 poster_commitment: user_commitment,
             cid: job_details_cid,
             milestones: milestones,
+            milestone_durations: milestone_durations,
             worker_commitment: option::none(),
             approved: false,
             active: true,
@@ -182,6 +188,7 @@ module did_addr_profile::escrow {
                 cancel_requested: false,
                 cancel_approved_poster: false,
                 cancel_approved_worker: false,
+                banned_workers: vector::empty<vector<u8>>(),
         };
 
         table::add(&mut jobs_res.jobs, job_id, new_job);
@@ -199,6 +206,14 @@ module did_addr_profile::escrow {
         assert!(job.active, ENOT_ACTIVE);
                 assert!(timestamp::now_seconds() <= job.application_deadline, 28);
                 assert!(job.poster_commitment != worker_commitment, ENOT_AUTHORIZED);
+                
+                // Check if worker is banned from this job
+                let i = 0;
+                while (i < vector::length(&job.banned_workers)) {
+                    let banned_commitment = *vector::borrow(&job.banned_workers, i);
+                    assert!(banned_commitment != worker_commitment, 36); // EBANNED_WORKER
+                    i = i + 1;
+                };
                 
                 // Transfer worker stake to escrow account
                 let marketplace_cap = borrow_global<MarketplaceCapability>(@did_addr_profile);
@@ -348,6 +363,42 @@ module did_addr_profile::escrow {
             job.active = false;
                     job.completed = true;
                 };
+            } else if (action == ACTION_AUTO_RETURN_STAKE) {
+                // AUTO_RETURN_STAKE - Auto return worker stake when milestone deadline passed
+                let roles = did_registry::get_role_types_by_commitment(user_commitment);
+                assert!(vector::length(&roles) > 0, ENO_PROFILE);
+                assert!(vector::contains(&roles, &2), EINVALID_PROFILE); // Only poster can trigger
+                assert!(job.poster_commitment == user_commitment, ENOT_POSTER);
+                assert!(job.active, ENOT_ACTIVE);
+                assert!(option::is_some(&job.worker_commitment), ENOT_WORKER);
+                assert!(job.approved, ENOT_APPROVED);
+                
+                // Check if current milestone deadline has passed
+                let current_milestone = job.current_milestone;
+                assert!(current_milestone < vector::length(&job.milestone_durations), EINVALID_MILESTONE);
+                
+                let milestone_duration = *vector::borrow(&job.milestone_durations, current_milestone);
+                let milestone_deadline = job.application_deadline + milestone_duration;
+                assert!(timestamp::now_seconds() > milestone_deadline, 35); // EMILESTONE_NOT_EXPIRED
+                
+                // Ban the current worker
+                let current_worker = *option::borrow(&job.worker_commitment);
+                vector::push_back(&mut job.banned_workers, current_worker);
+                
+                // Return worker stake to poster
+                if (job.worker_stake > 0) {
+                    let marketplace_cap = borrow_global<MarketplaceCapability>(@did_addr_profile);
+                    let escrow_signer = account::create_signer_with_capability(&marketplace_cap.cap);
+                    let poster_address = did_registry::get_address_by_commitment(job.poster_commitment);
+                    
+                    coin::transfer<AptosCoin>(&escrow_signer, poster_address, job.worker_stake);
+                    job.worker_stake = 0;
+                };
+                
+                // Reset job to allow new applications
+                job.worker_commitment = option::none();
+                job.approved = false;
+                // Keep job.active = true to allow new applications
             }
         };
 
@@ -389,6 +440,59 @@ module did_addr_profile::escrow {
         };
         
         result
+    }
+
+    #[view]
+    public fun get_application_deadline(job_id: u64): u64 acquires Jobs {
+        let jobs = borrow_global<Jobs>(@did_addr_profile);
+        assert!(table::contains(&jobs.jobs, job_id), EJOB_NOT_FOUND);
+        let job = table::borrow(&jobs.jobs, job_id);
+        
+        job.application_deadline
+    }
+
+    #[view]
+    public fun get_milestone_deadline(job_id: u64, milestone_index: u64): u64 acquires Jobs {
+        let jobs = borrow_global<Jobs>(@did_addr_profile);
+        assert!(table::contains(&jobs.jobs, job_id), EJOB_NOT_FOUND);
+        let job = table::borrow(&jobs.jobs, job_id);
+        
+        assert!(milestone_index < vector::length(&job.milestone_durations), EINVALID_MILESTONE);
+        
+        let milestone_duration = *vector::borrow(&job.milestone_durations, milestone_index);
+        job.application_deadline + milestone_duration
+    }
+
+    #[view]
+    public fun is_milestone_expired(job_id: u64, milestone_index: u64): bool acquires Jobs {
+        let jobs = borrow_global<Jobs>(@did_addr_profile);
+        assert!(table::contains(&jobs.jobs, job_id), EJOB_NOT_FOUND);
+        let job = table::borrow(&jobs.jobs, job_id);
+        
+        assert!(milestone_index < vector::length(&job.milestone_durations), EINVALID_MILESTONE);
+        
+        let milestone_duration = *vector::borrow(&job.milestone_durations, milestone_index);
+        let milestone_deadline = job.application_deadline + milestone_duration;
+        
+        timestamp::now_seconds() > milestone_deadline
+    }
+
+    #[view]
+    public fun is_worker_banned(job_id: u64, worker_commitment: vector<u8>): bool acquires Jobs {
+        let jobs = borrow_global<Jobs>(@did_addr_profile);
+        assert!(table::contains(&jobs.jobs, job_id), EJOB_NOT_FOUND);
+        let job = table::borrow(&jobs.jobs, job_id);
+        
+        let i = 0;
+        while (i < vector::length(&job.banned_workers)) {
+            let banned_commitment = *vector::borrow(&job.banned_workers, i);
+            if (banned_commitment == worker_commitment) {
+                return true
+            };
+            i = i + 1;
+        };
+        
+        false
     }
 
     #[view]
