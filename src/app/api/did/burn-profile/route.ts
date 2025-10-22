@@ -15,13 +15,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle empty fields - convert empty strings to empty vectors/strings
     const processedTableCommitmentHex = tableCommitmentHex && tableCommitmentHex.trim().length > 0 ? tableCommitmentHex : '';
     const processedTICommitment = tICommitment && tICommitment.length > 0 ? tICommitment : [];
     const processedACommitment = aCommitment && aCommitment.length > 0 ? aCommitment : [];
     const processedRoleTypes = roleTypes && roleTypes.length > 0 ? roleTypes : [];
 
-    // Call contract function
     const payload = {
       type: 'entry_function_payload',
       function: DID.BURN_DID,
@@ -34,13 +32,9 @@ export async function POST(request: NextRequest) {
         processedRoleTypes
       ]
     };
-    
-    console.log('Burn profile payload:', JSON.stringify(payload, null, 2));
-    
     return NextResponse.json({ success: true, payload });
 
   } catch (error: any) {
-    console.error('Burn Profile API error:', error);
     return NextResponse.json(
       { 
         success: false, 

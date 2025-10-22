@@ -16,10 +16,8 @@ export const DID = {
 } as const;
 
 export const JOB = {
-  // Single unified function for all job actions
   EXECUTE_JOB_ACTION: `${CONTRACT_ADDRESS}::escrow::execute_job_action`,
   
-  // Action constants
   ACTION_POST: 1,
   ACTION_APPLY: 2,
   ACTION_APPROVE: 3,
@@ -30,7 +28,6 @@ export const JOB = {
   ACTION_CANCEL: 8,
   ACTION_AUTO_RETURN_STAKE: 9,
   
-  // View functions
   GET_JOB_BY_ID: `${CONTRACT_ADDRESS}::escrow::get_job_by_id`,
   GET_JOB_LATEST: `${CONTRACT_ADDRESS}::escrow::get_job_latest`,
   HAS_NO_ACTIVE_JOBS: `${CONTRACT_ADDRESS}::escrow::has_no_active_jobs`,

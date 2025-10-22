@@ -38,14 +38,11 @@ export async function GET(request: NextRequest) {
     const jobViewArray = await viewResponse.json();
     console.log('🔍 Job view response:', JSON.stringify(jobViewArray, null, 2));
     
-    // Get first element from nested array (same as list API)
     const jobView = jobViewArray[0];
     console.log('🔍 Extracted job view:', JSON.stringify(jobView, null, 2));
     
-    // Convert CID from hex to string
     let cidString = '';
     if (typeof jobView.cid === 'string' && jobView.cid.startsWith('0x')) {
-      // Remove 0x prefix and convert hex to string
       cidString = Buffer.from(jobView.cid.slice(2), 'hex').toString('utf8');
     } else if (Array.isArray(jobView.cid)) {
       cidString = Buffer.from(jobView.cid).toString('utf8');
@@ -53,7 +50,6 @@ export async function GET(request: NextRequest) {
       cidString = jobView.cid;
     }
     
-    // Calculate total budget in APT
     const milestones = jobView.milestones || [];
     const milestonesNumbers = milestones.map((m: any) => parseInt(m) || 0);
     const totalBudgetAPT = milestonesNumbers.reduce((sum: number, amount: number) => sum + amount, 0) / 100_000_000;
@@ -64,7 +60,6 @@ export async function GET(request: NextRequest) {
       totalBudgetAPT
     });
     
-    // Determine status
     let status = 'active';
     if (jobView.completed) {
       status = 'completed';
@@ -74,7 +69,6 @@ export async function GET(request: NextRequest) {
       status = 'pending_approval';
     }
     
-    // Parse worker commitment
     let workerCommitmentValue = null;
     if (jobView.worker_commitment && jobView.worker_commitment.vec && jobView.worker_commitment.vec.length > 0) {
       workerCommitmentValue = jobView.worker_commitment.vec;

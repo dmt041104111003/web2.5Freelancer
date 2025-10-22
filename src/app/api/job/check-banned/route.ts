@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if worker is banned
     const isBanned = await aptos.view({
       payload: {
         function: JOB.IS_WORKER_BANNED,

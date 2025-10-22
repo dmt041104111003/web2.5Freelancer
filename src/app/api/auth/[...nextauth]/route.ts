@@ -8,7 +8,7 @@ export const authOptions: AuthOptions = {
     maxAge: 60 * 60 * 24,
   },
   jwt: {
-    maxAge: 60 * 60 * 24 ,     // 7 days total
+    maxAge: 60 * 60 * 24 , 
   },
   providers: [
     Credentials({
@@ -31,13 +31,11 @@ export const authOptions: AuthOptions = {
         token.address = address;
       }
       
-      // Auto-refresh token every 24h
       const now = Math.floor(Date.now() / 1000);
       const tokenAge = now - (Number(token.iat) || now);
       const oneDay = 24 * 60 * 60;
       
       if (tokenAge > oneDay) {
-        // Refresh token by updating iat
         token.iat = now;
       }
       

@@ -3,13 +3,8 @@ import { JOB, APTOS_NODE_URL } from '@/constants/contracts';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Fetching all jobs from contract...');
-    
-    console.log('🔄 Calling blockchain view function:', JOB.GET_JOB_LATEST);
-    console.log('🔄 Aptos node URL:', APTOS_NODE_URL);
-    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); 
     
     const viewResponse = await fetch(`${APTOS_NODE_URL}/v1/view`, {
       method: 'POST',
@@ -32,7 +27,6 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Blockchain response:', jobViews);
     console.log('📊 Found jobs:', jobViews.length);
     
-    // Debug first job if exists
     if (jobViews.length > 0) {
       console.log('🔍 First job data:', JSON.stringify(jobViews[0][0], null, 2));
     }
@@ -40,10 +34,9 @@ export async function GET(request: NextRequest) {
     const jobs = [];
     
     for (let i = 0; i < jobViews.length; i++) {
-      const jobView = jobViews[i][0]; // Get first element from nested array
+      const jobView = jobViews[i][0]; 
       console.log(`🔍 Processing job ${i}:`, jobView);
       
-      // Extract job data from view - essential fields only
       const cid = jobView.cid || '';
       const milestones = jobView.milestones || [];
       const workerCommitment = jobView.worker_commitment;
@@ -62,10 +55,8 @@ export async function GET(request: NextRequest) {
         completed
       });
       
-      // Convert CID from hex to string
       let cidString = '';
       if (typeof cid === 'string' && cid.startsWith('0x')) {
-        // Remove 0x prefix and convert hex to string
         cidString = Buffer.from(cid.slice(2), 'hex').toString('utf8');
       } else if (Array.isArray(cid)) {
         cidString = Buffer.from(cid).toString('utf8');
@@ -75,7 +66,6 @@ export async function GET(request: NextRequest) {
       
       console.log(`🔗 CID conversion: ${cid} -> ${cidString}`);
       
-      // Calculate total budget in APT
       const milestonesNumbers = milestones.map((m: any) => parseInt(m) || 0);
       const totalBudgetAPT = milestonesNumbers.reduce((sum: number, amount: number) => sum + amount, 0) / 100_000_000;
       
@@ -85,7 +75,6 @@ export async function GET(request: NextRequest) {
         totalBudgetAPT
       });
       
-      // Determine status
       let status = 'active';
       if (completed) {
         status = 'completed';
@@ -95,7 +84,6 @@ export async function GET(request: NextRequest) {
         status = 'pending_approval';
       }
       
-      // Parse worker commitment
       let workerCommitmentValue = null;
       if (workerCommitment && workerCommitment.vec && workerCommitment.vec.length > 0) {
         workerCommitmentValue = workerCommitment.vec;
@@ -108,25 +96,20 @@ export async function GET(request: NextRequest) {
       
       const job = {
         id: i,
-        // Core job data
         cid: cidString,
         milestones: milestonesNumbers,
         worker_commitment: workerCommitmentValue,
         poster_commitment: posterCommitment,
         
-        // Status fields
         approved,
         active,
         completed,
         
-        // Financial fields
         budget: totalBudgetAPT,
         
-        // Timeline fields
         application_deadline: applicationDeadline,
         current_milestone: currentMilestone,
         
-        // Computed fields
         status,
         created_at: new Date().toISOString()
       };

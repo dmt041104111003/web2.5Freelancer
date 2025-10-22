@@ -76,7 +76,6 @@ export async function POST(req: NextRequest) {
         const enc = new TextEncoder();
         did_commitment = await sha256Hex(enc.encode(did).buffer);
         console.log('[fullprove] did_commitment', shortHex(did_commitment));
-        // Use did_commitment for both t_I_commitment and a_commitment
         t_I_commitment = did_commitment;
         a_commitment = did_commitment;
       }

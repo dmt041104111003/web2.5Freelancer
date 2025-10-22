@@ -19,12 +19,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check if milestone is expired
     console.log('🔍 Checking milestone expiry for job:', job_id);
     const isExpired = await aptos.view({
       payload: {
         function: JOB.IS_MILESTONE_EXPIRED,
-        functionArguments: [job_id.toString(), "0"] // Check current milestone (index 0)
+        functionArguments: [job_id.toString(), "0"] 
       }
     });
 
@@ -38,22 +37,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create transaction payload for auto-return stake (raw payload, not signed)
     const payload = {
       type: "entry_function_payload",
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_AUTO_RETURN_STAKE, // action
-        job_id.toString(), // job_id
-        user_commitment, // user_commitment
-        "0x", // worker_commitment (empty for auto-return)
-        "0", // milestone_index
-        "0x", // cid (empty)
-        "0x", // job_details_cid (empty)
-        [], // milestones (empty)
-        [], // milestone_durations (empty)
-        "0" // application_deadline (empty)
+        JOB.ACTION_AUTO_RETURN_STAKE, 
+        job_id.toString(), 
+        user_commitment, 
+        "0x", 
+        "0", 
+        "0x", 
+        "0x", 
+        [], 
+        [], 
+        "0" 
       ]
     };
 

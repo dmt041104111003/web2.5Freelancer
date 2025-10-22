@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if milestone is expired
     const isExpired = await aptos.view({
       payload: {
         function: JOB.IS_MILESTONE_EXPIRED,
@@ -41,7 +40,6 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Get milestone deadline for reference
     const deadline = await aptos.view({
       payload: {
         function: JOB.GET_MILESTONE_DEADLINE,

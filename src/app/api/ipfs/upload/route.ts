@@ -3,16 +3,6 @@ import { DID, JOB, APTOS_NODE_URL } from '@/constants/contracts';
 
 const PINATA_JWT = process.env.PINATA_JWT;
 const IPFS_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY;
-
-// Helper function to create SHA256 hash
-const sha256Hex = async (s: string): Promise<string> => {
-  const enc = new TextEncoder();
-  const data = enc.encode(s);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const bytes = Array.from(new Uint8Array(hash));
-  return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
-};
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -20,13 +10,11 @@ export async function POST(request: NextRequest) {
       title, 
       description, 
       requirements, 
-      user_commitment, // ZKP commitment thay vì địa chỉ
-      type = 'job' // 'job', 'profile', or 'milestone'
+      user_commitment, 
+      type = 'job' 
     } = body;
     
-    // ✅ VALIDATE USER BASED ON TYPE
     if (type === 'job') {
-      // For job creation, user MUST have DID profile with poster role
       if (!user_commitment) {
         return NextResponse.json(
           { 
@@ -37,13 +25,11 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      // Check user's DID profile and role using view functions
       try {
         console.log('Checking DID profile for job creation:', user_commitment);
         console.log('Commitment type:', typeof user_commitment);
         console.log('Commitment length:', user_commitment.length);
         
-        // Use same commitment processing as get API
         const hexEncodedCommitment = '0x' + Buffer.from(user_commitment, 'utf8').toString('hex');
         console.log('Hex encoded commitment for upload:', hexEncodedCommitment);
         
@@ -71,19 +57,18 @@ export async function POST(request: NextRequest) {
         const userRolesResult = await roleResponse.json();
         console.log('User roles raw:', userRolesResult);
         
-        // Normalize roles
         const userRoles: number[] = [];
         for (const item of userRolesResult) {
           if (typeof item === 'number') {
             userRoles.push(item);
           } else if (typeof item === 'string') {
-            if (item.startsWith('0x') && item.length > 2) { // Only process non-empty hex
+            if (item.startsWith('0x') && item.length > 2) { 
               const hex = item.slice(2);
               for (let i = 0; i < hex.length; i += 2) {
                 const byteHex = hex.slice(i, i + 2);
                 if (byteHex.length === 2) userRoles.push(parseInt(byteHex, 16));
               }
-            } else if (item !== '0x' && item !== '') { // Skip empty hex strings
+            } else if (item !== '0x' && item !== '') { 
               const n = parseInt(item);
               if (!Number.isNaN(n)) userRoles.push(n);
             }
@@ -94,7 +79,6 @@ export async function POST(request: NextRequest) {
         
         console.log('User roles:', userRoles);
         
-        // Check if user has profile (roles.length > 0)
         if (userRoles.length === 0) {
           return NextResponse.json(
             { 
@@ -105,7 +89,6 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // For job creation, user must have poster role (2)
         if (!userRoles.includes(2)) {
           return NextResponse.json(
             { 
@@ -118,7 +101,6 @@ export async function POST(request: NextRequest) {
         
         console.log('✅ Job creation validation passed - userRoles:', userRoles);
         
-        // Store user roles for later use
         body.userRoles = userRoles;
         
       } catch (didError) {
@@ -132,10 +114,8 @@ export async function POST(request: NextRequest) {
         );
       }
     } else if (type === 'profile') {
-      // For profile creation, NO DID check needed (user is creating profile)
       console.log('✅ Profile creation - no DID validation needed');
       
-      // Get role types from request body
       const { roleTypes } = body;
       if (!roleTypes || !Array.isArray(roleTypes) || roleTypes.length === 0) {
         return NextResponse.json(
@@ -147,18 +127,14 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      // Store role types for later use
       body.userRoles = roleTypes;
     } else if (type === 'milestone') {
-      // For milestone submission, NO DID check needed (worker is submitting milestone)
       console.log('✅ Milestone submission - no DID validation needed');
     }
-    // Create metadata based on type
     let metadata: any;
     let fileName: string;
     
     if (type === 'job') {
-      // Job CID chỉ chứa thông tin cơ bản từ poster
       metadata = {
         title,
         description,
@@ -169,18 +145,15 @@ export async function POST(request: NextRequest) {
       };
       fileName = 'job-metadata.json';
     } else if (type === 'profile') {
-      // Create profile metadata based on role types from request body
       let profileData: any = {
         created_at: new Date().toISOString(),
         version: "1.0.0",
         type: "profile"
       };
       
-      // Get role types and profile data from request body
       const { skills, about, experience, roleTypes, freelancerAbout, posterAbout } = body;
       
-      // Handle multiple roles - don't use else if
-      if (roleTypes && roleTypes.includes(1)) { // Freelancer
+      if (roleTypes && roleTypes.includes(1)) { 
         profileData = { 
           ...profileData, 
           skills: skills || '', 
@@ -189,16 +162,14 @@ export async function POST(request: NextRequest) {
         };
       }
       
-      if (roleTypes && roleTypes.includes(2)) { // Poster
+      if (roleTypes && roleTypes.includes(2)) { 
         profileData = { 
           ...profileData, 
           posterAbout: posterAbout || about || '' 
         };
       }
       
-      // If user has both roles, we need to handle the about field properly
       if (roleTypes && roleTypes.includes(1) && roleTypes.includes(2)) {
-        // User is both Freelancer and Poster - use role-specific about fields
         profileData = { 
           ...profileData, 
           skills: skills || '', 
@@ -211,7 +182,6 @@ export async function POST(request: NextRequest) {
       metadata = profileData;
       fileName = 'profile-metadata.json';
     } else if (type === 'milestone') {
-      // Create milestone metadata
       const { milestone_index, description, timestamp, worker_commitment } = body;
       metadata = {
         milestone_index,
@@ -271,7 +241,6 @@ export async function POST(request: NextRequest) {
       ipfsUrl: `${IPFS_GATEWAY}/${ipfsHash}`,
       metadata,
       type,
-      // Contract function info for frontend
       contractInfo: {
         didRegistry: {
           createProfile: DID.CREATE_PROFILE,

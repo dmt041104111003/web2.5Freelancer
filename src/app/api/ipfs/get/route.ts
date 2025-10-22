@@ -4,9 +4,9 @@ import { DID, JOB, APTOS_NODE_URL } from '@/constants/contracts';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type'); // 'job' or 'profile'
-    const commitment = searchParams.get('commitment'); // For profile
-    const jobId = searchParams.get('jobId'); // For job
+    const type = searchParams.get('type');
+    const commitment = searchParams.get('commitment'); 
+    const jobId = searchParams.get('jobId'); 
     
     if (!type) {
       return NextResponse.json(
@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Get profile CID from did_registry
 async function getProfileCID(commitment: string | null) {
   if (!commitment) {
     return NextResponse.json(
@@ -64,18 +63,15 @@ async function getProfileCID(commitment: string | null) {
     console.log('Commitment type:', typeof commitment);
     console.log('Commitment length:', commitment.length);
     
-    // Convert commitment to hex if needed
     let processedCommitment = commitment;
     if (commitment.startsWith('0x')) {
       processedCommitment = commitment.slice(2);
     }
     console.log('Processed commitment:', processedCommitment);
     
-    // Convert to the format stored in blockchain (hex encoded string)
     const hexEncodedCommitment = '0x' + Buffer.from(commitment, 'utf8').toString('hex');
     console.log('Hex encoded commitment:', hexEncodedCommitment);
     
-    // Use the hex encoded version for blockchain call
     const finalCommitment = hexEncodedCommitment;
     
     const viewResponse = await fetch(`${APTOS_NODE_URL}/v1/view`, {
@@ -100,7 +96,6 @@ async function getProfileCID(commitment: string | null) {
     console.log('Result type:', typeof result);
     console.log('Result length:', Array.isArray(result) ? result.length : 'not array');
     
-    // Check if result is empty (indicates no profile found)
     if (Array.isArray(result) && result.length === 2 && result[0] === '0x' && result[1] === '0x') {
       console.log('❌ EMPTY RESULT: No profile found for this commitment');
       console.log('This means either:');
@@ -124,14 +119,12 @@ async function getProfileCID(commitment: string | null) {
       });
     }
     
-    // Extract did_commitment and profile_cid from result
     const [didCommitment, profileCid] = result;
     console.log('didCommitment:', didCommitment);
     console.log('profileCid:', profileCid);
     console.log('profileCid type:', typeof profileCid);
     console.log('profileCid is array:', Array.isArray(profileCid));
     
-    // Convert profile_cid from hex to string
     let cidString = '';
     if (Array.isArray(profileCid)) {
       console.log('Converting from array:', profileCid);
@@ -146,7 +139,6 @@ async function getProfileCID(commitment: string | null) {
     }
     console.log('Final cidString:', cidString);
     
-    // Get role types from blockchain
     let blockchainRoles: number[] = [];
     try {
       const roleResponse = await fetch(`${APTOS_NODE_URL}/v1/view`, {
@@ -163,7 +155,6 @@ async function getProfileCID(commitment: string | null) {
         const roleResult = await roleResponse.json();
         console.log('Blockchain roles:', roleResult);
         
-        // Normalize roles
         for (const item of roleResult) {
           if (typeof item === 'number') {
             blockchainRoles.push(item);
@@ -187,7 +178,6 @@ async function getProfileCID(commitment: string | null) {
       console.log('Could not fetch roles from blockchain:', roleError);
     }
 
-    // Try to fetch profile data from IPFS using CID
     let profileData = null;
     if (cidString) {
       try {
@@ -225,7 +215,6 @@ async function getProfileCID(commitment: string | null) {
   }
 }
 
-// Get job CID from escrow
 async function getJobCID(jobId: string | null) {
   if (!jobId) {
     return NextResponse.json(
@@ -257,10 +246,8 @@ async function getJobCID(jobId: string | null) {
     const jobData = await viewResponse.json();
     console.log('Job data result:', jobData);
     
-    // Extract CID from job data
     const cid = jobData.cid || [];
     
-    // Convert CID from hex to string
     let cidString = '';
     if (Array.isArray(cid)) {
       cidString = Buffer.from(cid).toString('utf8');

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CONTRACT_ADDRESS, DID } from '@/constants/contracts';
+import { DID } from '@/constants/contracts';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,10 +13,7 @@ export async function POST(request: NextRequest) {
       tICommitment, 
       aCommitment 
     } = body;
-    
-    console.log('Updating profile with roles:', roleTypes);
-    
-    // Validate required fields
+
     if (!did || !roleTypes || !Array.isArray(roleTypes)) {
       return NextResponse.json(
         { 
@@ -26,8 +23,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
-    // Validate role types
+
     const validRoles = roleTypes.every(role => role === 1 || role === 2);
     if (!validRoles) {
       return NextResponse.json(
@@ -39,21 +35,19 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Handle empty fields - convert empty strings to empty vectors/strings
     const processedDidCommitment = didCommitment && didCommitment.length > 0 ? didCommitment : [];
     const processedProfileCid = profileCid && profileCid.length > 0 ? profileCid : [];
     const processedTableCommitmentHex = tableCommitmentHex && tableCommitmentHex.trim().length > 0 ? tableCommitmentHex : '';
     const processedTICommitment = tICommitment && tICommitment.length > 0 ? tICommitment : [];
     const processedACommitment = aCommitment && aCommitment.length > 0 ? aCommitment : [];
     
-    // Call contract function
     const payload = {
       type: 'entry_function_payload',
       function: DID.UPDATE_PROFILE,
       type_arguments: [],
       arguments: [
         did,
-        roleTypes, // Pass as vector
+        roleTypes,
         processedDidCommitment,
         processedProfileCid,
         processedTableCommitmentHex,
@@ -61,9 +55,7 @@ export async function POST(request: NextRequest) {
         processedACommitment
       ]
     };
-    
-    console.log('Contract payload:', JSON.stringify(payload, null, 2));
-    
+
     return NextResponse.json({
       success: true,
       payload,
@@ -71,7 +63,6 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error: any) {
-    console.error('Update profile API error:', error);
     return NextResponse.json(
       { 
         success: false, 

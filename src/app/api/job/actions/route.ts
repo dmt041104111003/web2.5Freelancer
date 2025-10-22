@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Post a new job
 async function postJob(params: any) {
   const { 
     user_address, 
@@ -75,16 +74,12 @@ async function postJob(params: any) {
       commitmentLength: user_commitment?.length
     });
 
-    // Convert milestones to vector<u64> format expected by contract
-    // Contract expects: milestones: vector<u64> (array of amounts in micro-APT)
     const milestonesAmounts = milestones.map((milestone: any) => {
-      // If milestone is already a number (from dashboard conversion), use it directly
       if (typeof milestone === 'number') {
         return milestone;
       }
-      // If milestone is an object, extract amount and convert
       const amount = parseFloat(milestone.amount || '0');
-      return Math.floor(amount * 100_000_000); // Convert APT to micro-APT
+      return Math.floor(amount * 100_000_000); 
     });
     
     const payload = {
@@ -92,16 +87,16 @@ async function postJob(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_POST, // action
-        0, // job_id (will be assigned by contract)
-        user_commitment, // user_commitment
-        [], // worker_commitment (empty for post)
-        0, // milestone_index (not used for post)
-        [], // cid (not used for post)
-        job_details_cid, // job_details_cid
-        milestonesAmounts, // milestones as vector<u64>
-        milestone_durations || [], // milestone_durations as vector<u64>
-        application_deadline // application_deadline
+        JOB.ACTION_POST, 
+        0, 
+        user_commitment, 
+        [], 
+        0, 
+        [], 
+        job_details_cid, 
+        milestonesAmounts, 
+        milestone_durations || [], 
+        application_deadline 
       ]
     };
 
@@ -124,7 +119,6 @@ async function postJob(params: any) {
   }
 }
 
-// Apply to a job
 async function applyJob(params: any) {
   const { 
     user_address, 
@@ -148,16 +142,16 @@ async function applyJob(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_APPLY, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        user_commitment, // worker_commitment (same as user_commitment for apply)
-        0, // milestone_index (not used for apply)
-        [], // cid (not used for apply)
-        [], // job_details_cid (not used for apply)
-        [], // milestones (not used for apply)
-        [], // milestone_durations (not used for apply)
-        0 // application_deadline (not used for apply)
+        JOB.ACTION_APPLY, 
+        job_id, 
+        user_commitment, 
+        user_commitment, 
+        0, 
+        [], 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
@@ -173,7 +167,6 @@ async function applyJob(params: any) {
   }
 }
 
-// Approve a worker for a job
 async function approveJob(params: any) {
   const { 
     user_address, 
@@ -197,16 +190,16 @@ async function approveJob(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_APPROVE, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        [], // worker_commitment (not used for approve)
-        0, // milestone_index (not used for approve)
-        [], // cid (not used for approve)
-        [], // job_details_cid (not used for approve)
-        [], // milestones (not used for approve)
-        [], // milestone_durations (not used for approve)
-        0 // application_deadline (not used for approve)
+        JOB.ACTION_APPROVE, 
+        job_id, 
+        user_commitment, 
+        [], 
+        0, 
+        [], 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
@@ -222,7 +215,6 @@ async function approveJob(params: any) {
   }
 }
 
-// Submit a milestone
 async function submitMilestone(params: any) {
   const { 
     user_address, 
@@ -248,16 +240,16 @@ async function submitMilestone(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_SUBMIT, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        [], // worker_commitment (not used for submit)
-        milestone_index, // milestone_index
-        cid, // cid (milestone submission proof)
-        [], // job_details_cid (not used for submit)
-        [], // milestones (not used for submit)
-        [], // milestone_durations (not used for submit)
-        0 // application_deadline (not used for submit)
+        JOB.ACTION_SUBMIT, 
+        job_id, 
+        user_commitment, 
+        [], 
+        milestone_index, 
+        cid, 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
@@ -273,7 +265,6 @@ async function submitMilestone(params: any) {
   }
 }
 
-// Accept a milestone
 async function acceptMilestone(params: any) {
   const { 
     user_address, 
@@ -299,16 +290,16 @@ async function acceptMilestone(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_ACCEPT, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        [], // worker_commitment (not used for accept)
-        milestone_index, // milestone_index
-        cid, // cid (milestone acceptance proof)
-        [], // job_details_cid (not used for accept)
-        [], // milestones (not used for accept)
-        [], // milestone_durations (not used for accept)
-        0 // application_deadline (not used for accept)
+        JOB.ACTION_ACCEPT, 
+        job_id, 
+        user_commitment, 
+        [], 
+        milestone_index, 
+        cid, 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
@@ -324,7 +315,6 @@ async function acceptMilestone(params: any) {
   }
 }
 
-// Complete a job
 async function completeJob(params: any) {
   const { 
     user_address, 
@@ -348,16 +338,16 @@ async function completeJob(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_COMPLETE, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        [], // worker_commitment (not used for complete)
-        0, // milestone_index (not used for complete)
-        [], // cid (not used for complete)
-        [], // job_details_cid (not used for complete)
-        [], // milestones (not used for complete)
-        [], // milestone_durations (not used for complete)
-        0 // application_deadline (not used for complete)
+        JOB.ACTION_COMPLETE, 
+        job_id, 
+        user_commitment, 
+        [], 
+        0, 
+        [], 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
@@ -373,7 +363,6 @@ async function completeJob(params: any) {
   }
 }
 
-// Claim job payment
 async function claimJob(params: any) {
   const { 
     user_address, 
@@ -397,16 +386,16 @@ async function claimJob(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_CLAIM, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        [], // worker_commitment (not used for claim)
-        0, // milestone_index (not used for claim)
-        [], // cid (not used for claim)
-        [], // job_details_cid (not used for claim)
-        [], // milestones (not used for claim)
-        [], // milestone_durations (not used for claim)
-        0 // application_deadline (not used for claim)
+        JOB.ACTION_CLAIM, 
+        job_id, 
+        user_commitment, 
+        [], 
+        0, 
+        [], 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
@@ -422,7 +411,6 @@ async function claimJob(params: any) {
   }
 }
 
-// Cancel a job
 async function cancelJob(params: any) {
   const { 
     user_address, 
@@ -446,16 +434,16 @@ async function cancelJob(params: any) {
       function: JOB.EXECUTE_JOB_ACTION,
       type_arguments: [],
       arguments: [
-        JOB.ACTION_CANCEL, // action
-        job_id, // job_id
-        user_commitment, // user_commitment
-        [], // worker_commitment (not used for cancel)
-        0, // milestone_index (not used for cancel)
-        [], // cid (not used for cancel)
-        [], // job_details_cid (not used for cancel)
-        [], // milestones (not used for cancel)
-        [], // milestone_durations (not used for cancel)
-        0 // application_deadline (not used for cancel)
+        JOB.ACTION_CANCEL, 
+        job_id, 
+        user_commitment, 
+        [], 
+        0, 
+        [], 
+        [], 
+        [], 
+        [], 
+        0 
       ]
     };
     
