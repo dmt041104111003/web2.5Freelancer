@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'User address is required' }, { status: 400 });
       }
       
-      return new Promise((resolve) => {
+      return new Promise<NextResponse>((resolve) => {
         const roomsRef = ref(database, 'chatRooms');
         
         onValue(roomsRef, (snapshot) => {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     const roomIdForMessages = roomId || 'general';
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       const messagesRef = ref(database, `chats/${roomIdForMessages}/messages`);
       
       onValue(messagesRef, (snapshot) => {
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
       };
 
 
-      return new Promise((resolve) => {
+      return new Promise<NextResponse>((resolve) => {
         onValue(roomsRef, (snapshot) => {
           const data = snapshot.val();
           let existingRoom = null;
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
       
       const roomRef = ref(database, `chatRooms/${roomIdToAccept}`);
       
-      return new Promise((resolve) => {
+      return new Promise<NextResponse>((resolve) => {
         onValue(roomRef, (snapshot) => {
           const roomData = snapshot.val();
           

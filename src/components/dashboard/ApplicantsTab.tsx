@@ -19,13 +19,13 @@ export const ApplicantsTab: React.FC = () => {
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [approvingJob, setApprovingJob] = useState<string | null>(null);
 
-  const getUserCommitment = async () => sha256Hex(account!);
-  const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
-
   const fetchApplicants = useCallback(async () => {
     if (!account) return;
     setLoadingApplicants(true);
     try {
+      const getUserCommitment = async () => sha256Hex(account!);
+      const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
+      
       const { jobs } = await fetch('/api/job/list').then(r => r.json());
       const hexCommitment = getHexEncodedCommitment(await getUserCommitment());
       setApplicants(jobs.filter((job: Job) => 
@@ -42,6 +42,7 @@ export const ApplicantsTab: React.FC = () => {
     if (!account) return;
     setApprovingJob(jobId);
     try {
+      const getUserCommitment = async () => sha256Hex(account!);
       const data = await fetch('/api/job/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

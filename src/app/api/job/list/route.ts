@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { JOB, APTOS_NODE_URL } from '@/constants/contracts';
 
 const callView = async (fn: string, args: unknown[]) => {

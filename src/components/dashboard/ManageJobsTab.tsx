@@ -19,13 +19,13 @@ export const ManageJobsTab: React.FC = () => {
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [claimingJob, setClaimingJob] = useState<string | null>(null);
 
-  const getUserCommitment = async () => sha256Hex(account!);
-  const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
-
   const fetchMyJobs = useCallback(async () => {
     if (!account) return;
     setLoadingJobs(true);
     try {
+      const getUserCommitment = async () => sha256Hex(account!);
+      const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
+      
       const { jobs } = await fetch('/api/job/list').then(r => r.json());
       const hexCommitment = getHexEncodedCommitment(await getUserCommitment());
       setMyJobs(jobs.filter((job: Job) => job.poster_commitment === hexCommitment));
@@ -40,6 +40,7 @@ export const ManageJobsTab: React.FC = () => {
     if (!account) return;
     setClaimingJob(jobId);
     try {
+      const getUserCommitment = async () => sha256Hex(account!);
       const userCommitment = await getUserCommitment();
       const expiryData = await fetch(`/api/job/check-expiry?job_id=${jobId}&milestone_index=0`).then(r => r.json());
       

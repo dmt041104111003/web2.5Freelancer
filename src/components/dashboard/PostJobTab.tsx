@@ -27,8 +27,6 @@ export const PostJobTab: React.FC = () => {
   const [currentMilestone, setCurrentMilestone] = useState<Milestone>({amount: '', duration: '', unit: 'ngày'});
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
-  const getUserCommitment = async () => sha256Hex(account!);
-
   const TIME_MULTIPLIERS = { 'giây': 1, 'phút': 60, 'giờ': 3600, 'ngày': 86400, 'tuần': 604800, 'tháng': 2592000 };
   const APT_TO_UNITS = 100_000_000;
   const MIN_MILESTONE = 0.001;
@@ -36,7 +34,9 @@ export const PostJobTab: React.FC = () => {
   const convertAptToUnits = (apt: string) => Math.floor((parseFloat(apt) || 0) * APT_TO_UNITS);
 
   const checkProfile = useCallback(async () => {
+    if (!account) return;
     try {
+      const getUserCommitment = async () => sha256Hex(account!);
       setProfileStatus('Đang kiểm tra profile...');
       const profileData = await fetch(`/api/ipfs/get?type=profile&commitment=${await getUserCommitment()}`).then(r => r.json());
       
@@ -97,6 +97,7 @@ export const PostJobTab: React.FC = () => {
   const calculateTotalBudget = () => milestonesList.reduce((total, milestone) => total + (parseFloat(milestone.amount) || 0), 0);
 
   const createJob = async () => {
+    if (!account) return;
     try {
       setJobResult('Đang tạo job...');
       
@@ -110,6 +111,7 @@ export const PostJobTab: React.FC = () => {
         return;
       }
       
+      const getUserCommitment = async () => sha256Hex(account!);
       const userCommitment = await getUserCommitment();
       const ipfsData = await fetch('/api/ipfs/upload', {
         method: 'POST',
