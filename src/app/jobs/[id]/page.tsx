@@ -7,6 +7,24 @@ import { Header } from '@/components/landing/header';
 import { Footer } from '@/components/landing/footer';
 import { toast } from 'sonner';
 
+const sha256Hex = async (s: string): Promise<string> => {
+  const enc = new TextEncoder();
+  const data = enc.encode(s);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const bytes = Array.from(new Uint8Array(hash));
+  return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+const getWalletAccount = async () => {
+  const wallet = (window as any).aptos;
+  if (!wallet) throw new Error('Wallet not found. Please connect your wallet first.');
+  const account = await wallet.account();
+  if (!account) throw new Error('Please connect your wallet first.');
+  const accountAddress = typeof account === 'string' ? account : account.address;
+  if (!accountAddress) throw new Error('Invalid account format. Please reconnect your wallet.');
+  return { wallet, accountAddress };
+};
+
 export default function JobDetailPage() {
   const params = useParams();
   const jobId = params.id;
@@ -17,75 +35,49 @@ export default function JobDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [milestoneExpired, setMilestoneExpired] = useState(false);
-  const [userInfo, setUserInfo] = useState<{address: string, commitment: string} | null>(null);
 
-  // Fetch job details
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        console.log(`🔄 Fetching job ${jobId} details...`);
-        
-        // Fetch job from blockchain
         const jobResponse = await fetch(`/api/job/detail?id=${jobId}`);
         const jobData = await jobResponse.json();
-        
-        console.log('📋 Job API response:', jobData);
         
         if (!jobData.success) {
           throw new Error(jobData.error || 'Failed to fetch job');
         }
         
         setJob(jobData.job);
-        console.log('🔍 Job data for Apply button:', {
-          status: jobData.job.status,
-          worker_commitment: jobData.job.worker_commitment,
-          shouldShowApply: jobData.job.status === 'active' && !jobData.job.worker_commitment
-        });
         
-        // Check if current milestone is expired
         if (jobData.job.worker_commitment && jobData.job.approved) {
-          console.log('🔍 Checking milestone expiry...');
           try {
             const currentMilestone = parseInt(jobData.job.current_milestone) || 0;
-            console.log('🔍 Current milestone index:', currentMilestone);
-            
             const expiryCheck = await fetch(`/api/job/check-expiry?job_id=${jobId}&milestone_index=${currentMilestone}`);
             const expiryData = await expiryCheck.json();
-            
             if (expiryData.success && expiryData.is_expired) {
-              console.log('⚠️ Milestone expired, job should be reset');
               setMilestoneExpired(true);
             }
           } catch (expiryError) {
-            console.warn('⚠️ Error checking milestone expiry:', expiryError);
+            // Handle expiry check errors silently
           }
         }
         
-        // Fetch job details from IPFS using CID
         if (jobData.job.cid) {
-          console.log(`🔄 Fetching job details from IPFS using CID: ${jobData.job.cid}`);
-          
           try {
             const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs';
             const ipfsResponse = await fetch(`${ipfsGateway}/${jobData.job.cid}`);
-            
             if (ipfsResponse.ok) {
               const jobDetailsData = await ipfsResponse.json();
               setJobDetails(jobDetailsData);
-              console.log('✅ Job details loaded from IPFS:', jobDetailsData);
-            } else {
-              console.warn('⚠️ Failed to fetch job details from IPFS:', ipfsResponse.status);
             }
           } catch (ipfsError) {
-            console.warn('⚠️ Error fetching job details from IPFS:', ipfsError);
+            // Handle IPFS fetch errors silently
           }
         }
         
       } catch (err: any) {
-        console.error('❌ Error fetching job details:', err);
         setError(err.message || 'Failed to fetch job details');
       } finally {
         setLoading(false);
@@ -97,62 +89,17 @@ export default function JobDetailPage() {
     }
   }, [jobId]);
 
-
-  // Handle job application
   const handleApply = async () => {
     try {
       setApplying(true);
       
-      console.log(`🔄 Applying for job ${jobId}...`);
-      
-      // Get user address from wallet
-      const wallet = (window as any).aptos;
-      if (!wallet) {
-        throw new Error('Wallet not found. Please connect your wallet first.');
-      }
-      
-      const account = await wallet.account();
-      if (!account) {
-        throw new Error('Please connect your wallet first.');
-      }
-      
-      // Ensure account is a string
-      const accountAddress = typeof account === 'string' ? account : account.address;
-      if (!accountAddress) {
-        throw new Error('Invalid account format. Please reconnect your wallet.');
-      }
-      
-      console.log('🔍 Current account:', accountAddress);
-      console.log('🔍 Note: 0xf7e8b7c8a891170206aa1d343af88e33907cadbe39268ac7e5b45d643eb650bf is the POSTER account (job creator), not your account');
-      
-      // Generate commitment from account (same format as when creating profile)
-      const sha256Hex = async (s: string): Promise<string> => {
-        const enc = new TextEncoder();
-        const data = enc.encode(s);
-        const hash = await crypto.subtle.digest('SHA-256', data);
-        const bytes = Array.from(new Uint8Array(hash));
-        return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
-      };
-      
-      // Use the same commitment format as when creating profile (hash of account address)
+      const { wallet, accountAddress } = await getWalletAccount();
       const userCommitment = await sha256Hex(accountAddress);
-      console.log('🔍 Generated commitment:', userCommitment);
       
-      // Store user info for later use
-      setUserInfo({ address: accountAddress, commitment: userCommitment });
-      
-      // Check if user has verified profile before applying
-      console.log('🔍 Checking user profile before apply...');
       const profileCheck = await fetch(`/api/ipfs/get?type=profile&commitment=${userCommitment}`);
       const profileData = await profileCheck.json();
       
       if (!profileData.success || !profileData.profile_data) {
-        console.log('❌ Profile check failed:', profileData);
-        console.log('🔍 This means you need to create a profile with your current account first.');
-        console.log('🔍 Current account:', accountAddress);
-        console.log('🔍 Generated commitment:', userCommitment);
-        console.log('🔍 Expected commitment (from different account): 0x307866376538623763386138393131373032303661613164333433616638386533333930376361646265333932363861633765356234356436343365623635306266');
-        
         throw new Error(`No profile found for account ${accountAddress}. 
 
 You have two options:
@@ -163,14 +110,11 @@ Current account: ${accountAddress}
 Generated commitment: ${userCommitment}`);
       }
       
-      // Check if user has freelancer role
       const hasFreelancerRole = profileData.blockchain_roles && profileData.blockchain_roles.includes(1);
       if (!hasFreelancerRole) {
         throw new Error('You need to have freelancer role to apply for jobs. Please update your profile to include freelancer role.');
       }
       
-      // Check if user is banned from this job
-      console.log('🔍 Checking if user is banned from this job...');
       const bannedCheck = await fetch(`/api/job/check-banned?job_id=${jobId}&worker_commitment=${userCommitment}`);
       const bannedData = await bannedCheck.json();
       
@@ -178,9 +122,6 @@ Generated commitment: ${userCommitment}`);
         throw new Error('You are banned from this job. You cannot apply again.');
       }
       
-      console.log('✅ User profile verified and not banned, proceeding with application...');
-      
-      // Call job actions API
       const response = await fetch('/api/job/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,60 +138,31 @@ Generated commitment: ${userCommitment}`);
         throw new Error(data.error || 'Failed to prepare application');
       }
       
-      console.log('✅ Application prepared:', data);
-      
-      // Sign and submit transaction
       const tx = await wallet.signAndSubmitTransaction(data.payload);
       const hash = tx?.hash || '';
       
-      if (hash) {
-        console.log(`✅ Application submitted! TX: ${hash}`);
-        toast.success(`Application submitted successfully! Transaction: ${hash}`);
-        
-        // Refresh job data
-        window.location.reload();
-      } else {
-        console.log('✅ Application transaction sent');
-        toast.success('Application submitted successfully!');
-      }
+      toast.success(hash ? `Application submitted successfully! Transaction: ${hash}` : 'Application submitted successfully!');
+      if (hash) window.location.reload();
       
     } catch (err: any) {
-      console.error('❌ Application failed:', err);
       toast.error(`Application failed: ${err.message}`);
     } finally {
       setApplying(false);
     }
   };
 
-  // Handle milestone submission
   const handleSubmitMilestone = async () => {
     try {
       setApplying(true);
       
-      console.log(`🔄 Submitting milestone for job ${jobId}...`);
-      
-      // Get current milestone index
-      console.log('🔍 Full job object:', job);
-      console.log('🔍 Current milestone from job:', job.current_milestone);
-      
       let milestoneIndex = parseInt(job.current_milestone);
-      console.log('🔍 Parsed milestone index:', milestoneIndex);
-      
       if (isNaN(milestoneIndex)) {
-        // Fallback: try to get milestone from job data or default to 0
-        console.log('⚠️ Milestone index is NaN, trying fallback...');
-        const fallbackMilestone = job.current_milestone || '0';
-        milestoneIndex = parseInt(fallbackMilestone);
-        console.log('🔍 Fallback milestone:', fallbackMilestone, 'parsed:', milestoneIndex);
-        
+        milestoneIndex = parseInt(job.current_milestone || '0');
         if (isNaN(milestoneIndex)) {
           throw new Error('Invalid milestone index. Please refresh the page and try again.');
         }
-        
-        console.log('✅ Using fallback milestone index:', milestoneIndex);
       }
       
-      // Create milestone data
       const milestoneData = {
         milestone_index: milestoneIndex,
         description: `Milestone ${milestoneIndex + 1} submission`,
@@ -258,67 +170,28 @@ Generated commitment: ${userCommitment}`);
         worker_commitment: job.worker_commitment
       };
       
-      // Upload milestone data to IPFS
       const uploadResponse = await fetch('/api/ipfs/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...milestoneData,
-          type: 'milestone'
-        })
+        body: JSON.stringify({ ...milestoneData, type: 'milestone' })
       });
       
       const uploadData = await uploadResponse.json();
-      
       if (!uploadData.success) {
         throw new Error(uploadData.error || 'Failed to upload milestone data');
       }
       
-      const milestoneCid = uploadData.ipfsHash;
-      console.log(`✅ Milestone data uploaded to IPFS: ${milestoneCid}`);
-      console.log('📋 Upload response:', uploadData);
-      
-      // Get user info from wallet (same logic as in handleApply)
-      const wallet = (window as any).aptos;
-      if (!wallet) {
-        throw new Error('Wallet not found. Please connect your wallet first.');
-      }
-      
-      const account = await wallet.account();
-      if (!account) {
-        throw new Error('Please connect your wallet first.');
-      }
-      
-      // Ensure account is a string
-      const accountAddress = typeof account === 'string' ? account : account.address;
-      if (!accountAddress) {
-        throw new Error('Invalid account format. Please reconnect your wallet.');
-      }
-      
-      // Generate commitment from account (same format as when creating profile)
-      const sha256Hex = async (s: string): Promise<string> => {
-        const enc = new TextEncoder();
-        const data = enc.encode(s);
-        const hash = await crypto.subtle.digest('SHA-256', data);
-        const bytes = Array.from(new Uint8Array(hash));
-        return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
-      };
-      
-      // Use the same commitment format as when creating profile (hash of account address)
+      const { wallet, accountAddress } = await getWalletAccount();
       const userCommitment = await sha256Hex(accountAddress);
-      console.log('🔍 Generated commitment for milestone submission:', userCommitment);
       
-      // Submit milestone to blockchain
       const submitData = {
         action: 'submit',
         user_address: accountAddress,
         user_commitment: userCommitment,
         job_id: parseInt(jobId as string),
         milestone_index: milestoneIndex,
-        cid: milestoneCid
+        cid: uploadData.ipfsHash
       };
-      
-      console.log('🔍 Submitting milestone data:', submitData);
       
       const response = await fetch('/api/job/actions', {
         method: 'POST',
@@ -332,25 +205,13 @@ Generated commitment: ${userCommitment}`);
         throw new Error(data.error || 'Failed to submit milestone');
       }
       
-      console.log('✅ Milestone submission prepared:', data);
-      
-      // Sign and submit transaction
       const tx = await wallet.signAndSubmitTransaction(data.payload);
       const hash = tx?.hash || '';
       
-      if (hash) {
-        console.log(`✅ Milestone submitted! TX: ${hash}`);
-        toast.success(`Milestone submitted successfully! Transaction: ${hash}`);
-        
-        // Refresh job data
-        window.location.reload();
-      } else {
-        console.log('✅ Milestone transaction sent');
-        toast.success('Milestone submitted successfully!');
-      }
+      toast.success(hash ? `Milestone submitted successfully! Transaction: ${hash}` : 'Milestone submitted successfully!');
+      if (hash) window.location.reload();
       
     } catch (err: any) {
-      console.error('❌ Milestone submission failed:', err);
       toast.error(`Milestone submission failed: ${err.message}`);
     } finally {
       setApplying(false);
@@ -365,9 +226,7 @@ Generated commitment: ${userCommitment}`);
           <Container>
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="text-text-secondary text-lg mt-4">
-                Loading job details...
-              </p>
+              <p className="text-text-secondary text-lg mt-4">Loading job details...</p>
             </div>
           </Container>
         </main>
@@ -383,9 +242,7 @@ Generated commitment: ${userCommitment}`);
         <main className="flex-1 pt-20">
           <Container>
             <div className="text-center py-12">
-              <p className="text-red-500 text-lg">
-                Error: {error}
-              </p>
+              <p className="text-red-500 text-lg">Error: {error}</p>
             </div>
           </Container>
         </main>
@@ -397,30 +254,24 @@ Generated commitment: ${userCommitment}`);
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      
       <main className="flex-1 pt-20">
         <Container>
           <div className="mb-8">
             <button 
               onClick={() => window.history.back()}
-              className="text-primary hover:text-primary/80 mb-4 flex items-center gap-2"
+              className="text-primary hover:text-primary/80 mb-4 flex items-center gap-2 transition-colors"
             >
               ← Back to Jobs
             </button>
-            
             <h1 className="text-4xl lg:text-6xl font-bold text-text-primary mb-4 leading-tight">
-              <span className="text-primary block">
-                Job #{job?.id}
-              </span>
+              <span className="text-primary block">Job #{job?.id}</span>
             </h1>
           </div>
 
           {job && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main Content */}
               <div className="lg:col-span-2">
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
-                  {/* Job Details from IPFS */}
                   {jobDetails ? (
                     <div className="space-y-6">
                       <div>
@@ -431,103 +282,67 @@ Generated commitment: ${userCommitment}`);
                           {jobDetails.description || 'No description provided'}
                         </p>
                       </div>
-                      
                       {jobDetails.requirements && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                            Requirements
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-400">
-                            {jobDetails.requirements}
-                          </p>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Requirements</h3>
+                          <p className="text-gray-600 dark:text-gray-400">{jobDetails.requirements}</p>
                         </div>
                       )}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Job details not available
-                      </p>
+                      <p className="text-gray-500 dark:text-gray-400">Job details not available</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Sidebar */}
               <div className="space-y-6">
-                {/* Job Status */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Job Status
-                  </h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Job Status</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500 dark:text-gray-400">Status:</span>
                       <span className={`font-medium ${
                         job.status === 'active' ? 'text-green-600 dark:text-green-400' :
                         job.status === 'in_progress' ? 'text-blue-600 dark:text-blue-400' :
-                        job.status === 'completed' ? 'text-gray-600 dark:text-gray-400' :
-                        'text-yellow-600 dark:text-yellow-400'
-                      }`}>
-                        {job.status}
-                      </span>
+                        job.status === 'completed' ? 'text-gray-600 dark:text-gray-400' : 'text-yellow-600 dark:text-yellow-400'
+                      }`}>{job.status}</span>
                     </div>
-                    
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500 dark:text-gray-400">Budget:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {job.budget} APT
-                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">{job.budget} APT</span>
                     </div>
-                    
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500 dark:text-gray-400">Milestones:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {job.milestones?.length || 0}
-                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">{job.milestones?.length || 0}</span>
                     </div>
-                    
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500 dark:text-gray-400">Worker:</span>
-                      <span className={`font-medium ${
-                        job.worker_commitment ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
-                      }`}>
+                      <span className={`font-medium ${job.worker_commitment ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>
                         {job.worker_commitment ? 'Assigned' : 'Open'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Milestones */}
                 {job.milestones && job.milestones.length > 0 && (
                   <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      Milestones
-                    </h3>
-                    
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Milestones</h3>
                     <div className="space-y-2">
                       {job.milestones.map((amount: number, index: number) => (
-                        <div key={index} className="flex justify-between text-sm">
-                          <span className="text-gray-500 dark:text-gray-400">
-                            Milestone {index + 1}:
-                          </span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {(amount / 100_000_000).toFixed(2)} APT
-                          </span>
+                        <div key={index} className="flex justify-between text-sm items-center">
+                          <span className="text-gray-500 dark:text-gray-400">Milestone {index + 1}:</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{(amount / 100_000_000).toFixed(2)} APT</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Milestone Expired Notice */}
                 {milestoneExpired && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                     <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
                       <span className="font-medium">Milestone Expired</span>
                     </div>
                     <p className="text-red-600 dark:text-red-400 text-sm mt-1">
@@ -536,7 +351,6 @@ Generated commitment: ${userCommitment}`);
                   </div>
                 )}
 
-                {/* Apply Button */}
                 {(job.status === 'active' || job.status === 'pending_approval') && !job.worker_commitment && (
                   <button 
                     onClick={handleApply}
@@ -549,15 +363,11 @@ Generated commitment: ${userCommitment}`);
                         Applying...
                       </span>
                     ) : (
-                      <span className="flex items-center justify-center gap-2">
-                
-                        Apply for Job
-                      </span>
+                      'Apply for Job'
                     )}
                   </button>
                 )}
 
-                {/* Submit Milestone Button */}
                 {job.worker_commitment && job.status === 'in_progress' && (
                   <button 
                     onClick={handleSubmitMilestone}
@@ -570,21 +380,16 @@ Generated commitment: ${userCommitment}`);
                         Submitting...
                       </span>
                     ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        Submit Milestone
-                      </span>
+                      'Submit Milestone'
                     )}
                   </button>
                 )}
-
               </div>
             </div>
           )}
         </Container>
       </main>
-
       <Footer />
-      
     </div>
   );
 }

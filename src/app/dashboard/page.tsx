@@ -168,14 +168,27 @@ export default function DashboardPage() {
       setProfileStatus('Đang kiểm tra profile...');
       const profileData = await fetch(`/api/ipfs/get?type=profile&commitment=${await getUserCommitment()}`).then(r => r.json());
       
+      console.log('Dashboard: API response:', profileData);
+      
       if (!profileData.success) {
         setProfileStatus('Profile chưa được verify! Vào /auth/did-verification để tạo profile.');
         setCanPostJobs(false);
         return;
       }
       
-      const hasProfile = profileData.profile_data && Object.keys(profileData.profile_data).length > 0;
-      const hasPosterRole = profileData.blockchain_roles?.includes(2);
+      const hasProfile = profileData.data && Object.keys(profileData.data).length > 0;
+      const hasPosterRole = profileData.data?.blockchain_roles?.includes(2);
+      
+      console.log('Dashboard: Profile check:', {
+        success: profileData.success,
+        hasData: !!profileData.data,
+        dataKeys: profileData.data ? Object.keys(profileData.data) : [],
+        hasProfileData: !!profileData.profile_data, 
+        profileDataKeys: profileData.profile_data ? Object.keys(profileData.profile_data) : [], // Để so sánh
+        blockchain_roles: profileData.data?.blockchain_roles,
+        hasProfile,
+        hasPosterRole
+      });
       
       if (hasProfile && hasPosterRole) {
         setProfileStatus('Profile đã được verify với role Poster! Bạn có thể đăng job.');

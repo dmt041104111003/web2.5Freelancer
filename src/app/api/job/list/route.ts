@@ -40,12 +40,33 @@ const getWorkerCommitment = (workerCommitment: any) =>
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('API: Calling GET_JOB_LATEST...');
     const jobViews = await callView(JOB.GET_JOB_LATEST, []);
-    const jobs = jobViews.map((jobView: any, i: number) => {
+    console.log('API: Raw jobViews response:', jobViews);
+    console.log('API: jobViews length:', jobViews?.length);
+    
+    const flattenedJobs = Array.isArray(jobViews) && jobViews.length > 0 && Array.isArray(jobViews[0]) 
+      ? jobViews[0] 
+      : jobViews;
+    console.log('API: Flattened jobs:', flattenedJobs);
+    console.log('API: Flattened jobs length:', flattenedJobs?.length);
+    
+    const jobs = flattenedJobs.map((jobView: any, i: number) => {
+      console.log(`API: Processing job ${i}:`, jobView);
       const cidString = convertToString(jobView.cid || '');
       const { numbers: milestonesNumbers, totalAPT } = processMilestones(jobView.milestones || []);
       const status = getStatus(jobView.completed, jobView.worker_commitment, jobView.approved);
       const workerCommitmentValue = getWorkerCommitment(jobView.worker_commitment);
+      
+      console.log(`API: Job ${i} processed:`, {
+        id: i,
+        cid: cidString,
+        cidRaw: jobView.cid,
+        milestones: milestonesNumbers,
+        totalAPT,
+        status,
+        worker_commitment: workerCommitmentValue
+      });
       
       return {
         id: i,

@@ -55,8 +55,17 @@ export default function DIDActionsPanel() {
       const didCommitHex = await sha256Hex(didTail(did));
       const ipfsResponse = await fetch(`/api/ipfs/get?type=profile&commitment=${didCommitHex}`);
       const ipfsData = await ipfsResponse.json();
+      console.log('Frontend: API response:', ipfsData);
       
-      const hasProfile = ipfsData.success && ipfsData.profile_data && Object.keys(ipfsData.profile_data).length > 0;
+      const hasProfile = ipfsData.success && ipfsData.data && Object.keys(ipfsData.data).length > 0;
+      console.log('Frontend: hasProfile check:', {
+        success: ipfsData.success,
+        hasData: !!ipfsData.data,
+        dataKeys: ipfsData.data ? Object.keys(ipfsData.data) : [],
+        hasProfileData: !!ipfsData.profile_data,
+        profileDataKeys: ipfsData.profile_data ? Object.keys(ipfsData.profile_data) : [],
+        hasProfile
+      });
       setIsVerified(hasProfile);
       setVerificationStatus(hasProfile ? 'Profile đã được verify! Bạn có thể sử dụng tất cả tính năng.' : 'Profile chưa được verify! Cần tạo và verify profile trước.');
     } catch (e: any) {
@@ -75,11 +84,14 @@ export default function DIDActionsPanel() {
         const ipfsResponse = await fetch(`/api/ipfs/get?type=profile&commitment=${didCommitHex}`);
         const ipfsData = await ipfsResponse.json();
         
-        if (ipfsData.success && ipfsData.profile_data) {
-          const profile = ipfsData.profile_data;
-          const finalRoles = ipfsData.blockchain_roles || [];
+        if (ipfsData.success && ipfsData.data) {
+          const profile = ipfsData.data;
+          const finalRoles = profile.blockchain_roles || [];
+          console.log('Frontend: Loading profile data:', profile);
+          console.log('Frontend: Loading roles from profile.blockchain_roles:', finalRoles);
           
           if (finalRoles.includes(ROLES.FREELANCER)) {
+            console.log('Frontend: Setting freelancer data from profile:', profile);
             setFreelancerData({
               skills: profile.skills || '',
               about: profile.freelancerAbout || profile.about || '', 
@@ -88,6 +100,7 @@ export default function DIDActionsPanel() {
           }
           
           if (finalRoles.includes(ROLES.POSTER)) {
+            console.log('Frontend: Setting poster data from profile:', profile);
             setPosterData({
               skills: '',
               about: profile.posterAbout || profile.about || '', 

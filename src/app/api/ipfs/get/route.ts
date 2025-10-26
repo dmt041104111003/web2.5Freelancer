@@ -50,16 +50,27 @@ export async function GET(request: NextRequest) {
     if (type === 'profile') {
       if (!commitment) return NextResponse.json({ success: false, error: 'Commitment required' }, { status: 400 });
       
-      const processedCommitment = '0x' + Buffer.from(commitment, 'utf8').toString('hex');
-      const result = await callView(DID.GET_PROFILE_DATA_BY_COMMITMENT, [processedCommitment]);
+      const hexEncodedCommitment = '0x' + Buffer.from(commitment, 'utf8').toString('hex');
+      console.log('API: Original commitment:', commitment);
+      console.log('API: Hex encoded commitment:', hexEncodedCommitment);
+      console.log('API: Commitment length:', hexEncodedCommitment.length);
+      
+      console.log('API: Skipping address check, going directly to profile data');
+      
+      const result = await callView(DID.GET_PROFILE_DATA_BY_COMMITMENT, [hexEncodedCommitment]);
+      console.log('API: Contract result:', result);
       
       if (Array.isArray(result) && result.length === 2 && result[0] === '0x' && result[1] === '0x') {
+        console.log('API: No profile found - empty result');
         return NextResponse.json({ success: false, error: 'No profile found' }, { status: 404 });
       }
       
       const [didCommitment, profileCid] = result;
       const cidString = convertToString(profileCid);
-      const [roles, profileData] = await Promise.all([getRoles(processedCommitment), getIPFSData(cidString)]);
+      console.log('API: Profile CID:', cidString);
+      
+      const [roles, profileData] = await Promise.all([getRoles(hexEncodedCommitment), getIPFSData(cidString)]);
+      console.log('API: Roles:', roles, 'Profile data:', profileData);
       
       return NextResponse.json({
         success: true,
