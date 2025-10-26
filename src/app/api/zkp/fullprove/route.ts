@@ -35,16 +35,30 @@ export async function POST(req: NextRequest) {
       console.log('[fullprove] body parsed', { didLen: did.length });
     } catch {}
 
-    const wasmPath = resolvePath(process.env.ZK_WASM_PATH || 'zk/membership_js/membership.wasm');
-    const zkeyPath = resolvePath(process.env.ZK_ZKEY_PATH || 'zk/circuit.zkey');
-    const inputPath = resolvePath(process.env.ZK_INPUT_PATH || 'zk/input.json');
-    const vkPath = resolvePath(process.env.ZK_VK_PATH || 'zk/verification_key.json');
+    const wasmPath = resolvePath(process.env.ZK_WASM_PATH);
+    const zkeyPath = resolvePath(process.env.ZK_ZKEY_PATH);
+    const inputPath = resolvePath(process.env.ZK_INPUT_PATH);
+    const vkPath = resolvePath(process.env.ZK_VK_PATH);
 
     if (!wasmPath || !zkeyPath || !inputPath) {
       return NextResponse.json({ error: 'Missing ZK paths' }, { status: 500 });
     }
 
-    await Promise.all([wasmPath, zkeyPath, inputPath].map(p => fs.stat(p)));
+    const fileChecks = await Promise.allSettled([
+      fs.stat(wasmPath),
+      fs.stat(zkeyPath), 
+      fs.stat(inputPath)
+    ]);
+    
+    const missingFiles = fileChecks
+      .map((result, index) => result.status === 'rejected' ? [wasmPath, zkeyPath, inputPath][index] : null)
+      .filter(Boolean);
+    
+    if (missingFiles.length > 0) {
+      console.error('[fullprove] Missing files:', missingFiles);
+      return NextResponse.json({ error: `Missing files: ${missingFiles.join(', ')}` }, { status: 500 });
+    }
+    
     console.log('[fullprove] files ok', { wasmPath, zkeyPath, inputPath, vkPath });
     const snarkjs: Record<string, unknown> = await import('snarkjs');
     const input = JSON.parse(await fs.readFile(inputPath, 'utf8'));

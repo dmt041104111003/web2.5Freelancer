@@ -1,5 +1,5 @@
 export const APTOS_NETWORK = "testnet";
-export const APTOS_NODE_URL = "https://api.testnet.aptoslabs.com/v1";
+export const APTOS_NODE_URL = "https://api.testnet.aptoslabs.com";
 export const APTOS_FAUCET_URL =  "https://faucet.testnet.aptoslabs.com";
 export const APTOS_API_KEY = process.env.APTOS_API_KEY;
 

@@ -1,0 +1,9 @@
+# Ignore everything except what we need
+node_modules
+.next
+.git
+*.log
+
+# But include ZK files
+!zk/
+!zk/**
