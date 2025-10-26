@@ -33,14 +33,19 @@ export async function POST(req: NextRequest) {
       const body = await req.json();
       did = String(body?.did || '');
       console.log('[fullprove] body parsed', { didLen: did.length });
-    } catch {}
+    } catch (error) {
+      console.error('[fullprove] body parse error:', error);
+    }
 
     const wasmPath = resolvePath(process.env.ZK_WASM_PATH || 'public/zk/membership_js/membership.wasm');
     const zkeyPath = resolvePath(process.env.ZK_ZKEY_PATH || 'public/zk/circuit.zkey');
     const inputPath = resolvePath(process.env.ZK_INPUT_PATH || 'public/zk/input.json');
     const vkPath = resolvePath(process.env.ZK_VK_PATH || 'public/zk/verification_key.json');
 
+    console.log('[fullprove] resolved paths:', { wasmPath, zkeyPath, inputPath, vkPath });
+
     if (!wasmPath || !zkeyPath || !inputPath) {
+      console.error('[fullprove] Missing ZK paths:', { wasmPath, zkeyPath, inputPath });
       return NextResponse.json({ error: 'Missing ZK paths' }, { status: 500 });
     }
 
@@ -60,11 +65,36 @@ export async function POST(req: NextRequest) {
     }
     
     console.log('[fullprove] files ok', { wasmPath, zkeyPath, inputPath, vkPath });
-    const snarkjs: Record<string, unknown> = await import('snarkjs');
-    const input = JSON.parse(await fs.readFile(inputPath, 'utf8'));
-    console.log('[fullprove] running groth16.fullProve');
-    const { proof, publicSignals } = await (snarkjs.groth16 as { fullProve: (input: unknown, wasmPath: string, zkeyPath: string) => Promise<{ proof: unknown; publicSignals: unknown }> }).fullProve(input, wasmPath, zkeyPath);
-    console.log('[fullprove] prover done', { publicSignalsLen: Array.isArray(publicSignals) ? publicSignals.length : 0 });
+    
+    let snarkjs: Record<string, unknown>;
+    try {
+      snarkjs = await import('snarkjs');
+      console.log('[fullprove] snarkjs imported successfully');
+    } catch (error) {
+      console.error('[fullprove] snarkjs import failed:', error);
+      return NextResponse.json({ error: 'Failed to import snarkjs' }, { status: 500 });
+    }
+    
+    let input: unknown;
+    try {
+      input = JSON.parse(await fs.readFile(inputPath, 'utf8'));
+      console.log('[fullprove] input loaded:', input);
+    } catch (error) {
+      console.error('[fullprove] input load failed:', error);
+      return NextResponse.json({ error: 'Failed to load input file' }, { status: 500 });
+    }
+    
+    let proof: unknown, publicSignals: unknown;
+    try {
+      console.log('[fullprove] running groth16.fullProve');
+      const result = await (snarkjs.groth16 as { fullProve: (input: unknown, wasmPath: string, zkeyPath: string) => Promise<{ proof: unknown; publicSignals: unknown }> }).fullProve(input, wasmPath, zkeyPath);
+      proof = result.proof;
+      publicSignals = result.publicSignals;
+      console.log('[fullprove] prover done', { publicSignalsLen: Array.isArray(publicSignals) ? publicSignals.length : 0 });
+    } catch (error) {
+      console.error('[fullprove] groth16.fullProve failed:', error);
+      return NextResponse.json({ error: 'ZKP proof generation failed' }, { status: 500 });
+    }
 
     const proofData = {
       proof: proof,
