@@ -58,6 +58,7 @@ module did_addr_profile::escrow {
         cancel_approved_poster: bool,
         cancel_approved_worker: bool,
         banned_workers: vector<vector<u8>>, // List of banned worker commitments
+        milestone_start_time: u64, // When current milestone started
     }
 
     struct Jobs has key {
@@ -189,6 +190,7 @@ module did_addr_profile::escrow {
                 cancel_approved_poster: false,
                 cancel_approved_worker: false,
                 banned_workers: vector::empty<vector<u8>>(),
+                milestone_start_time: 0, // Will be set when milestone starts
         };
 
         table::add(&mut jobs_res.jobs, job_id, new_job);
@@ -235,6 +237,7 @@ module did_addr_profile::escrow {
                 assert!(!job.approved, EALREADY_HAS_WORKER);
         
         job.approved = true;
+                job.milestone_start_time = timestamp::now_seconds(); // Set milestone start time
             } else if (action == ACTION_SUBMIT) {
                 // SUBMIT - Worker submits milestone
                 let roles = did_registry::get_role_types_by_commitment(user_commitment);
@@ -248,6 +251,7 @@ module did_addr_profile::escrow {
                 
                 // Milestone submitted (simplified - no complex state tracking)
                 job.current_milestone = milestone_index + 1;
+                job.milestone_start_time = timestamp::now_seconds(); // Set start time for next milestone
             } else if (action == ACTION_ACCEPT) {
                 // ACCEPT - Poster accepts milestone
                 let roles = did_registry::get_role_types_by_commitment(user_commitment);
@@ -378,7 +382,7 @@ module did_addr_profile::escrow {
                 assert!(current_milestone < vector::length(&job.milestone_durations), EINVALID_MILESTONE);
                 
                 let milestone_duration = *vector::borrow(&job.milestone_durations, current_milestone);
-                let milestone_deadline = job.application_deadline + milestone_duration;
+                let milestone_deadline = job.milestone_start_time + milestone_duration;
                 assert!(timestamp::now_seconds() > milestone_deadline, 35); // EMILESTONE_NOT_EXPIRED
                 
                 // Ban the current worker
@@ -398,6 +402,7 @@ module did_addr_profile::escrow {
                 // Reset job to allow new applications
                 job.worker_commitment = option::none();
                 job.approved = false;
+                job.milestone_start_time = 0; // Reset milestone start time
                 // Keep job.active = true to allow new applications
             }
         };
@@ -460,7 +465,7 @@ module did_addr_profile::escrow {
         assert!(milestone_index < vector::length(&job.milestone_durations), EINVALID_MILESTONE);
         
         let milestone_duration = *vector::borrow(&job.milestone_durations, milestone_index);
-        job.application_deadline + milestone_duration
+        job.milestone_start_time + milestone_duration
     }
 
     #[view]
@@ -472,7 +477,7 @@ module did_addr_profile::escrow {
         assert!(milestone_index < vector::length(&job.milestone_durations), EINVALID_MILESTONE);
         
         let milestone_duration = *vector::borrow(&job.milestone_durations, milestone_index);
-        let milestone_deadline = job.application_deadline + milestone_duration;
+        let milestone_deadline = job.milestone_start_time + milestone_duration;
         
         timestamp::now_seconds() > milestone_deadline
     }

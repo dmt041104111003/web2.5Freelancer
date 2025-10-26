@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import AuthSessionProvider from "../components/providers/SessionProvider";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </div>
               <div className="relative min-h-screen">{children}</div>
               <Toaster />
+              <SonnerToaster position="top-right" richColors />
           </WalletProvider>
         </AuthSessionProvider>
       </body>

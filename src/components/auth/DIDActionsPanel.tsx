@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useWallet } from '@/contexts/WalletContext';
 const ROLES = { FREELANCER: 1, POSTER: 2 } as const;
@@ -263,65 +262,101 @@ export default function DIDActionsPanel() {
   };
 
   return (
-    <Card variant="outlined" className="space-y-4 mt-6">
+    <Card variant="outlined" className="space-y-4 mt-6 bg-white">
       <div className="text-lg font-bold text-blue-800">Danh tính (DID)</div>
       
       {verificationStatus && (
-        <div className="p-4 border-2 bg-blue-800 text-black border-blue-800 text-sm font-bold">
+        <div className="p-4 border-2 bg-blue-50 text-blue-800 border-blue-200 text-sm font-bold rounded-md">
           {verificationStatus}
         </div>
       )}
       
       <div className="space-y-2">
           <div className="flex flex-wrap gap-2 mt-2">
-            <Button size="sm" variant="outline" onClick={handleCreateProfile} disabled={isLoading || isVerified === true}>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleCreateProfile} 
+              disabled={isLoading || isVerified === true}
+              className="border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+            >
               {isVerified === true ? 'Đã verify' : 'Tạo DID + Hồ sơ'}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleUpdateProfile} disabled={isLoading || isVerified === false}>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleUpdateProfile} 
+              disabled={isLoading || isVerified === false}
+              className="border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+            >
               Cập nhật hồ sơ
             </Button>
-            <Button size="sm" variant="outline" onClick={handleBurnDid} disabled={isLoading || isVerified === false}>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleBurnDid} 
+              disabled={isLoading || isVerified === false}
+              className="border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-50"
+            >
               Hủy DID
             </Button>
           </div>
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof TABS[keyof typeof TABS])}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value={TABS.FREELANCER}>
+          <div className="w-full">
+            <div className="flex border-b-2 border-blue-800 bg-gray-100">
+              <button
+                onClick={() => setActiveTab(TABS.FREELANCER)}
+                className={`px-6 py-3 font-bold border-b-2 flex-1 ${
+                  activeTab === TABS.FREELANCER
+                    ? 'text-blue-800 border-blue-800 bg-white' 
+                    : 'text-gray-700 border-transparent hover:text-blue-800'
+                }`}
+              >
                 Freelancer Profile
-              </TabsTrigger>
-              <TabsTrigger value={TABS.POSTER}>
+              </button>
+              <button
+                onClick={() => setActiveTab(TABS.POSTER)}
+                className={`px-6 py-3 font-bold border-b-2 flex-1 ${
+                  activeTab === TABS.POSTER
+                    ? 'text-blue-800 border-blue-800 bg-white' 
+                    : 'text-gray-700 border-transparent hover:text-blue-800'
+                }`}
+              >
                 Poster Profile
-              </TabsTrigger>
-            </TabsList>
+              </button>
+            </div>
 
-            <TabsContent value={TABS.FREELANCER} className="space-y-4">
-              <Switch
-                checked={isRoleEnabled(ROLES.FREELANCER)}
-                onChange={(checked) => toggleRole(ROLES.FREELANCER, checked)}
-                label="Enable Freelancer Role"
-                disabled={isLoading}
-              />
-              {isRoleEnabled(ROLES.FREELANCER) && (
-                <div className="space-y-4">
-                  <FormField label="Kỹ năng (skills)" value={freelancerData.skills} onChange={(value) => setFreelancerData(prev => ({ ...prev, skills: value }))} placeholder="React, Rust, Move, ..." disabled={isLoading} type="input" />
-                  <FormField label="Giới thiệu (about)" value={freelancerData.about} onChange={(value) => setFreelancerData(prev => ({ ...prev, about: value }))} placeholder="Mô tả về kỹ năng và kinh nghiệm của bạn" disabled={isLoading} type="textarea" />
-                  <FormField label="Kinh nghiệm (experience)" value={freelancerData.experience} onChange={(value) => setFreelancerData(prev => ({ ...prev, experience: value }))} placeholder="3 năm Frontend, 1 năm Move development, ..." disabled={isLoading} type="textarea" />
-                </div>
-              )}
-            </TabsContent>
+            {activeTab === TABS.FREELANCER && (
+              <div className="space-y-4 bg-white p-4 rounded-md">
+                <Switch
+                  checked={isRoleEnabled(ROLES.FREELANCER)}
+                  onChange={(checked) => toggleRole(ROLES.FREELANCER, checked)}
+                  label="Enable Freelancer Role"
+                  disabled={isLoading}
+                />
+                {isRoleEnabled(ROLES.FREELANCER) && (
+                  <div className="space-y-4">
+                    <FormField label="Kỹ năng (skills)" value={freelancerData.skills} onChange={(value) => setFreelancerData(prev => ({ ...prev, skills: value }))} placeholder="React, Rust, Move, ..." disabled={isLoading} type="input" />
+                    <FormField label="Giới thiệu (about)" value={freelancerData.about} onChange={(value) => setFreelancerData(prev => ({ ...prev, about: value }))} placeholder="Mô tả về kỹ năng và kinh nghiệm của bạn" disabled={isLoading} type="textarea" />
+                    <FormField label="Kinh nghiệm (experience)" value={freelancerData.experience} onChange={(value) => setFreelancerData(prev => ({ ...prev, experience: value }))} placeholder="3 năm Frontend, 1 năm Move development, ..." disabled={isLoading} type="textarea" />
+                  </div>
+                )}
+              </div>
+            )}
 
-            <TabsContent value={TABS.POSTER} className="space-y-4">
-              <Switch
-                checked={isRoleEnabled(ROLES.POSTER)}
-                onChange={(checked) => toggleRole(ROLES.POSTER, checked)}
-                label="Enable Poster Role"
-                disabled={isLoading}
-              />
-              {isRoleEnabled(ROLES.POSTER) && (
-                <FormField label="Giới thiệu (about)" value={posterData.about} onChange={(value) => setPosterData(prev => ({ ...prev, about: value }))} placeholder="Mô tả về công ty/dự án và loại công việc bạn đang tìm kiếm" disabled={isLoading} type="textarea" />
-              )}
-            </TabsContent>
-          </Tabs>
+            {activeTab === TABS.POSTER && (
+              <div className="space-y-4 bg-white p-4 rounded-md">
+                <Switch
+                  checked={isRoleEnabled(ROLES.POSTER)}
+                  onChange={(checked) => toggleRole(ROLES.POSTER, checked)}
+                  label="Enable Poster Role"
+                  disabled={isLoading}
+                />
+                {isRoleEnabled(ROLES.POSTER) && (
+                  <FormField label="Giới thiệu (about)" value={posterData.about} onChange={(value) => setPosterData(prev => ({ ...prev, about: value }))} placeholder="Mô tả về công ty/dự án và loại công việc bạn đang tìm kiếm" disabled={isLoading} type="textarea" />
+                )}
+              </div>
+            )}
+          </div>
         </div>
     </Card>
   );

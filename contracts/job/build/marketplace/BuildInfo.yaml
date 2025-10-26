@@ -8,14 +8,14 @@ compiled_package_info:
     aptos_std: "0000000000000000000000000000000000000000000000000000000000000001"
     aptos_token: "0000000000000000000000000000000000000000000000000000000000000003"
     core_resources: 000000000000000000000000000000000000000000000000000000000a550c18
-    did_addr_profile: ebad4f97504c15dfbc9fe1a2a393bfcc99e57eb8ef1c47d8d9ff93fd373f2ffa
+    did_addr_profile: e7b20cd398ea0b505ba19987b89cf4d0dbf456e82bee5a87ba0ee3f05e635f55
     std: "0000000000000000000000000000000000000000000000000000000000000001"
     vm: "0000000000000000000000000000000000000000000000000000000000000000"
     vm_reserved: "0000000000000000000000000000000000000000000000000000000000000000"
-  source_digest: B91D5656D42E7A4E35E6E76DDD908FA885C443A30E1026E7E8C52FC57D42C21B
+  source_digest: 513A7A10DB0EDB55164030D5831AA1AD99BA42FC8294254A4959F02A0AA32756
   build_flags:
-    dev_mode: false
-    test_mode: false
+    dev_mode: true
+    test_mode: true
     override_std: ~
     generate_docs: false
     generate_abis: false
@@ -23,8 +23,7 @@ compiled_package_info:
     full_model_generation: true
     install_dir: ~
     force_recompilation: false
-    additional_named_addresses:
-      did_addr_profile: ebad4f97504c15dfbc9fe1a2a393bfcc99e57eb8ef1c47d8d9ff93fd373f2ffa
+    additional_named_addresses: {}
     fetch_deps_only: false
     skip_fetch_latest_git_deps: false
     compiler_config:

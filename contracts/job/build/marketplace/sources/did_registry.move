@@ -24,12 +24,14 @@ module did_addr_profile::did_registry {
         did_documents: Table<String, DIDDocument>,
         commitment_to_did: Table<vector<u8>, String>,
         commitment_to_address: Table<vector<u8>, address>,
+        all_commitments: vector<vector<u8>>,
     }
     fun init_module(account: &signer) {
         move_to(account, DIDRegistry {
             did_documents: table::new(),
             commitment_to_did: table::new(),
             commitment_to_address: table::new(),
+            all_commitments: vector::empty<vector<u8>>(),
         });
     }
 
@@ -65,6 +67,7 @@ module did_addr_profile::did_registry {
         table::add(&mut registry.did_documents, did, did_doc);
         table::add(&mut registry.commitment_to_did, did_commitment, did);
         table::add(&mut registry.commitment_to_address, did_commitment, user_addr);
+        vector::push_back(&mut registry.all_commitments, did_commitment);
         did_addr_profile::zkp_lookup::set_did_commitment_internal(did, did_commitment);
         did_addr_profile::zkp_lookup::add_zkp_proof_internal(did, table_commitment_hex, t_I_commitment, a_commitment);
     }
@@ -163,6 +166,17 @@ module did_addr_profile::did_registry {
         let registry = borrow_global<DIDRegistry>(@did_addr_profile);
         assert!(table::contains(&registry.commitment_to_address, commitment), ERR_DID_NOT_FOUND);
         *table::borrow(&registry.commitment_to_address, commitment)
+    }
+
+    #[view]
+    public fun get_all_commitments(): vector<vector<u8>> acquires DIDRegistry {
+        let registry = borrow_global<DIDRegistry>(@did_addr_profile);
+        registry.all_commitments
+    }
+
+    #[view]
+    public fun test_function(): u64 {
+        42
     }
 
 

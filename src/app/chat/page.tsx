@@ -1,12 +1,12 @@
 'use client';
 
 import { ChatLayout } from '@/components/chat/ChatLayout';
-import { ChatContent } from '@/components/chat/ChatContent';
+import { ChatContentWithAuth } from '@/components/chat/ChatContentWithAuth';
 
 export default function ChatPage() {
   return (
     <ChatLayout>
-      <ChatContent />
+      <ChatContentWithAuth />
     </ChatLayout>
   );
 }

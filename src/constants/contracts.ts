@@ -3,7 +3,7 @@ export const APTOS_NODE_URL = "https://fullnode.testnet.aptoslabs.com";
 export const APTOS_FAUCET_URL =  "https://faucet.testnet.aptoslabs.com";
 
 
-export const CONTRACT_ADDRESS ="0xebad4f97504c15dfbc9fe1a2a393bfcc99e57eb8ef1c47d8d9ff93fd373f2ffa";
+export const CONTRACT_ADDRESS ="0xe7b20cd398ea0b505ba19987b89cf4d0dbf456e82bee5a87ba0ee3f05e635f55";
 
 export const DID = {
   BURN_DID: `${CONTRACT_ADDRESS}::did_registry::burn_did`,
@@ -13,6 +13,7 @@ export const DID = {
   GET_ROLE_TYPES_BY_COMMITMENT: `${CONTRACT_ADDRESS}::did_registry::get_role_types_by_commitment`,
   GET_PROFILE_DATA_BY_COMMITMENT: `${CONTRACT_ADDRESS}::did_registry::get_profile_data_by_commitment`,
   GET_ADDRESS_BY_COMMITMENT: `${CONTRACT_ADDRESS}::did_registry::get_address_by_commitment`,
+  GET_ALL_COMMITMENTS: `${CONTRACT_ADDRESS}::did_registry::get_all_commitments`,
 } as const;
 
 export const JOB = {
