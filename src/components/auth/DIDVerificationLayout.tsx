@@ -21,7 +21,7 @@ export default function DIDVerificationLayout({
 
   const BackToHome = () => (
     <Link href="/">
-      <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+      <Button variant="outline" size="sm" className="flex items-center gap-2">
         <ArrowLeft className="w-4 h-4" />
         Back to home
       </Button>
@@ -35,14 +35,14 @@ export default function DIDVerificationLayout({
           <div className="mb-6"><BackToHome /></div>
 
           <div className="text-center py-20">
-            <div className="space-y-4">
-              <Wallet className="w-16 h-16 mx-auto text-gray-400" />
-              <h2 className="text-2xl font-bold">Wallet connection required</h2>
-              <p className="text-muted-foreground">
+            <div className="space-y-6">
+              <Wallet className="w-16 h-16 mx-auto text-gray-600" />
+              <h2 className="text-3xl font-bold text-blue-800">Wallet connection required</h2>
+              <p className="text-lg text-gray-700">
                 Please connect your Petra wallet to continue DID verification
               </p>
-              <div className="flex justify-center space-x-4">
-                <Button onClick={connectWallet} disabled={isConnecting}>
+              <div className="flex justify-center gap-4">
+                <Button variant="primary" size="lg" onClick={connectWallet} disabled={isConnecting}>
                   {isConnecting ? 'Connecting...' : 'Connect Petra wallet'}
                 </Button>
                 <BackToHome />
@@ -60,9 +60,9 @@ export default function DIDVerificationLayout({
         <div className="mb-6"><BackToHome /></div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{title}</h1>
-          <p className="text-muted-foreground">{subtitle}</p>
-          <div className="mt-2 text-sm text-blue-600">Connected wallet: {account.slice(0, 6)}...{account.slice(-4)}</div>
+          <h1 className="text-3xl font-bold text-blue-800 mb-2">{title}</h1>
+          <p className="text-lg text-gray-700">{subtitle}</p>
+          <div className="mt-2 text-sm font-bold text-blue-800">Connected wallet: {account.slice(0, 6)}...{account.slice(-4)}</div>
         </div>
 
         {children}

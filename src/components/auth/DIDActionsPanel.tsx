@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useWallet } from '@/contexts/WalletContext';
-
 const ROLES = { FREELANCER: 1, POSTER: 2 } as const;
 const TABS = { FREELANCER: 'freelancer', POSTER: 'poster' } as const;
 const DEFAULT_TABLE_ID = 'default_table';
@@ -18,10 +17,10 @@ interface ProfileData {
 const FormField = ({ label, value, onChange, placeholder, disabled, type = 'input', rows = 3 }: {
   label: string; value: string; onChange: (value: string) => void; placeholder: string; disabled: boolean; type?: 'input' | 'textarea'; rows?: number;
 }) => {
-  const baseClasses = "w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50";
+  const baseClasses = "w-full px-3 py-2 border border-gray-400 bg-white text-sm disabled:opacity-50";
   return (
     <div>
-      <label className="block text-sm font-medium mb-2">{label}</label>
+      <label className="block text-sm font-bold text-gray-900 mb-2">{label}</label>
       {type === 'input' ? (
         <input className={baseClasses} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled} />
       ) : (
@@ -264,17 +263,11 @@ export default function DIDActionsPanel() {
   };
 
   return (
-    <Card variant="outlined" padding="md" className="space-y-4 mt-6">
-      <div className="text-sm font-medium">Danh tính (DID)</div>
+    <Card variant="outlined" className="space-y-4 mt-6">
+      <div className="text-lg font-bold text-blue-800">Danh tính (DID)</div>
       
       {verificationStatus && (
-        <div className={`p-3 rounded-lg text-sm font-medium ${
-          verificationStatus.includes('đã được verify') || verificationStatus.includes('thành công')
-            ? 'bg-green-50 text-green-800 border border-green-200'
-            : verificationStatus.includes('chưa được verify') || verificationStatus.includes('Lỗi')
-            ? 'bg-red-50 text-red-800 border border-red-200'
-            : 'bg-blue-50 text-blue-800 border border-blue-200'
-        }`}>
+        <div className="p-4 border-2 bg-blue-800 text-black border-blue-800 text-sm font-bold">
           {verificationStatus}
         </div>
       )}
@@ -304,7 +297,7 @@ export default function DIDActionsPanel() {
             <TabsContent value={TABS.FREELANCER} className="space-y-4">
               <Switch
                 checked={isRoleEnabled(ROLES.FREELANCER)}
-                onChange={(e) => toggleRole(ROLES.FREELANCER, e.target.checked)}
+                onChange={(checked) => toggleRole(ROLES.FREELANCER, checked)}
                 label="Enable Freelancer Role"
                 disabled={isLoading}
               />
@@ -320,7 +313,7 @@ export default function DIDActionsPanel() {
             <TabsContent value={TABS.POSTER} className="space-y-4">
               <Switch
                 checked={isRoleEnabled(ROLES.POSTER)}
-                onChange={(e) => toggleRole(ROLES.POSTER, e.target.checked)}
+                onChange={(checked) => toggleRole(ROLES.POSTER, checked)}
                 label="Enable Poster Role"
                 disabled={isLoading}
               />

@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { Container } from '@/components/ui/container';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Header } from '@/components/landing/header';
 import { Footer } from '@/components/landing/footer';
 import { useWallet } from '@/contexts/WalletContext';
-import { Wallet } from 'lucide-react';
 
 interface Milestone { amount: string; duration: string; unit: string; }
 interface Job { id: string; status: string; budget: number; worker_commitment?: string[]; approved: boolean; poster_commitment: string; }
@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [milestonesList, setMilestonesList] = useState<Milestone[]>([]);
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentMilestone, setCurrentMilestone] = useState<Milestone>({amount: '', duration: '', unit: 'ngày'});
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
   const getUserCommitment = async () => sha256Hex(account!);
   const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
@@ -261,29 +262,25 @@ export default function DashboardPage() {
 
   if (!account) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         <Header />
         <main className="flex-1 pt-20">
           <Container>
             <div className="max-w-2xl mx-auto text-center py-20">
               <div className="mb-8">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Wallet className="w-12 h-12 text-primary" />
-                </div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-text-primary mb-4">
+                <h1 className="text-4xl lg:text-5xl font-bold text-blue-800 mb-4">
                   Connect wallet to access Dashboard
                 </h1>
-                <p className="text-xl text-text-secondary mb-8">
+                <p className="text-xl text-gray-700 mb-8">
                   You need to connect Petra wallet to manage your jobs
                 </p>
               </div>
               <div className="space-y-4">
                 <Button size="lg" onClick={connectWallet} disabled={isConnecting} className="flex items-center gap-2 mx-auto">
-                  <Wallet className="w-5 h-5" />
                   {isConnecting ? 'Connecting...' : 'Connect Petra Wallet'}
                 </Button>
-                <div className="text-sm text-muted-foreground">
-                  Or <Link href="/" className="text-primary hover:underline">go back to home</Link>
+                <div className="text-sm text-gray-600">
+                  Or <Link href="/" className="text-blue-800 hover:underline">go back to home</Link>
                 </div>
               </div>
             </div>
@@ -295,369 +292,399 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
       
       <main className="flex-1 pt-20">
         <Container>
-          <div className="space-y-6">
-            {/* Tabs */}
-            <div className="max-w-4xl mx-auto">
-              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-                {(['post', 'manage', 'applicants'] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                      activeTab === tab
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    {tab === 'post' ? 'Đăng Dự Án' : tab === 'manage' ? 'Quản Lý Dự Án' : 'Ứng Viên'}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-blue-800 mb-2">Dashboard</h1>
+            <p className="text-lg text-gray-700">Quản lý dự án và ứng viên của bạn</p>
+          </div>
 
-            {activeTab === 'post' && (
-            <div className="max-w-2xl mx-auto">
-              <Card className="p-8">
-                <div className="text-center mb-8">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Đăng Dự Án</h1>
-                  <p className="text-gray-600">Tạo dự án mới và tìm freelancer phù hợp</p>
-                  
-                  {profileStatus && (
-                    <div className={`p-3 rounded-lg text-sm font-medium ${
-                      profileStatus.includes('đã được verify') 
-                        ? 'bg-green-50 text-green-800 border border-green-200'
-                        : profileStatus.includes('chưa được verify') || profileStatus.includes('không có role')
-                        ? 'bg-red-50 text-red-800 border border-red-200'
-                        : 'bg-blue-50 text-blue-800 border border-blue-200'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <span>{profileStatus}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+          <Tabs className="w-full">
+            <TabsList 
+              className="flex w-full mb-6"
+              activeTab={activeTab}
+              setActiveTab={(value) => setActiveTab(value as TabType)}
+            >
+              <TabsTrigger value="post">Đăng Dự Án</TabsTrigger>
+              <TabsTrigger value="manage">Quản Lý Dự Án</TabsTrigger>
+              <TabsTrigger value="applicants">Ứng Viên</TabsTrigger>
+            </TabsList>
 
-                <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); createJob(); }}>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tiêu đề dự án *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={jobTitle}
-                      onChange={(e) => setJobTitle(e.target.value)}
-                      placeholder="Ví dụ: Phát triển smart contract"
-                      disabled={!canPostJobs}
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
-                      }`}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mô tả dự án *
-                    </label>
-                    <textarea
-                      required
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder="Mô tả chi tiết về dự án, yêu cầu và mục tiêu..."
-                      rows={4}
-                      disabled={!canPostJobs}
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
-                        !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
-                      }`}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kỹ năng yêu cầu
-                    </label>
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        type="text"
-                        value={currentSkill}
-                        onChange={(e) => setCurrentSkill(e.target.value)}
-                        placeholder="Thêm kỹ năng..."
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                        disabled={!canPostJobs}
-                        className={`flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
-                        }`}
-                      />
-                      <Button type="button" onClick={addSkill} variant="outline" disabled={!canPostJobs}>
-                        +
-                      </Button>
-                    </div>
-                    {skillsList.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {skillsList.map((skill, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                          >
-                            {skill}
-                            <button
-                              type="button"
-                              onClick={() => removeSkill(index)}
-                              className="text-blue-600 hover:text-red-600"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
+            <TabsContent value="post" className="space-y-6">
+              <div className="max-w-2xl mx-auto">
+                <Card variant="outlined" className="p-8">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-blue-800 mb-2">Đăng Dự Án</h2>
+                    <p className="text-gray-700">Tạo dự án mới và tìm freelancer phù hợp</p>
+                    
+                    {profileStatus && (
+                      <div className="p-4 border-2 bg-blue-800 text-black border-blue-800 text-sm font-bold mt-4">
+                        {profileStatus}
                       </div>
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Thời hạn nộp đơn
-                    </label>
-                    <div className="flex gap-2">
+                  <form className="space-y-6" onSubmit={(e) => { 
+                    e.preventDefault(); 
+                    console.log('Form submitted!', { jobTitle, jobDescription, milestonesList });
+                    setValidationErrors({});
+                    
+                    const errors: {[key: string]: string} = {};
+                    
+                    if (!jobTitle.trim()) {
+                      errors.jobTitle = 'Tiêu đề dự án không được để trống!';
+                    }
+                    if (!jobDescription.trim()) {
+                      errors.jobDescription = 'Mô tả dự án không được để trống!';
+                    }
+                    if (milestonesList.length === 0) {
+                      errors.milestones = 'Vui lòng thêm ít nhất một cột mốc dự án!';
+                    }
+                    
+                    console.log('Validation errors:', errors);
+                    
+                    if (Object.keys(errors).length > 0) {
+                      setValidationErrors(errors);
+                      setJobResult('Vui lòng kiểm tra lại thông tin!');
+                      return;
+                    }
+                    
+                    createJob(); 
+                  }}>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">
+                        Tiêu đề dự án *
+                      </label>
                       <input
-                        type="number"
-                        value={jobDuration}
-                        onChange={(e) => setJobDuration(e.target.value)}
-                        placeholder="7"
+                        type="text"
+                        required
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        placeholder="Ví dụ: Phát triển smart contract"
                         disabled={!canPostJobs}
-                        className={`w-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        className={`w-full px-4 py-3 border-2 ${
+                          validationErrors.jobTitle 
+                            ? 'border-red-500 bg-red-50' 
+                            : 'border-gray-400'
+                        } ${
                           !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
                         }`}
                       />
-                      <select 
+                      {validationErrors.jobTitle && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.jobTitle}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">
+                        Mô tả dự án *
+                      </label>
+                      <textarea
+                        required
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        placeholder="Mô tả chi tiết về dự án, yêu cầu và mục tiêu..."
+                        rows={4}
                         disabled={!canPostJobs}
-                        title="Chọn đơn vị thời gian"
-                        className={`px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        className={`w-full px-4 py-3 border-2 resize-none ${
+                          validationErrors.jobDescription 
+                            ? 'border-red-500 bg-red-50' 
+                            : 'border-gray-400'
+                        } ${
                           !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
                         }`}
-                      >
-                        <option>ngày</option>
-                        <option>tuần</option>
-                        <option>tháng</option>
-                      </select>
+                      />
+                      {validationErrors.jobDescription && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.jobDescription}</p>
+                      )}
                     </div>
-                  </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Cột mốc dự án *
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">
+                        Kỹ năng yêu cầu
                       </label>
-                      <div className="text-sm font-semibold text-blue-600">
-                        Tổng: {calculateTotalBudget().toFixed(3)} APT
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mb-3">
                         <input
-                          type="number"
-                          step="0.001"
-                          min="0.001"
-                          value={currentMilestone.amount}
-                          onChange={(e) => setCurrentMilestone({...currentMilestone, amount: e.target.value})}
-                          placeholder="Số tiền (APT)"
+                          type="text"
+                          value={currentSkill}
+                          onChange={(e) => setCurrentSkill(e.target.value)}
+                          placeholder="Thêm kỹ năng..."
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                           disabled={!canPostJobs}
-                          className={`flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          className={`flex-1 px-4 py-3 border border-gray-400 ${
                             !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
                           }`}
                         />
-                        <input
-                          type="number"
-                          value={currentMilestone.duration}
-                          onChange={(e) => setCurrentMilestone({...currentMilestone, duration: e.target.value})}
-                          placeholder="Thời gian"
-                          disabled={!canPostJobs}
-                          className={`w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
-                          }`}
-                        />
-                        <select
-                          value={currentMilestone.unit}
-                          onChange={(e) => setCurrentMilestone({...currentMilestone, unit: e.target.value})}
-                          disabled={!canPostJobs}
-                          title="Chọn đơn vị thời gian cho milestone"
-                          className={`px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
-                          }`}
-                        >
-                          <option value="giây">giây</option>
-                          <option value="phút">phút</option>
-                          <option value="giờ">giờ</option>
-                          <option value="ngày">ngày</option>
-                          <option value="tuần">tuần</option>
-                          <option value="tháng">tháng</option>
-                        </select>
+                        <Button type="button" onClick={addSkill} variant="outline" disabled={!canPostJobs}>
+                          +
+                        </Button>
                       </div>
-                      <Button type="button" onClick={addMilestone} variant="outline" className="w-full" disabled={!canPostJobs}>
-                        + Thêm cột mốc
-                      </Button>
-                      {milestonesList.length > 0 && (
-                        <div className="space-y-2">
-                          {milestonesList.map((milestone, index) => (
-                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <span className="text-sm text-gray-700">
-                                {milestone.amount} APT - {milestone.duration} {milestone.unit}
-                              </span>
+                      {skillsList.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {skillsList.map((skill, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center gap-2 px-3 py-1 bg-blue-800 text-black text-sm"
+                            >
+                              {skill}
                               <button
                                 type="button"
-                                onClick={() => removeMilestone(index)}
-                                className="text-red-600 hover:text-red-800"
+                                onClick={() => removeSkill(index)}
+                                className="text-black hover:text-red-300"
                               >
                                 ×
                               </button>
-                            </div>
+                            </span>
                           ))}
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {milestonesList.length > 0 && (
-                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-700">Tổng ngân sách:</span>
-                        <span className="text-lg font-bold text-blue-600">{calculateTotalBudget().toFixed(3)} APT</span>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">
+                        Thời hạn nộp đơn
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={jobDuration}
+                          onChange={(e) => setJobDuration(e.target.value)}
+                          placeholder="7"
+                          disabled={!canPostJobs}
+                          className={`w-24 px-4 py-3 border border-gray-400 ${
+                            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                          }`}
+                        />
+                        <select 
+                          disabled={!canPostJobs}
+                          title="Chọn đơn vị thời gian"
+                          className={`px-4 py-3 border border-gray-400 ${
+                            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                          }`}
+                        >
+                          <option>ngày</option>
+                          <option>tuần</option>
+                          <option>tháng</option>
+                        </select>
                       </div>
                     </div>
-                  )}
 
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
-                    disabled={milestonesList.length === 0 || !canPostJobs}
-                  >
-                    {!canPostJobs ? 'Cần verify profile và có role Poster' : 'Đăng dự án'}
-                  </Button>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-bold text-gray-900">
+                          Cột mốc dự án *
+                        </label>
+                        <span className="text-sm font-bold text-blue-800">
+                          Tổng: {calculateTotalBudget().toFixed(3)} APT
+                        </span>
+                      </div>
+                      {validationErrors.milestones && (
+                        <p className="text-red-500 text-sm">{validationErrors.milestones}</p>
+                      )}
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            step="0.001"
+                            min="0.001"
+                            value={currentMilestone.amount}
+                            onChange={(e) => setCurrentMilestone({...currentMilestone, amount: e.target.value})}
+                            placeholder="Số tiền (APT)"
+                            disabled={!canPostJobs}
+                            className={`flex-1 px-4 py-3 border border-gray-400 ${
+                              !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                            }`}
+                          />
+                          <input
+                            type="number"
+                            value={currentMilestone.duration}
+                            onChange={(e) => setCurrentMilestone({...currentMilestone, duration: e.target.value})}
+                            placeholder="Thời gian"
+                            disabled={!canPostJobs}
+                            className={`w-32 px-4 py-3 border border-gray-400 ${
+                              !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                            }`}
+                          />
+                          <select
+                            value={currentMilestone.unit}
+                            onChange={(e) => setCurrentMilestone({...currentMilestone, unit: e.target.value})}
+                            disabled={!canPostJobs}
+                            title="Chọn đơn vị thời gian cho milestone"
+                            className={`px-4 py-3 border border-gray-400 ${
+                              !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                            }`}
+                          >
+                            <option value="giây">giây</option>
+                            <option value="phút">phút</option>
+                            <option value="giờ">giờ</option>
+                            <option value="ngày">ngày</option>
+                            <option value="tuần">tuần</option>
+                            <option value="tháng">tháng</option>
+                          </select>
+                        </div>
+                        <Button type="button" onClick={addMilestone} variant="outline" className="w-full" disabled={!canPostJobs}>
+                          + Thêm cột mốc
+                        </Button>
+                        {milestonesList.length > 0 && (
+                          <div className="space-y-2">
+                            {milestonesList.map((milestone, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-100 border border-gray-400">
+                                <span className="text-sm text-gray-700">
+                                  {milestone.amount} APT - {milestone.duration} {milestone.unit}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeMilestone(index)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                  {jobResult && (
-                    <div className={`p-4 rounded-lg text-sm ${
-                      jobResult.includes('thành công') 
-                        ? 'bg-green-50 text-green-800 border border-green-200'
-                        : jobResult.includes('Lỗi') || jobResult.includes('không hợp lệ')
-                        ? 'bg-red-50 text-red-800 border border-red-200'
-                        : 'bg-blue-50 text-blue-800 border border-blue-200'
-                    }`}>
-                      {jobResult}
+                    {milestonesList.length > 0 && (
+                      <div className="p-4 bg-blue-800 text-black border-2 border-blue-800">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold">Tổng ngân sách:</span>
+                          <span className="text-lg font-bold">{calculateTotalBudget().toFixed(3)} APT</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      type="submit"
+                      size="lg"
+                      variant="outline"
+                      className="w-full !bg-white !text-black !border-2 !border-black py-4 text-lg font-bold hover:!bg-gray-100"
+                      disabled={!canPostJobs}
+                    >
+                      {!canPostJobs ? 'Cần verify profile và có role Poster' : 'Đăng dự án'}
+                    </Button>
+
+                    {jobResult && (
+                      <div className="p-4 border-2 bg-blue-800 text-black border-blue-800 text-sm font-bold">
+                        {jobResult}
+                      </div>
+                    )}
+                  </form>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="manage" className="space-y-6">
+              <div className="max-w-4xl mx-auto">
+                <Card variant="outlined" className="p-8">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-blue-800 mb-2">Quản Lý Dự Án</h2>
+                    <p className="text-gray-700">Theo dõi và quản lý các dự án của bạn</p>
+                  </div>
+
+                  {loadingJobs ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-800"></div>
+                      <p className="text-gray-700 text-lg mt-4">Đang tải dự án...</p>
+                    </div>
+                  ) : myJobs.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">Bạn chưa có dự án nào</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {myJobs.map((job) => (
+                        <div key={job.id} className="border border-gray-400 bg-gray-50 p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold text-blue-800">Job #{job.id}</h3>
+                              <p className="text-sm text-gray-700">
+                                Status: {job.status} | Worker: {job.worker_commitment ? 'Assigned' : 'None'} | Approved: {job.approved ? 'Yes' : 'No'}
+                              </p>
+                              <p className="text-sm text-gray-700">Budget: {(job.budget || 0).toFixed(2)} APT</p>
+                            </div>
+                            <div className="flex gap-2">
+                              {job.approved ? (
+                                <Button
+                                  onClick={() => claimStake(job.id.toString())}
+                                  disabled={claimingJob === job.id.toString()}
+                                  variant="outline"
+                                  size="sm"
+                                  className="bg-white text-black border-2 border-black hover:bg-gray-100"
+                                >
+                                  {claimingJob === job.id.toString() ? 'Claiming...' : 'Claim Stake'}
+                                </Button>
+                              ) : (
+                                <span className="px-4 py-2 bg-gray-400 text-black cursor-not-allowed">
+                                  Waiting for Approval
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
-                </form>
-              </Card>
-            </div>
-            )}
+                </Card>
+              </div>
+            </TabsContent>
 
-            {activeTab === 'manage' && (
-            <div className="max-w-4xl mx-auto">
-              <Card className="p-8">
-                <div className="text-center mb-8">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản Lý Dự Án</h1>
-                  <p className="text-gray-600">Theo dõi và quản lý các dự án của bạn</p>
-                </div>
+            <TabsContent value="applicants" className="space-y-6">
+              <div className="max-w-4xl mx-auto">
+                <Card variant="outlined" className="p-8">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-blue-800 mb-2">Ứng Viên</h2>
+                    <p className="text-gray-700">Duyệt và phê duyệt ứng viên cho các dự án của bạn</p>
+                  </div>
 
-                {loadingJobs ? (
-                  <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <p className="text-text-secondary text-lg mt-4">Đang tải dự án...</p>
-                  </div>
-                ) : myJobs.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Bạn chưa có dự án nào</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {myJobs.map((job) => (
-                      <div key={job.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900">Job #{job.id}</h3>
-                            <p className="text-sm text-gray-600">
-                              Status: {job.status} | Worker: {job.worker_commitment ? 'Assigned' : 'None'} | Approved: {job.approved ? 'Yes' : 'No'}
-                            </p>
-                            <p className="text-sm text-gray-600">Budget: {(job.budget || 0).toFixed(2)} APT</p>
-                          </div>
-                          <div className="flex gap-2">
-                            {job.approved ? (
-                              <button
-                                onClick={() => claimStake(job.id.toString())}
-                                disabled={claimingJob === job.id.toString()}
-                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  {loadingApplicants ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-800"></div>
+                      <p className="text-gray-700 text-lg mt-4">Đang tải ứng viên...</p>
+                    </div>
+                  ) : applicants.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">Không có ứng viên nào đang chờ duyệt</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {applicants.map((job) => (
+                        <div key={job.id} className="border border-gray-400 bg-gray-50 p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold text-blue-800">Job #{job.id}</h3>
+                              <p className="text-sm text-gray-700">
+                                Status: {job.status} | Worker: {job.worker_commitment ? 'Assigned' : 'None'} | Approved: {job.approved ? 'Yes' : 'No'}
+                              </p>
+                              <p className="text-sm text-gray-700">Budget: {(job.budget || 0).toFixed(2)} APT</p>
+                              <p className="text-sm text-gray-700">
+                                Worker Commitment: {job.worker_commitment ? job.worker_commitment[0]?.slice(0, 20) + '...' : 'None'}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => approveWorker(job.id.toString())}
+                                disabled={approvingJob === job.id.toString()}
+                                variant="outline"
+                                size="sm"
+                                className="bg-white text-black border-2 border-black hover:bg-gray-100"
                               >
-                                {claimingJob === job.id.toString() ? 'Claiming...' : 'Claim Stake'}
-                              </button>
-                            ) : (
-                              <span className="px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed">
-                                Waiting for Approval
-                              </span>
-                            )}
+                                {approvingJob === job.id.toString() ? 'Approving...' : 'Approve Worker'}
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            </div>
-            )}
-
-            {activeTab === 'applicants' && (
-            <div className="max-w-4xl mx-auto">
-              <Card className="p-8">
-                <div className="text-center mb-8">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Ứng Viên</h1>
-                  <p className="text-gray-600">Duyệt và phê duyệt ứng viên cho các dự án của bạn</p>
-                </div>
-
-                {loadingApplicants ? (
-                  <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <p className="text-text-secondary text-lg mt-4">Đang tải ứng viên...</p>
-                  </div>
-                ) : applicants.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Không có ứng viên nào đang chờ duyệt</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {applicants.map((job) => (
-                      <div key={job.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900">Job #{job.id}</h3>
-                            <p className="text-sm text-gray-600">
-                              Status: {job.status} | Worker: {job.worker_commitment ? 'Assigned' : 'None'} | Approved: {job.approved ? 'Yes' : 'No'}
-                            </p>
-                            <p className="text-sm text-gray-600">Budget: {(job.budget || 0).toFixed(2)} APT</p>
-                            <p className="text-sm text-gray-600">
-                              Worker Commitment: {job.worker_commitment ? job.worker_commitment[0]?.slice(0, 20) + '...' : 'None'}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => approveWorker(job.id.toString())}
-                              disabled={approvingJob === job.id.toString()}
-                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {approvingJob === job.id.toString() ? 'Approving...' : 'Approve Worker'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            </div>
-            )}
-          </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </Container>
       </main>
 

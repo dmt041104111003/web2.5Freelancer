@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import { Container } from '@/components/ui/container';
+import { Card } from '@/components/ui/card';
 import { TRUST_STATS } from '@/constants/landing';
 import CountUp from 'react-countup';
 
@@ -42,7 +43,7 @@ export function TrustNumbers() {
         
         <div className="grid md:grid-cols-3 gap-8">
           {TRUST_STATS.map((stat, index) => (
-            <div key={index} className="border border-gray-400 bg-gray-50 p-6 text-center">
+            <Card key={index} variant="default" className="text-center">
               <div className="text-4xl font-bold text-blue-800 mb-3">
                 {isVisible ? (
                   <CountUp
@@ -58,7 +59,7 @@ export function TrustNumbers() {
               <div className="text-lg font-bold text-gray-900">
                 {stat.label}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
         

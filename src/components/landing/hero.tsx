@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Container } from '@/components/ui/container';
+import { Button } from '@/components/ui/button';
 import { HERO_DATA } from '@/constants/landing';
 
 export function Hero() {
@@ -23,12 +24,20 @@ export function Hero() {
             </p>
             
             <div className="space-y-4 pt-4">
-              <button className="block w-full max-w-xs px-8 py-4 bg-blue-600 text-white text-center font-bold">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                className="block w-full max-w-xs bg-blue-600"
+              >
                 {HERO_DATA.primaryCta}
-              </button>
-              <button className="block w-full max-w-xs px-8 py-4 bg-gray-100 text-blue-900 border-2 border-blue-800 text-center font-bold">
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="lg" 
+                className="block w-full max-w-xs bg-gray-100 text-blue-900"
+              >
                 {HERO_DATA.secondaryCta}
-              </button>
+              </Button>
             </div>
           </div>
 

@@ -30,10 +30,10 @@ export function PersonaSwitcher() {
               {PERSONAS.poster.benefits.map((benefit, index) => (
                 <div key={index} className="border border-gray-300 bg-white p-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-blue-800 text-white flex items-center justify-center font-bold text-xs">
+                    <div className="w-5 h-5 bg-blue-800 text-black flex items-center justify-center font-bold text-xs">
                       {index + 1}
                     </div>
-                    <p className="text-gray-700 text-sm">
+                    <p className="text-gray-800 text-sm font-medium">
                       {benefit}
                     </p>
                   </div>
@@ -42,7 +42,7 @@ export function PersonaSwitcher() {
             </div>
             
             <div className="text-center mt-6">
-              <button className="px-6 py-3 bg-blue-800 text-white font-bold">
+              <button className="px-6 py-3 bg-white text-black font-bold border-2 border-black hover:bg-gray-100">
                 {PERSONAS.poster.cta}
               </button>
             </div>
@@ -58,10 +58,10 @@ export function PersonaSwitcher() {
               {PERSONAS.freelancer.benefits.map((benefit, index) => (
                 <div key={index} className="border border-gray-300 bg-white p-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-blue-800 text-white flex items-center justify-center font-bold text-xs">
+                    <div className="w-5 h-5 bg-blue-800 text-black flex items-center justify-center font-bold text-xs">
                       {index + 1}
                     </div>
-                    <p className="text-gray-700 text-sm">
+                    <p className="text-gray-800 text-sm font-medium">
                       {benefit}
                     </p>
                   </div>
@@ -70,7 +70,7 @@ export function PersonaSwitcher() {
             </div>
             
             <div className="text-center mt-6">
-              <button className="px-6 py-3 bg-blue-800 text-white font-bold">
+              <button className="px-6 py-3 bg-white text-black font-bold border-2 border-black hover:bg-gray-100">
                 {PERSONAS.freelancer.cta}
               </button>
             </div>

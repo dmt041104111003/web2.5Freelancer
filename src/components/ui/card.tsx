@@ -1,34 +1,65 @@
+"use client";
+
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { CardProps } from '@/constants/ui';
 
-export function Card({ 
-  children, 
-  className,
-  variant = 'default',
-  padding = 'md',
-  hover = false
-}: CardProps) {
-  const variants = {
-    default: 'glass-card border border-border',
-    elevated: 'glass-card shadow-lg hover:shadow-xl border border-border',
-    outlined: 'glass-card border border-border'
-  };
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  variant?: 'default' | 'outlined';
+}
 
-  const paddings = {
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8'
+export function Card({ children, className = '', variant = 'default' }: CardProps) {
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'outlined':
+        return 'border border-gray-400 bg-white';
+      case 'default':
+      default:
+        return 'border border-gray-300 bg-gray-50';
+    }
   };
 
   return (
-    <div className={cn(
-      'rounded-xl transition-all duration-300',
-      variants[variant],
-      paddings[padding],
-      hover && 'hover:scale-105',
-      className
-    )}>
+    <div className={`p-6 ${getVariantStyles()} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+interface CardHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardHeader({ children, className = '' }: CardHeaderProps) {
+  return (
+    <div className={`mb-4 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+interface CardContentProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardContent({ children, className = '' }: CardContentProps) {
+  return (
+    <div className={className}>
+      {children}
+    </div>
+  );
+}
+
+interface CardFooterProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function CardFooter({ children, className = '' }: CardFooterProps) {
+  return (
+    <div className={`mt-4 ${className}`}>
       {children}
     </div>
   );

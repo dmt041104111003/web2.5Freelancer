@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { Container } from '@/components/ui/container';
+import { Card } from '@/components/ui/card';
 import { HOW_IT_WORKS_STEPS } from '@/constants/landing';
 
 export function HowItWorks() {
@@ -50,15 +51,13 @@ export function HowItWorks() {
           <h3 className="text-xl font-bold text-blue-800 mb-6 text-center">Quick Start Guide</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {HOW_IT_WORKS_STEPS.map((step, index) => (
-              <div key={step.id} className="border border-gray-400 bg-gray-50 p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-800 mb-3">
-                    {step.id}
-                  </div>
-                  <h4 className="font-bold text-gray-900 mb-2">{step.title}</h4>
-                  <p className="text-gray-700 text-sm">{step.description}</p>
+              <Card key={step.id} variant="default" className="text-center">
+                <div className="text-2xl font-bold text-blue-800 mb-3">
+                  {step.id}
                 </div>
-              </div>
+                <h4 className="font-bold text-gray-900 mb-2">{step.title}</h4>
+                <p className="text-gray-700 text-sm">{step.description}</p>
+              </Card>
             ))}
           </div>
         </div>

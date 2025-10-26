@@ -7,19 +7,19 @@ import { Footer } from '@/components/landing/footer';
 
 export default function ChatPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
       
       <main className="flex-1 pt-20">
         <Container>
           <div className="max-w-2xl mx-auto text-center py-20">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl lg:text-5xl font-bold text-blue-800 mb-4">
               💬 Chat
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-gray-700 mb-8">
               Tính năng chat đang được phát triển
             </p>
-            <p className="text-gray-500">
+            <p className="text-gray-600">
               Sẽ có sớm trong các phiên bản tiếp theo
             </p>
           </div>

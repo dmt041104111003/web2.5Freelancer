@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Container } from '@/components/ui/container';
+import { Button } from '@/components/ui/button';
 import { NAVIGATION } from '@/constants/landing';
 import { useWallet } from '@/contexts/WalletContext';
 import { toast } from 'sonner';
@@ -88,24 +89,27 @@ export function Header() {
 
           <div className="hidden md:flex items-center gap-4">
             {!account ? (
-              <button 
+              <Button 
                 onClick={connectWallet}
                 disabled={isConnecting}
-                className="px-4 py-2 bg-blue-800 text-white border border-blue-800 hover:bg-blue-900 disabled:opacity-50"
+                variant="primary"
+                size="sm"
               >
                 {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-              </button>
+              </Button>
             ) : (
               <div className="relative">
-                <button 
+                <Button 
                   onClick={() => setShowWalletMenu(!showWalletMenu)}
-                  className="px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700"
+                  variant="primary"
+                  size="sm"
+                  className="bg-green-600 border-green-600"
                 >
                   <span className="hidden sm:inline font-mono">
                     {account.slice(0, 6)}...{account.slice(-4)}
                   </span>
                   <span className="sm:hidden">Wallet</span>
-                </button>
+                </Button>
                 
                 {showWalletMenu && null}
               </div>

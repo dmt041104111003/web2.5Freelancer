@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Container } from '@/components/ui/container';
+import { Card } from '@/components/ui/card';
 import { FAQS } from '@/constants/landing';
 
 export function FAQ() {
@@ -27,7 +28,7 @@ export function FAQ() {
         <div className="max-w-3xl mx-auto">
           <div className="space-y-4">
             {FAQS.map((faq, index) => (
-              <div key={index} className="border border-gray-400 bg-white">
+              <Card key={index} variant="outlined">
                 <button
                   onClick={() => toggleFAQ(index)}
                   className="w-full px-6 py-4 text-left flex items-center justify-between bg-gray-50 border-b border-gray-300"
@@ -47,7 +48,7 @@ export function FAQ() {
                     </p>
                   </div>
                 )}
-              </div>
+              </Card>
             ))}
           </div>
         </div>

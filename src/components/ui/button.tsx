@@ -1,43 +1,52 @@
 "use client";
 
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { ButtonProps } from '@/constants/ui';
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
-    
-    const variants = {
-      primary: "bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary shadow-lg hover:shadow-xl",
-      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90 focus:ring-secondary shadow-lg hover:shadow-xl",
-      outline: "border border-primary bg-transparent text-primary hover:bg-primary/10 focus:ring-primary",
-      ghost: "bg-transparent text-text-primary hover:bg-background-secondary focus:ring-primary"
-    };
-    
-    const sizes = {
-      sm: "h-9 px-3 text-sm",
-      md: "h-11 px-6 text-base",
-      lg: "h-14 px-8 text-lg"
-    };
-    
-    return (
-      <button
-        className={cn(
-          baseStyles,
-          variants[variant],
-          sizes[size],
-          className
-        )}
-        ref={ref}
-        {...props}
-      >
-        {children}
-      </button>
-    );
-  }
-);
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  children: React.ReactNode;
+}
 
-Button.displayName = 'Button';
+export function Button({ 
+  variant = 'primary', 
+  size = 'md', 
+  className = '', 
+  children, 
+  ...props 
+}: ButtonProps) {
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'primary':
+        return 'bg-blue-800 text-white border border-blue-800';
+      case 'secondary':
+        return 'bg-gray-100 text-blue-800 border border-blue-800';
+      case 'outline':
+        return 'bg-white text-blue-800 border border-blue-800';
+      default:
+        return 'bg-blue-800 text-white border border-blue-800';
+    }
+  };
 
-export { Button };
+  const getSizeStyles = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-4 py-2 text-sm';
+      case 'md':
+        return 'px-6 py-3 text-base';
+      case 'lg':
+        return 'px-8 py-4 text-lg';
+      default:
+        return 'px-6 py-3 text-base';
+    }
+  };
+
+  return (
+    <button
+      className={`font-bold ${getVariantStyles()} ${getSizeStyles()} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
