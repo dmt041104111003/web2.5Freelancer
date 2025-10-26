@@ -8,12 +8,22 @@ export interface Message {
   sender: string;
   timestamp: number;
   senderId: string;
+  deleted?: boolean;
+  deletedAt?: number;
+  replyTo?: {
+    id: string;
+    text: string;
+    sender: string;
+    senderId: string;
+    timestamp: number;
+  } | null;
 }
 
 interface ChatContextType {
   messages: Message[];
-  sendMessage: (text: string, sender: string, senderId: string) => void;
+  sendMessage: (text: string, sender: string, senderId: string, replyTo?: any) => void;
   isLoading: boolean;
+  setRoomId: (roomId: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -34,12 +44,15 @@ interface ChatProviderProps {
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = 'general' }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentRoomId, setCurrentRoomId] = useState(roomId);
 
   // Fetch messages từ API
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`/api/chat/messages?roomId=${roomId}`);
+      console.log('Fetching messages for roomId:', currentRoomId);
+      const response = await fetch(`/api/chat/messages?roomId=${currentRoomId}`);
       const data = await response.json();
+      console.log('Messages response:', data);
       setMessages(data.messages || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -56,9 +69,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
     const interval = setInterval(fetchMessages, 2000);
     
     return () => clearInterval(interval);
-  }, [roomId]);
+  }, [currentRoomId]);
 
-  const sendMessage = async (text: string, sender: string, senderId: string) => {
+  const sendMessage = async (text: string, sender: string, senderId: string, replyTo?: any) => {
     if (!text.trim()) return;
 
     try {
@@ -68,10 +81,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          roomId,
+          roomId: currentRoomId,
           text: text.trim(),
           sender,
           senderId,
+          replyTo,
         }),
       });
 
@@ -84,10 +98,15 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
     }
   };
 
+  const setRoomId = (newRoomId: string) => {
+    setCurrentRoomId(newRoomId);
+  };
+
   const value: ChatContextType = {
     messages,
     sendMessage,
     isLoading,
+    setRoomId,
   };
 
   return (

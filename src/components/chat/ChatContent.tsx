@@ -30,22 +30,16 @@ const ChatContentInner: React.FC = () => {
   const [showCommitmentsList, setShowCommitmentsList] = useState(true);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const [replyingTo, setReplyingTo] = useState<any>(null);
-  const { messages, sendMessage, isLoading } = useChat();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const { messages, sendMessage, isLoading, setRoomId } = useChat();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
     
-    const isReplyingToSelf = replyingTo?.senderId === currentUser.id;
-    const replyPrefix = isReplyingToSelf 
-      ? `Reply chính mình: ${replyingTo.text}`
-      : `Reply ${replyingTo?.sender}: ${replyingTo?.text}`;
+    const messageText = message;
     
-    const messageText = replyingTo 
-      ? `${replyPrefix} | ${message}`
-      : message;
-    
-    await sendMessage(messageText, currentUser.name, currentUser.id);
+    await sendMessage(messageText, currentUser.name, currentUser.id, replyingTo);
     setMessage('');
     setReplyingTo(null);
   };
@@ -73,6 +67,44 @@ const ChatContentInner: React.FC = () => {
     } catch (error) {
       console.error('Error accepting room:', error);
       toast.error('Lỗi khi accept phòng');
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      // Sử dụng selectedRoom trực tiếp vì nó đã là roomId thực tế
+      const actualRoomId = selectedRoom || 'general';
+      
+      console.log('Deleting message:', { messageId, selectedRoom, actualRoomId });
+      console.log('Current rooms:', rooms);
+      console.log('Selected room details:', rooms.find(r => r.id === selectedRoom));
+      
+      const response = await fetch('/api/chat/messages', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId,
+          roomId: actualRoomId
+        })
+      });
+
+      console.log('Delete response status:', response.status);
+      const data = await response.json();
+      console.log('Delete response data:', data);
+      
+      if (data.success) {
+        setShowDeleteConfirm(null);
+        toast.success('Đã xóa tin nhắn');
+        // Trigger refresh by changing roomId temporarily
+        const currentRoomId = selectedRoom;
+        setRoomId('temp');
+        setTimeout(() => setRoomId(currentRoomId), 100);
+      } else {
+        toast.error(data.error || 'Lỗi khi xóa tin nhắn');
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast.error('Lỗi khi xóa tin nhắn');
     }
   };
 
@@ -270,6 +302,7 @@ const ChatContentInner: React.FC = () => {
                   
                   setRooms(prev => [...prev, newRoom]);
                   setSelectedRoom(newRoom.id);
+                  setRoomId(newRoom.id);
                 } else {
                   setCreateRoomError(roomData.error || 'Lỗi khi tạo phòng');
                   setIsCreatingRoom(false);
@@ -373,7 +406,10 @@ const ChatContentInner: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div 
                     className="flex-1 cursor-pointer"
-                    onClick={() => setSelectedRoom(room.id)}
+                        onClick={() => {
+                          setSelectedRoom(room.id);
+                          setRoomId(room.id);
+                        }}
                   >
                     <div className="flex items-center space-x-3">
                       <AvatarSVG 
@@ -614,6 +650,7 @@ const ChatContentInner: React.FC = () => {
             <div className="space-y-3">
               {messages.map((msg) => {
                 const isOwnMessage = currentUser.id === msg.senderId;
+                
                 return (
                   <div
                     key={msg.id}
@@ -621,18 +658,46 @@ const ChatContentInner: React.FC = () => {
                   >
                     <div className="flex items-end gap-2">
                       {isOwnMessage && (
-                        <button
-                          onClick={() => setReplyingTo(msg)}
-                          className="text-xs text-blue-400 hover:text-blue-300"
-                        >
-                          Reply
-                        </button>
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => setReplyingTo(msg)}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            Reply
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(msg.id)}
+                            className="text-xs text-red-400 hover:text-red-300"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       )}
                       <div className={`max-w-xs px-4 py-2 border ${
                         isOwnMessage 
                           ? 'bg-gray-800 text-white border-gray-800' 
                           : 'bg-gray-200 text-gray-800 border-gray-400'
                       }`}>
+                        {msg.replyTo && (
+                          <div className={`mb-2 p-2 border-l-4 ${
+                            isOwnMessage 
+                              ? 'bg-gray-700 border-gray-600' 
+                              : 'bg-gray-100 border-gray-400'
+                          }`}>
+                            <div className={`text-xs ${
+                              isOwnMessage ? 'text-gray-300' : 'text-gray-600'
+                            }`}>
+                              {msg.replyTo.senderId === currentUser.id 
+                                ? 'Replying to yourself' 
+                                : `Replying to ${msg.replyTo.sender}`}
+                            </div>
+                            <div className={`text-xs truncate ${
+                              isOwnMessage ? 'text-gray-400' : 'text-gray-700'
+                            }`}>
+                              {msg.replyTo.text}
+                            </div>
+                          </div>
+                        )}
                         {!isOwnMessage && (
                           <div className="text-xs font-bold text-gray-800 mb-1">
                             {msg.sender}:
@@ -752,13 +817,41 @@ const ChatContentInner: React.FC = () => {
                   </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Popup */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg border border-gray-400 w-80">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Xác nhận xóa tin nhắn</h3>
+            <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn xóa tin nhắn này? Hành động này không thể hoàn tác.</p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1"
+              >
+                HỦY
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleDeleteMessage(showDeleteConfirm)}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-black hover:text-white"
+              >
+                XÓA
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export const ChatContent: React.FC = () => {
   return (
-    <ChatProvider roomId="general">
+    <ChatProvider>
       <ChatContentInner />
     </ChatProvider>
   );

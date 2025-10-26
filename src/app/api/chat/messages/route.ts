@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, onValue, off, serverTimestamp, update } from 'firebase/database';
+import { getDatabase, ref, push, onValue, off, serverTimestamp, update, remove } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -53,11 +53,13 @@ export async function GET(request: NextRequest) {
 
     // Handle getting messages (original logic)
     const roomIdForMessages = roomId || 'general';
+    console.log('Fetching messages for roomId:', roomIdForMessages);
     return new Promise((resolve) => {
       const messagesRef = ref(database, `chats/${roomIdForMessages}/messages`);
       
       onValue(messagesRef, (snapshot) => {
         const data = snapshot.val();
+        console.log('Firebase data for room', roomIdForMessages, ':', data);
         let messages: any[] = [];
         
         if (data) {
@@ -67,11 +69,13 @@ export async function GET(request: NextRequest) {
             sender: message.sender,
             timestamp: message.timestamp,
             senderId: message.senderId,
+            replyTo: message.replyTo || null,
           }));
           
           messages.sort((a, b) => a.timestamp - b.timestamp);
         }
         
+        console.log('Processed messages:', messages);
         off(messagesRef, 'value');
         resolve(NextResponse.json({ messages }));
       });
@@ -89,6 +93,7 @@ export async function POST(request: NextRequest) {
       text, 
       sender, 
       senderId,
+      replyTo,
       // Room creation fields
       name,
       commitment,
@@ -225,6 +230,7 @@ export async function POST(request: NextRequest) {
       sender,
       senderId,
       timestamp: serverTimestamp(),
+      replyTo: replyTo || null,
     };
 
     await push(messagesRef, newMessage);
@@ -233,5 +239,28 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error sending message:', error);
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { messageId, roomId } = await request.json();
+    console.log('DELETE API called with:', { messageId, roomId });
+
+    if (!messageId || !roomId) {
+      console.log('Missing messageId or roomId');
+      return NextResponse.json({ error: 'Message ID and Room ID are required' }, { status: 400 });
+    }
+
+    const messageRef = ref(database, `chats/${roomId}/messages/${messageId}`);
+    console.log('Deleting from Firebase path:', `chats/${roomId}/messages/${messageId}`);
+    
+    await remove(messageRef);
+    console.log('Message deleted successfully from Firebase');
+
+    return NextResponse.json({ success: true, message: 'Message deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    return NextResponse.json({ error: 'Failed to delete message' }, { status: 500 });
   }
 }
