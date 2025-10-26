@@ -67,7 +67,7 @@ function createBlockies(diameter: number, seed: number) {
   return svg;
 }
 
-export function Avatar({ address, name, size = 40, className = '' }: AvatarProps) {
+export function Avatar({ address, size = 40, className = '' }: AvatarProps) {
   const avatarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

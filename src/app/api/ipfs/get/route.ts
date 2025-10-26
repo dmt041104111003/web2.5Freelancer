@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DID, JOB, APTOS_NODE_URL } from '@/constants/contracts';
 
-const callView = async (fn: string, args: any[]) => {
+const callView = async (fn: string, args: unknown[]) => {
   const res = await fetch(`${APTOS_NODE_URL}/v1/view`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -11,7 +11,7 @@ const callView = async (fn: string, args: any[]) => {
   return res.json();
 };
 
-const convertToString = (data: any): string => {
+const convertToString = (data: unknown): string => {
   if (Array.isArray(data)) return Buffer.from(data).toString('utf8');
   if (typeof data === 'string') return data.startsWith('0x') ? Buffer.from(data.slice(2), 'hex').toString('utf8') : data;
   return '';
@@ -20,7 +20,7 @@ const convertToString = (data: any): string => {
 const getRoles = async (commitment: string): Promise<number[]> => {
   try {
     const result = await callView(DID.GET_ROLE_TYPES_BY_COMMITMENT, [commitment]);
-    return result.flatMap((item: any) => 
+    return result.flatMap((item: unknown) => 
       typeof item === 'number' ? [item] :
       typeof item === 'string' && item.startsWith('0x') ? 
         Array.from({ length: item.slice(2).length / 2 }, (_, i) => 
@@ -29,7 +29,7 @@ const getRoles = async (commitment: string): Promise<number[]> => {
   } catch { return []; }
 };
 
-const getIPFSData = async (cid: string): Promise<any> => {
+const getIPFSData = async (cid: string): Promise<Record<string, unknown> | null> => {
   if (!cid) return null;
   try {
     const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs';
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     }
     
     return NextResponse.json({ success: false, error: 'Invalid type' }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed' }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message || 'Failed' }, { status: 500 });
   }
 }

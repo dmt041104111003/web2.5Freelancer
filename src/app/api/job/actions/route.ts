@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JOB } from '@/constants/contracts';
 
-const createPayload = (action: string, jobId: number, userCommitment: string, milestoneIndex?: number, cid?: string, milestones?: any[], milestoneDurations?: any[], applicationDeadline?: number) => ({
+const createPayload = (action: string, jobId: number, userCommitment: string, milestoneIndex?: number, cid?: string, milestones?: unknown[], milestoneDurations?: unknown[], applicationDeadline?: number) => ({
   type: 'entry_function_payload',
   function: JOB.EXECUTE_JOB_ACTION,
   type_arguments: [],
@@ -24,13 +24,13 @@ const createPayload = (action: string, jobId: number, userCommitment: string, mi
   ] : []
 });
 
-const validateParams = (params: any, required: string[]) => {
+const validateParams = (params: Record<string, unknown>, required: string[]) => {
   const missing = required.filter(key => !params[key] && params[key] !== 0);
   if (missing.length) throw new Error(`Missing required parameters: ${missing.join(', ')}`);
 };
 
-const processMilestones = (milestones: any[]) => 
-  milestones.map(m => typeof m === 'number' ? m : Math.floor(parseFloat(m.amount || '0') * 100_000_000));
+const processMilestones = (milestones: unknown[]) => 
+  milestones.map(m => typeof m === 'number' ? m : Math.floor(parseFloat((m as { amount?: string }).amount || '0') * 100_000_000));
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: `Invalid action. Must be: ${actions.join(', ')}` }, { status: 400 });
     }
     
-    const { user_address, user_commitment, job_id, milestone_index, cid, milestones, milestone_durations, application_deadline } = params;
+    const { user_commitment, job_id, milestone_index, cid, milestones, milestone_durations, application_deadline } = params;
     
     if (action === 'post') {
       validateParams(params, ['user_address', 'user_commitment', 'job_details_cid', 'milestones', 'application_deadline']);
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: `Milestone ${action} transaction prepared`, payload, instructions: 'Submit this payload to Aptos network using your wallet' });
     }
     
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed to execute job action' }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message || 'Failed to execute job action' }, { status: 500 });
   }
 }

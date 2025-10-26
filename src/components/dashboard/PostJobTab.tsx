@@ -35,8 +35,6 @@ export const PostJobTab: React.FC = () => {
   const convertTimeToSeconds = (duration: string, unit: string) => (parseFloat(duration) || 0) * (TIME_MULTIPLIERS[unit as keyof typeof TIME_MULTIPLIERS] || 1);
   const convertAptToUnits = (apt: string) => Math.floor((parseFloat(apt) || 0) * APT_TO_UNITS);
 
-  useEffect(() => { if (account) checkProfile(); }, [account]);
-
   const checkProfile = async () => {
     try {
       setProfileStatus('Đang kiểm tra profile...');
@@ -74,11 +72,13 @@ export const PostJobTab: React.FC = () => {
         setProfileStatus(message);
         setCanPostJobs(false);
       }
-    } catch (e: any) {
-      setProfileStatus(`Lỗi kiểm tra profile: ${e?.message || 'thất bại'}`);
+    } catch (e: unknown) {
+      setProfileStatus(`Lỗi kiểm tra profile: ${(e as Error)?.message || 'thất bại'}`);
       setCanPostJobs(false);
     }
   };
+
+  useEffect(() => { if (account) checkProfile(); }, [account, checkProfile]);
 
   const addSkill = () => {
     const trimmed = currentSkill.trim();
@@ -139,13 +139,13 @@ export const PostJobTab: React.FC = () => {
       if (!data.success) throw new Error(data.error);
       
       setJobResult('Đang ký transaction...');
-      const tx = await (window as any).aptos.signAndSubmitTransaction(data.payload);
+      const tx = await (window as { aptos: { signAndSubmitTransaction: (payload: unknown) => Promise<{ hash: string }> } }).aptos.signAndSubmitTransaction(data.payload);
       const hash = tx?.hash;
       
       setJobResult(hash ? `Job đã được tạo thành công! TX: ${hash}` : 'Job đã được gửi transaction!');
       
-    } catch (e: any) {
-      setJobResult(`Lỗi: ${e?.message || 'thất bại'}`);
+    } catch (e: unknown) {
+      setJobResult(`Lỗi: ${(e as Error)?.message || 'thất bại'}`);
     }
   };
 

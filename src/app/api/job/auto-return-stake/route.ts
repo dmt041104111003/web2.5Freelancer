@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       message: 'Auto-return stake transaction ready for signing'
     });
 
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed to create auto-return stake transaction' });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message || 'Failed to create auto-return stake transaction' });
   }
 }

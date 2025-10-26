@@ -15,7 +15,10 @@ const sha256Hex = async (s: string): Promise<string> => {
 };
 
 const getWalletAccount = async () => {
-  const wallet = (window as any).aptos;
+  const wallet = (window as { aptos: { 
+    account: () => Promise<string | { address: string }>;
+    signAndSubmitTransaction: (payload: any) => Promise<{ hash?: string }>;
+  } }).aptos;
   if (!wallet) throw new Error('Wallet not found. Please connect your wallet first.');
   const account = await wallet.account();
   if (!account) throw new Error('Please connect your wallet first.');
@@ -28,8 +31,22 @@ export const JobDetailContent: React.FC = () => {
   const params = useParams();
   const jobId = params.id;
   
-  const [job, setJob] = useState<any>(null);
-  const [jobDetails, setJobDetails] = useState<any>(null);
+  const [job, setJob] = useState<{
+    id: number;
+    cid: string;
+    milestones: number[];
+    worker_commitment: unknown;
+    poster_commitment?: unknown;
+    approved: boolean;
+    active: boolean;
+    completed: boolean;
+    application_deadline: number;
+    budget: number;
+    status: string;
+    current_milestone: number;
+    created_at: string;
+  } | null>(null);
+  const [jobDetails, setJobDetails] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
@@ -77,8 +94,8 @@ export const JobDetailContent: React.FC = () => {
           }
         }
         
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch job details');
+      } catch (err: unknown) {
+        setError((err as Error).message || 'Failed to fetch job details');
       } finally {
         setLoading(false);
       }
@@ -146,9 +163,10 @@ Generated commitment: ${userCommitment}`);
         if (hash) window.location.reload();
         
       } else if (action === 'submit') {
-        let milestoneIndex = parseInt(job.current_milestone);
+        if (!job) throw new Error('Job not found');
+        let milestoneIndex = typeof job.current_milestone === 'string' ? parseInt(job.current_milestone) : job.current_milestone;
         if (isNaN(milestoneIndex)) {
-          milestoneIndex = parseInt(job.current_milestone || '0');
+          milestoneIndex = 0;
           if (isNaN(milestoneIndex)) {
             throw new Error('Invalid milestone index. Please refresh the page and try again.');
           }
@@ -200,8 +218,8 @@ Generated commitment: ${userCommitment}`);
         if (hash) window.location.reload();
       }
       
-    } catch (err: any) {
-      toast.error(`${action === 'apply' ? 'Application' : 'Milestone submission'} failed: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`${action === 'apply' ? 'Application' : 'Milestone submission'} failed: ${(err as Error).message}`);
     } finally {
       setApplying(false);
     }
@@ -245,16 +263,16 @@ Generated commitment: ${userCommitment}`);
                 <div className="space-y-6">
                   <div>
                     <h2 className="text-2xl font-bold text-blue-800 mb-2">
-                      {jobDetails.title || 'Untitled Job'}
+                      {String(jobDetails.title) || 'Untitled Job'}
                     </h2>
                     <p className="text-gray-700">
-                      {jobDetails.description || 'No description provided'}
+                      {String(jobDetails.description) || 'No description provided'}
                     </p>
                   </div>
-                  {jobDetails.requirements && (
+                  {!!jobDetails.requirements && (
                     <div>
                       <h3 className="text-lg font-bold text-blue-800 mb-2">Requirements</h3>
-                      <p className="text-gray-700">{jobDetails.requirements}</p>
+                      <p className="text-gray-700">{String(jobDetails.requirements)}</p>
                     </div>
                   )}
                 </div>
@@ -298,19 +316,19 @@ Generated commitment: ${userCommitment}`);
                     {job.cid || 'N/A'}
                   </span>
                 </div>
-                {job.poster_commitment && (
+                {!!job.poster_commitment && (
                   <div className="flex flex-col space-y-1">
                     <span className="text-gray-700 text-sm">Poster Commitment:</span>
                     <span className="font-mono text-xs text-gray-600 break-all bg-gray-50 p-2 rounded">
-                      {job.poster_commitment}
+                      {String(job.poster_commitment)}
                     </span>
                   </div>
                 )}
-                {job.worker_commitment && (
+                {!!job.worker_commitment && (
                   <div className="flex flex-col space-y-1">
                     <span className="text-gray-700 text-sm">Worker Commitment:</span>
                     <span className="font-mono text-xs text-gray-600 break-all bg-gray-50 p-2 rounded">
-                      {job.worker_commitment}
+                      {String(job.worker_commitment)}
                     </span>
                   </div>
                 )}
@@ -417,7 +435,7 @@ Generated commitment: ${userCommitment}`);
               </Button>
             )}
 
-            {job.worker_commitment && job.status === 'in_progress' && (
+            {!!job.worker_commitment && job.status === 'in_progress' && (
               <Button 
                 onClick={() => handleAction('submit')}
                 disabled={applying}

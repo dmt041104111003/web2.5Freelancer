@@ -57,7 +57,7 @@ export const ManageJobsTab: React.FC = () => {
       }).then(r => r.json());
       
       if (autoReturnData.success) {
-        const tx = await (window as any).aptos.signAndSubmitTransaction(autoReturnData.payload);
+        const tx = await (window as { aptos: { signAndSubmitTransaction: (payload: unknown) => Promise<{ hash: string }> } }).aptos.signAndSubmitTransaction(autoReturnData.payload);
         alert(`Stake claimed successfully! Transaction: ${tx.hash}`);
         fetchMyJobs();
       } else {
@@ -73,7 +73,7 @@ export const ManageJobsTab: React.FC = () => {
 
   useEffect(() => {
     if (account) fetchMyJobs();
-  }, [account]);
+  }, [account, fetchMyJobs]);
 
   return (
     <div className="max-w-4xl mx-auto">

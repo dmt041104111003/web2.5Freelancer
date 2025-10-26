@@ -21,7 +21,7 @@ export interface Message {
 
 interface ChatContextType {
   messages: Message[];
-  sendMessage: (text: string, sender: string, senderId: string, replyTo?: any) => void;
+  sendMessage: (text: string, sender: string, senderId: string, replyTo?: string | null) => void;
   isLoading: boolean;
   setRoomId: (roomId: string) => void;
 }
@@ -69,9 +69,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
     const interval = setInterval(fetchMessages, 2000);
     
     return () => clearInterval(interval);
-  }, [currentRoomId]);
+  }, [currentRoomId, fetchMessages]);
 
-  const sendMessage = async (text: string, sender: string, senderId: string, replyTo?: any) => {
+  const sendMessage = async (text: string, sender: string, senderId: string, replyTo?: string | null) => {
     if (!text.trim()) return;
 
     try {

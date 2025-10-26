@@ -35,7 +35,7 @@ export const useWallet = () => useContext(WalletContext);
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
-  const { data: session } = useSession();
+  useSession();
   const [account, setAccount] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [accountType, setAccountType] = useState<'aptos' | null>(null);

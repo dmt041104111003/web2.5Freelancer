@@ -25,9 +25,9 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
-      if (user && (user as any).address) {
-        const address = (user as any).address as string;
+    async jwt({ token, user }) {
+      if (user && 'address' in user) {
+        const address = user.address as string;
         token.address = address;
       }
       
@@ -42,7 +42,7 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      const address = (token as any).address as string | undefined;
+      const address = token.address as string | undefined;
       if (address) {
         (session as Session & { address?: string }).address = address;
       }

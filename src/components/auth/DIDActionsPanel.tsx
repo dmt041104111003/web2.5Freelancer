@@ -66,8 +66,8 @@ export default function DIDActionsPanel() {
       });
       setIsVerified(hasProfile);
       setVerificationStatus(hasProfile ? 'Profile đã được verify! Bạn có thể sử dụng tất cả tính năng.' : 'Profile chưa được verify! Cần tạo và verify profile trước.');
-    } catch (e: any) {
-      setVerificationStatus(`Lỗi kiểm tra verification: ${e?.message || 'thất bại'}`);
+    } catch (e: unknown) {
+      setVerificationStatus(`Lỗi kiểm tra verification: ${(e as Error)?.message || 'thất bại'}`);
       setIsVerified(false);
     }
   };
@@ -115,17 +115,17 @@ export default function DIDActionsPanel() {
             experience: '3 năm Frontend, 1 năm Move development'
           });
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('Error loading profile:', e);
       } finally {
         setIsLoading(false);
       }
     };
     loadProfileData();
-  }, [did]);
+  }, [did, checkVerificationStatus]);
 
   const getWalletOrThrow = () => {
-    const w = (globalThis as any).aptos ?? (globalThis as any)?.window?.aptos;
+    const w = (globalThis as { aptos?: { signAndSubmitTransaction: (payload: any) => Promise<any> } }).aptos ?? (globalThis as { window?: { aptos?: { signAndSubmitTransaction: (payload: any) => Promise<any> } } })?.window?.aptos;
     if (!w) throw new Error('Wallet not found');
     return w;
   };
@@ -195,8 +195,8 @@ export default function DIDActionsPanel() {
       if (!apiData.success) return setError(`API Error: ${apiData.error}`);
       const tx = await getWalletOrThrow().signAndSubmitTransaction(apiData.payload);
       console.log(tx?.hash ? `Tạo DID+Profile tx: ${tx.hash}` : 'Đã gửi giao dịch');
-    } catch (e: any) {
-      setError(e?.message || 'Tạo DID+Profile thất bại');
+    } catch (e: unknown) {
+      setError((e as Error)?.message || 'Tạo DID+Profile thất bại');
     }
   };
 
@@ -231,9 +231,9 @@ export default function DIDActionsPanel() {
       } else {
         setVerificationStatus('Đã gửi giao dịch cập nhật profile');
       }
-    } catch (e: any) {
-      setError(e?.message || 'Cập nhật Profile thất bại');
-      setVerificationStatus(`Lỗi cập nhật: ${e?.message || 'thất bại'}`);
+    } catch (e: unknown) {
+      setError((e as Error)?.message || 'Cập nhật Profile thất bại');
+      setVerificationStatus(`Lỗi cập nhật: ${(e as Error)?.message || 'thất bại'}`);
     } finally {
       setIsLoading(false);
     }
@@ -256,8 +256,8 @@ export default function DIDActionsPanel() {
       const { payload } = await response.json();
       const tx = await getWalletOrThrow().signAndSubmitTransaction(payload);
       console.log(tx?.hash ? `Hủy DID tx: ${tx.hash}` : 'Đã gửi giao dịch hủy DID');
-    } catch (e: any) {
-      setError(e?.message || 'Hủy DID thất bại');
+    } catch (e: unknown) {
+      setError((e as Error)?.message || 'Hủy DID thất bại');
     }
   };
 

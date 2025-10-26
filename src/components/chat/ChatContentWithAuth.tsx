@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
 import { ChatContent } from './ChatContent';
@@ -9,12 +10,6 @@ export const ChatContentWithAuth: React.FC = () => {
   const { account, connectWallet, isConnecting } = useWallet();
   const [isDIDVerified, setIsDIDVerified] = useState(false);
   const [isCheckingDID, setIsCheckingDID] = useState(false);
-
-  useEffect(() => {
-    if (account) {
-      checkDIDVerification();
-    }
-  }, [account]);
 
   const checkDIDVerification = async () => {
     if (!account) return;
@@ -30,6 +25,12 @@ export const ChatContentWithAuth: React.FC = () => {
       setIsCheckingDID(false);
     }
   };
+
+  useEffect(() => {
+    if (account) {
+      checkDIDVerification();
+    }
+  }, [account, checkDIDVerification]);
 
   if (!account) {
     return (
@@ -47,7 +48,7 @@ export const ChatContentWithAuth: React.FC = () => {
             {isConnecting ? 'Connecting...' : 'Connect Petra Wallet'}
           </Button>
           <div className="text-sm text-gray-600">
-            Or <a href="/" className="text-blue-800 hover:underline">go back to home</a>
+            Or <Link href="/" className="text-blue-800 hover:underline">go back to home</Link>
           </div>
         </div>
       </div>

@@ -32,11 +32,11 @@ export async function GET(request: NextRequest) {
       job_id
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Check banned error:', error);
     return NextResponse.json({ 
       success: false, 
-      error: error.message || 'Failed to check if worker is banned' 
+      error: (error as Error).message || 'Failed to check if worker is banned' 
     });
   }
 }

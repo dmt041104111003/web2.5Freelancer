@@ -29,19 +29,29 @@ export async function GET(request: NextRequest) {
         
         onValue(roomsRef, (snapshot) => {
           const data = snapshot.val();
-          let rooms: any[] = [];
+          let rooms: Array<{
+            id: string;
+            name: string;
+            lastMessage: string;
+            address: string;
+            commitment: string;
+            role: string;
+            chatAccepted: boolean;
+            creatorAddress: string;
+            participantAddress: string;
+          }> = [];
           
           if (data) {
-            rooms = Object.entries(data).map(([id, room]: [string, any]) => ({
+            rooms = Object.entries(data).map(([id, room]) => ({
               id,
-              name: room.name,
-              lastMessage: room.lastMessage,
-              address: room.participantAddress,
-              commitment: room.commitment,
-              role: room.participantRole,
-              chatAccepted: room.chatAccepted,
-              creatorAddress: room.creatorAddress,
-              participantAddress: room.participantAddress
+              name: (room as Record<string, unknown>).name as string,
+              lastMessage: (room as Record<string, unknown>).lastMessage as string,
+              address: (room as Record<string, unknown>).participantAddress as string,
+              commitment: (room as Record<string, unknown>).commitment as string,
+              role: (room as Record<string, unknown>).participantRole as string,
+              chatAccepted: (room as Record<string, unknown>).chatAccepted as boolean,
+              creatorAddress: (room as Record<string, unknown>).creatorAddress as string,
+              participantAddress: (room as Record<string, unknown>).participantAddress as string
             }));
           }
           
@@ -60,16 +70,23 @@ export async function GET(request: NextRequest) {
       onValue(messagesRef, (snapshot) => {
         const data = snapshot.val();
         console.log('Firebase data for room', roomIdForMessages, ':', data);
-        let messages: any[] = [];
+        let messages: Array<{
+          id: string;
+          text: string;
+          sender: string;
+          timestamp: number;
+          senderId: string;
+          replyTo: string | null;
+        }> = [];
         
         if (data) {
-          messages = Object.entries(data).map(([id, message]: [string, any]) => ({
+          messages = Object.entries(data).map(([id, message]) => ({
             id,
-            text: message.text,
-            sender: message.sender,
-            timestamp: message.timestamp,
-            senderId: message.senderId,
-            replyTo: message.replyTo || null,
+            text: (message as Record<string, unknown>).text as string,
+            sender: (message as Record<string, unknown>).sender as string,
+            timestamp: (message as Record<string, unknown>).timestamp as number,
+            senderId: (message as Record<string, unknown>).senderId as string,
+            replyTo: ((message as Record<string, unknown>).replyTo as string) || null,
           }));
           
           messages.sort((a, b) => a.timestamp - b.timestamp);
@@ -136,9 +153,9 @@ export async function POST(request: NextRequest) {
           let existingRoom = null;
           
           if (data) {
-            existingRoom = Object.values(data).find((room: any) => 
-              (room.creatorAddress === creatorId && room.participantAddress === address) ||
-              (room.creatorAddress === address && room.participantAddress === creatorId)
+            existingRoom = Object.values(data).find((room) => 
+              (room as Record<string, unknown>).creatorAddress === creatorId && (room as Record<string, unknown>).participantAddress === address ||
+              (room as Record<string, unknown>).creatorAddress === address && (room as Record<string, unknown>).participantAddress === creatorId
             );
           }
           

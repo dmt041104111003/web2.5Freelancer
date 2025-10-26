@@ -49,7 +49,7 @@ export const ApplicantsTab: React.FC = () => {
       }).then(r => r.json());
       
       if (data.success) {
-        const tx = await (window as any).aptos.signAndSubmitTransaction(data.payload);
+        const tx = await (window as { aptos: { signAndSubmitTransaction: (payload: unknown) => Promise<{ hash: string }> } }).aptos.signAndSubmitTransaction(data.payload);
         alert(`Worker approved successfully! Transaction: ${tx.hash}`);
         fetchApplicants();
       } else {
@@ -65,7 +65,7 @@ export const ApplicantsTab: React.FC = () => {
 
   useEffect(() => {
     if (account) fetchApplicants();
-  }, [account]);
+  }, [account, fetchApplicants]);
 
   return (
     <div className="max-w-4xl mx-auto">

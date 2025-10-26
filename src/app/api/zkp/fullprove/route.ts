@@ -46,10 +46,10 @@ export async function POST(req: NextRequest) {
 
     await Promise.all([wasmPath, zkeyPath, inputPath].map(p => fs.stat(p)));
     console.log('[fullprove] files ok', { wasmPath, zkeyPath, inputPath, vkPath });
-    const snarkjs: any = await import('snarkjs');
+    const snarkjs: Record<string, unknown> = await import('snarkjs');
     const input = JSON.parse(await fs.readFile(inputPath, 'utf8'));
     console.log('[fullprove] running groth16.fullProve');
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, wasmPath, zkeyPath);
+    const { proof, publicSignals } = await (snarkjs.groth16 as { fullProve: (input: unknown, wasmPath: string, zkeyPath: string) => Promise<{ proof: unknown; publicSignals: unknown }> }).fullProve(input, wasmPath, zkeyPath);
     console.log('[fullprove] prover done', { publicSignalsLen: Array.isArray(publicSignals) ? publicSignals.length : 0 });
 
     const proofData = {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       a_commitment,
       debug
     });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || 'fullprove failed' }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: (e as Error)?.message || 'fullprove failed' }, { status: 500 });
   }
 }

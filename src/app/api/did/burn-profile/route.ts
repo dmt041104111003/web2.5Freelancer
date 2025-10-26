@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json({ success: true, payload });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || 'Failed to create burn profile payload' 
+        error: (error as Error).message || 'Failed to create burn profile payload' 
       },
       { status: 500 }
     );

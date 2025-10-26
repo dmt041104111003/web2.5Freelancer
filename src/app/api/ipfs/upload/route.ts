@@ -4,7 +4,7 @@ import { DID, JOB, APTOS_NODE_URL } from '@/constants/contracts';
 const PINATA_JWT = process.env.PINATA_JWT;
 const IPFS_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY;
 
-const callView = async (fn: string, args: any[]) => {
+const callView = async (fn: string, args: unknown[]) => {
   const res = await fetch(`${APTOS_NODE_URL}/v1/view`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -17,7 +17,7 @@ const callView = async (fn: string, args: any[]) => {
 const getRoles = async (commitment: string): Promise<number[]> => {
   try {
     const result = await callView(DID.GET_ROLE_TYPES_BY_COMMITMENT, [commitment]);
-    return result.flatMap((item: any) => 
+    return result.flatMap((item: unknown) => 
       typeof item === 'number' ? [item] :
       typeof item === 'string' && item.startsWith('0x') && item.length > 2 ? 
         Array.from({ length: item.slice(2).length / 2 }, (_, i) => 
@@ -26,7 +26,7 @@ const getRoles = async (commitment: string): Promise<number[]> => {
   } catch { return []; }
 };
 
-const uploadToPinata = async (metadata: any, fileName: string, type: string, title?: string) => {
+const uploadToPinata = async (metadata: Record<string, unknown>, fileName: string, type: string, title?: string) => {
   const formData = new FormData();
   formData.append('file', new Blob([JSON.stringify(metadata, null, 2)], { type: 'application/json' }), fileName);
   formData.append('pinataOptions', JSON.stringify({ cidVersion: 1 }));
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       body.userRoles = roleTypes;
     }
     
-    let metadata: any, fileName: string;
+    let metadata: Record<string, unknown>, fileName: string;
     
     if (type === 'job') {
       metadata = { title, description, requirements: Array.isArray(requirements) ? requirements : [requirements], created_at: new Date().toISOString(), version: "1.0.0", type: "job" };
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         escrow: { executeJobAction: JOB.EXECUTE_JOB_ACTION, getJobById: JOB.GET_JOB_BY_ID, getJobLatest: JOB.GET_JOB_LATEST, hasNoActiveJobs: JOB.HAS_NO_ACTIVE_JOBS }
       }
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Upload failed' }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message || 'Upload failed' }, { status: 500 });
   }
 }

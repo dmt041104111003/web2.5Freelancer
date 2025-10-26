@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { AvatarSVG } from '@/components/ui/avatar';
 import { useChat, ChatProvider } from '@/contexts/ChatContext';
 import { useWallet } from '@/contexts/WalletContext';
@@ -19,9 +17,29 @@ const ChatContentInner: React.FC = () => {
 
   const [message, setMessage] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
-  const [verifiedUser, setVerifiedUser] = useState<any>(null);
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [commitments, setCommitments] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<Array<{
+    id: string;
+    name: string;
+    lastMessage: string;
+    address: string;
+    commitment: string;
+    role: string;
+    chatAccepted: boolean;
+    creatorAddress: string;
+    participantAddress: string;
+  }>>([]);
+  const [commitments, setCommitments] = useState<Array<{
+    id: string;
+    commitment: string;
+    address: string;
+    name: string;
+    role: string;
+    verified: boolean;
+    profile: {
+      didCommitment: unknown;
+      profileCid: unknown;
+    };
+  }>>([]);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [newRoomCommitment, setNewRoomCommitment] = useState('');
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
@@ -201,7 +219,7 @@ const ChatContentInner: React.FC = () => {
       
       if (data.success && data.commitments) {
         const userCommitment = data.commitments.find(
-          (c: any) => c.address.toLowerCase() === account.toLowerCase()
+          (c: { address: string }) => c.address.toLowerCase() === account.toLowerCase()
         );
         
         if (userCommitment) {
@@ -225,14 +243,14 @@ const ChatContentInner: React.FC = () => {
 
   React.useEffect(() => {
     checkAccess();
-  }, [account]);
+  }, [account, checkAccess]);
 
   React.useEffect(() => {
     if (currentUser.address) {
       loadCommitments();
       loadRoomsFromFirebase();
     }
-  }, [currentUser.address]);
+  }, [currentUser.address, loadCommitments, loadRoomsFromFirebase]);
 
 
   const handleCreateRoom = async (e: React.FormEvent) => {
@@ -297,7 +315,9 @@ const ChatContentInner: React.FC = () => {
                     address: data.user.address,
                     commitment: newRoomCommitment.trim(),
                     role: data.user.role,
-                    chatAccepted: false
+                    chatAccepted: false,
+                    creatorAddress: currentUser.address,
+                    participantAddress: data.user.address
                   };
                   
                   setRooms(prev => [...prev, newRoom]);

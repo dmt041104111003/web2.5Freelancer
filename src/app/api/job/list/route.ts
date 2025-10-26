@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JOB, APTOS_NODE_URL } from '@/constants/contracts';
 
-const callView = async (fn: string, args: any[]) => {
+const callView = async (fn: string, args: unknown[]) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
   
@@ -17,26 +17,26 @@ const callView = async (fn: string, args: any[]) => {
   return res.json();
 };
 
-const convertToString = (data: any): string => {
+const convertToString = (data: unknown): string => {
   if (typeof data === 'string' && data.startsWith('0x')) return Buffer.from(data.slice(2), 'hex').toString('utf8');
   if (Array.isArray(data)) return Buffer.from(data).toString('utf8');
-  return data || '';
+  return String(data || '');
 };
 
-const processMilestones = (milestones: any[]) => {
-  const numbers = milestones.map((m: any) => parseInt(m) || 0);
+const processMilestones = (milestones: unknown[]) => {
+  const numbers = milestones.map((m: unknown) => parseInt(String(m)) || 0);
   return { numbers, totalAPT: numbers.reduce((sum, amount) => sum + amount, 0) / 100_000_000 };
 };
 
-const getStatus = (completed: boolean, workerCommitment: any, approved: boolean) => {
+const getStatus = (completed: boolean, workerCommitment: unknown, approved: boolean) => {
   if (completed) return 'completed';
   if (workerCommitment && approved) return 'in_progress';
   if (workerCommitment && !approved) return 'pending_approval';
   return 'active';
 };
 
-const getWorkerCommitment = (workerCommitment: any) => 
-  workerCommitment?.vec?.length > 0 ? workerCommitment.vec : null;
+const getWorkerCommitment = (workerCommitment: unknown) => 
+  (workerCommitment as { vec?: unknown[] })?.vec?.length ? (workerCommitment as { vec: unknown[] }).vec : null;
 
 export async function GET(request: NextRequest) {
   try {
@@ -51,11 +51,11 @@ export async function GET(request: NextRequest) {
     console.log('API: Flattened jobs:', flattenedJobs);
     console.log('API: Flattened jobs length:', flattenedJobs?.length);
     
-    const jobs = flattenedJobs.map((jobView: any, i: number) => {
+    const jobs = flattenedJobs.map((jobView: Record<string, unknown>, i: number) => {
       console.log(`API: Processing job ${i}:`, jobView);
       const cidString = convertToString(jobView.cid || '');
-      const { numbers: milestonesNumbers, totalAPT } = processMilestones(jobView.milestones || []);
-      const status = getStatus(jobView.completed, jobView.worker_commitment, jobView.approved);
+      const { numbers: milestonesNumbers, totalAPT } = processMilestones(Array.isArray(jobView.milestones) ? jobView.milestones : []);
+      const status = getStatus(Boolean(jobView.completed), jobView.worker_commitment, Boolean(jobView.approved));
       const workerCommitmentValue = getWorkerCommitment(jobView.worker_commitment);
       
       console.log(`API: Job ${i} processed:`, {
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         active: jobView.active || false,
         completed: jobView.completed || false,
         budget: totalAPT,
-        application_deadline: parseInt(jobView.application_deadline) || 0,
+        application_deadline: parseInt(String(jobView.application_deadline)) || 0,
         current_milestone: jobView.current_milestone,
         status,
         created_at: new Date().toISOString()
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({ success: true, jobs, total: jobs.length });
     
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed to fetch jobs' }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message || 'Failed to fetch jobs' }, { status: 500 });
   }
 }

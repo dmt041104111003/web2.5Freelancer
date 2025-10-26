@@ -18,7 +18,7 @@ export function Tabs({ children, defaultValue, className = '' }: TabsProps) {
           return React.cloneElement(child, { 
             activeTab, 
             setActiveTab 
-          } as any);
+          } as { activeTab?: string; setActiveTab?: (value: string) => void });
         }
         return child;
       })}
@@ -41,7 +41,7 @@ export function TabsList({ children, activeTab, setActiveTab, className = '' }: 
           return React.cloneElement(child, { 
             activeTab, 
             setActiveTab 
-          } as any);
+          } as { activeTab?: string; setActiveTab?: (value: string) => void });
         }
         return child;
       })}

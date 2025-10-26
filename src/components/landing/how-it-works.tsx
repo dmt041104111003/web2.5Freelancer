@@ -50,7 +50,7 @@ export function HowItWorks() {
         <div className="mt-12">
           <h3 className="text-2xl font-bold text-blue-800 mb-6 text-center">Quick Start Guide</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {HOW_IT_WORKS_STEPS.map((step, index) => (
+            {HOW_IT_WORKS_STEPS.map((step) => (
               <Card key={step.id} variant="default" className="text-center">
                 <div className="text-3xl font-bold text-blue-800 mb-3">
                   {step.id}

@@ -54,11 +54,11 @@ export async function GET(request: NextRequest) {
       current_time: Math.floor(Date.now() / 1000)
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Check expiry error:', error);
     return NextResponse.json({ 
       success: false, 
-      error: error.message || 'Failed to check milestone expiry' 
+      error: (error as Error).message || 'Failed to check milestone expiry' 
     });
   }
 }

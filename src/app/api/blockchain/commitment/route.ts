@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { APTOS_NODE_URL, DID, CONTRACT_ADDRESS } from '@/constants/contracts';
+import { APTOS_NODE_URL, DID } from '@/constants/contracts';
 
 async function lookupCommitmentOnBlockchain(commitment: string) {
   try {

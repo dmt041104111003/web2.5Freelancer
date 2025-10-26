@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['snarkjs', 'ffjavascript', 'web-worker'],
-  },
+  serverExternalPackages: ['snarkjs', 'ffjavascript', 'web-worker'],
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];

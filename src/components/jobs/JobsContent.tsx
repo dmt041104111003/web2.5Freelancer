@@ -6,7 +6,21 @@ import { Card } from '@/components/ui/card';
 
 export const JobsContent: React.FC = () => {
   const router = useRouter();
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Array<{
+    id: number;
+    cid: string;
+    milestones: number[];
+    worker_commitment: unknown;
+    poster_commitment: unknown;
+    approved: boolean;
+    active: boolean;
+    completed: boolean;
+    budget: number;
+    application_deadline: number;
+    current_milestone: number;
+    status: string;
+    created_at: string;
+  }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

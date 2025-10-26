@@ -62,11 +62,11 @@ export async function POST(request: NextRequest) {
       message: 'Profile update payload generated'
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || 'Failed to update profile' 
+        error: (error as Error).message || 'Failed to update profile' 
       },
       { status: 500 }
     );

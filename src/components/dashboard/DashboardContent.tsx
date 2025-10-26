@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useWallet } from '@/contexts/WalletContext';
@@ -30,7 +31,7 @@ export const DashboardContent: React.FC = () => {
             {isConnecting ? 'Connecting...' : 'Connect Petra Wallet'}
           </Button>
           <div className="text-sm text-gray-600">
-            Or <a href="/" className="text-blue-800 hover:underline">go back to home</a>
+            Or <Link href="/" className="text-blue-800 hover:underline">go back to home</Link>
           </div>
         </div>
       </div>

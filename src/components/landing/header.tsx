@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
@@ -58,9 +59,11 @@ export function Header() {
       <Container>
         <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-3">
-              <img 
+              <Image 
                 src="/images/landing/logo_full.png" 
                 alt="Marketplace2vn Logo" 
+                width={32}
+                height={32}
                 className="h-8 object-contain"
               />
               <span className="text-xl font-bold text-blue-800">
