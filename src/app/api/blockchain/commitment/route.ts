@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { APTOS_NODE_URL, DID, CONTRACT_ADDRESS, APTOS_API_KEY } from '@/constants/contracts';
+import { APTOS_NODE_URL, DID, APTOS_API_KEY } from '@/constants/contracts';
 
 async function lookupCommitmentOnBlockchain(commitment: string) {
   try {
@@ -83,13 +83,13 @@ async function lookupCommitmentOnBlockchain(commitment: string) {
     let profileName = `User ${address.slice(0, 8)}`;
     if (profileCid && profileCid.length > 0) {
       try {
-        const cidString = Buffer.from(profileCid).toString('utf8');
+        Buffer.from(profileCid).toString('utf8');
         profileName = `User ${address.slice(0, 8)}`; 
-      } catch (e) {
+      } catch {
+        // Ignore error
       }
     }
 
-    // Check if commitment has roles (verification)
     const isVerified = roles.length > 0;
 
     return {
@@ -203,7 +203,7 @@ async function checkAddressVerification(address: string) {
             }
           }
         }
-      } catch (err) {
+      } catch {
         continue;
       }
     }
@@ -223,7 +223,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const commitment = searchParams.get('commitment');
     const address = searchParams.get('address');
-    const excludeAddress = searchParams.get('excludeAddress');
+    // const excludeAddress = searchParams.get('excludeAddress');
 
     // NEW: Check if address has verified DID
     if (address) {

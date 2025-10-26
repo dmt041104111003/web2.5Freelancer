@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
@@ -35,7 +35,7 @@ export const PostJobTab: React.FC = () => {
   const convertTimeToSeconds = (duration: string, unit: string) => (parseFloat(duration) || 0) * (TIME_MULTIPLIERS[unit as keyof typeof TIME_MULTIPLIERS] || 1);
   const convertAptToUnits = (apt: string) => Math.floor((parseFloat(apt) || 0) * APT_TO_UNITS);
 
-  const checkProfile = async () => {
+  const checkProfile = useCallback(async () => {
     try {
       setProfileStatus('Đang kiểm tra profile...');
       const profileData = await fetch(`/api/ipfs/get?type=profile&commitment=${await getUserCommitment()}`).then(r => r.json());
@@ -76,7 +76,7 @@ export const PostJobTab: React.FC = () => {
       setProfileStatus(`Lỗi kiểm tra profile: ${(e as Error)?.message || 'thất bại'}`);
       setCanPostJobs(false);
     }
-  };
+  }, [account]);
 
   useEffect(() => { if (account) checkProfile(); }, [account, checkProfile]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 export interface Message {
   id: string;
@@ -21,7 +21,7 @@ export interface Message {
 
 interface ChatContextType {
   messages: Message[];
-  sendMessage: (text: string, sender: string, senderId: string, replyTo?: any) => void;
+  sendMessage: (text: string, sender: string, senderId: string, replyTo?: { id: string; text: string; sender: string; senderId: string; timestamp: number } | null) => void;
   isLoading: boolean;
   setRoomId: (roomId: string) => void;
 }
@@ -46,8 +46,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
   const [isLoading, setIsLoading] = useState(true);
   const [currentRoomId, setCurrentRoomId] = useState(roomId);
 
-  // Fetch messages từ API
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const response = await fetch(`/api/chat/messages?roomId=${currentRoomId}`);
       const data = await response.json();
@@ -58,20 +57,18 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentRoomId]);
 
   useEffect(() => {
     if (!currentRoomId) return;
     
     fetchMessages();
     
-    // Polling để cập nhật tin nhắn mới (có thể thay bằng WebSocket sau)
-    const interval = setInterval(fetchMessages, 5000); // Tăng lên 5 giây để giảm tải
-    
+    const interval = setInterval(fetchMessages, 5000); 
     return () => clearInterval(interval);
-  }, [currentRoomId]);
+  }, [currentRoomId, fetchMessages]);
 
-  const sendMessage = async (text: string, sender: string, senderId: string, replyTo?: any) => {
+  const sendMessage = async (text: string, sender: string, senderId: string, replyTo?: { id: string; text: string; sender: string; senderId: string; timestamp: number } | null) => {
     if (!text.trim()) return;
 
     try {
@@ -90,7 +87,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
       });
 
       if (response.ok) {
-        // Refresh messages sau khi gửi
         fetchMessages();
       }
     } catch (error) {

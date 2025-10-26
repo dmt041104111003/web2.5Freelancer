@@ -33,7 +33,7 @@ const ChatContentInner: React.FC = () => {
   const [newRoomName, setNewRoomName] = useState('');
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [createRoomError, setCreateRoomError] = useState('');
-  const [replyingTo, setReplyingTo] = useState<any>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; text: string; sender: string; senderId: string; timestamp: number } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const { messages, sendMessage, isLoading, setRoomId } = useChat();
 
@@ -148,18 +148,16 @@ const ChatContentInner: React.FC = () => {
     }
   }, [currentUser.address]);
 
-  // Realtime Firebase listener for rooms
   React.useEffect(() => {
     if (!currentUser.address) return;
 
     const interval = setInterval(() => {
       loadRoomsFromFirebase();
-    }, 10000); // Poll every 10 seconds for realtime updates
+    }, 10000); 
 
     return () => clearInterval(interval);
-  }, [currentUser.address]);
+  }, [currentUser.address, loadRoomsFromFirebase]);
 
-  // Set current user when account changes
   React.useEffect(() => {
     if (account) {
       const getCurrentUserCommitment = async () => {
@@ -624,7 +622,7 @@ const ChatContentInner: React.FC = () => {
                         const currentRoom = rooms.find(r => r.id === selectedRoom);
                         const isChatAccepted = currentRoom?.chatAccepted !== false;
                         const isParticipant = currentRoom?.participantAddress === currentUser.address;
-                        const isCreator = currentRoom?.creatorAddress === currentUser.address;
+                        // const isCreator = currentRoom?.creatorAddress === currentUser.address;
                         
                         
                         return isChatAccepted ? (

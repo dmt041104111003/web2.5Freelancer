@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
@@ -22,7 +22,7 @@ export const ApplicantsTab: React.FC = () => {
   const getUserCommitment = async () => sha256Hex(account!);
   const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
 
-  const fetchApplicants = async () => {
+  const fetchApplicants = useCallback(async () => {
     if (!account) return;
     setLoadingApplicants(true);
     try {
@@ -36,7 +36,7 @@ export const ApplicantsTab: React.FC = () => {
     } finally {
       setLoadingApplicants(false);
     }
-  };
+  }, [account]);
 
   const approveWorker = async (jobId: string) => {
     if (!account) return;

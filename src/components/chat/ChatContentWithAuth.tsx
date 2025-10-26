@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
@@ -11,7 +11,7 @@ export const ChatContentWithAuth: React.FC = () => {
   const [isDIDVerified, setIsDIDVerified] = useState(false);
   const [isCheckingDID, setIsCheckingDID] = useState(false);
 
-  const checkDIDVerification = async () => {
+  const checkDIDVerification = useCallback(async () => {
     if (!account) return;
     
     setIsCheckingDID(true);
@@ -31,13 +31,13 @@ export const ChatContentWithAuth: React.FC = () => {
     } finally {
       setIsCheckingDID(false);
     }
-  };
+  }, [account]);
 
   useEffect(() => {
     if (account) {
       checkDIDVerification();
     }
-  }, [account]);
+  }, [account, checkDIDVerification]);
 
   if (!account) {
     return (

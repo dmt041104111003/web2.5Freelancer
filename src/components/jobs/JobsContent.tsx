@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 
 export const JobsContent: React.FC = () => {
   const router = useRouter();
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Array<{ id: string; budget: number; status: string; milestones?: Array<unknown>; worker_commitment?: string; cid: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export const JobsContent: React.FC = () => {
         } else {
           setError(data.error || 'Failed to fetch jobs');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to fetch jobs');
       } finally {
         setLoading(false);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -46,7 +46,7 @@ export default function DIDActionsPanel() {
   const toggleRole = (role: number, checked: boolean) => 
     setRoleTypes(checked ? [...roleTypes, role] : roleTypes.filter(r => r !== role));
 
-  const checkVerificationStatus = async () => {
+  const checkVerificationStatus = useCallback(async () => {
     if (!did) return;
     try {
       setVerificationStatus('Đang kiểm tra trạng thái verification...');
@@ -70,7 +70,7 @@ export default function DIDActionsPanel() {
       setVerificationStatus(`Lỗi kiểm tra verification: ${(e as Error)?.message || 'thất bại'}`);
       setIsVerified(false);
     }
-  };
+  }, [did]);
 
   useEffect(() => {
     if (!did) return;
@@ -125,7 +125,7 @@ export default function DIDActionsPanel() {
   }, [did, checkVerificationStatus]);
 
   const getWalletOrThrow = () => {
-    const w = (globalThis as { aptos?: { signAndSubmitTransaction: (payload: any) => Promise<any> } }).aptos ?? (globalThis as { window?: { aptos?: { signAndSubmitTransaction: (payload: any) => Promise<any> } } })?.window?.aptos;
+    const w = (globalThis as { aptos?: { signAndSubmitTransaction: (payload: unknown) => Promise<{ hash?: string }> } }).aptos ?? (globalThis as { window?: { aptos?: { signAndSubmitTransaction: (payload: unknown) => Promise<{ hash?: string }> } } })?.window?.aptos;
     if (!w) throw new Error('Wallet not found');
     return w;
   };

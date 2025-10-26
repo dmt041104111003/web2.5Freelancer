@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, onValue, off, serverTimestamp, update, remove } from 'firebase/database';
-import { APTOS_NODE_URL, DID, CONTRACT_ADDRESS, APTOS_API_KEY } from '@/constants/contracts';
+import { APTOS_NODE_URL, DID, APTOS_API_KEY } from '@/constants/contracts';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,

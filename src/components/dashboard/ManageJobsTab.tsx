@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
@@ -22,7 +22,7 @@ export const ManageJobsTab: React.FC = () => {
   const getUserCommitment = async () => sha256Hex(account!);
   const getHexEncodedCommitment = (commitment: string) => '0x' + Buffer.from(commitment, 'utf8').toString('hex');
 
-  const fetchMyJobs = async () => {
+  const fetchMyJobs = useCallback(async () => {
     if (!account) return;
     setLoadingJobs(true);
     try {
@@ -34,7 +34,7 @@ export const ManageJobsTab: React.FC = () => {
     } finally {
       setLoadingJobs(false);
     }
-  };
+  }, [account]);
 
   const claimStake = async (jobId: string) => {
     if (!account) return;
