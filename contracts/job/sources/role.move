@@ -14,7 +14,7 @@ module job_work_board::role {
     struct RoleEntry has store {
         kind: u8, // 1:freelancer 2:poster 3:reviewer
         role: string::String, // 'freelancer' | 'poster' | 'reviewer'
-        cid: Option<string::String>
+        cids: vector<string::String> // vector of CIDs for this role
     }
 
     struct Roles has key, store { entries: vector<RoleEntry> }
@@ -41,12 +41,29 @@ module job_work_board::role {
         let addr = signer::address_of(registrar);
         if (exists<Roles>(addr)) {
             let r = borrow_global_mut<Roles>(addr);
-            assert!(!contains_in_entries(&r.entries, ROLE_FREELANCER), E_ALREADY_REGISTERED);
-            vector::push_back(&mut r.entries, RoleEntry { kind: ROLE_FREELANCER, role, cid: option::some(cid) });
+            let n = vector::length(&r.entries);
+            let i = 0;
+            let found = false;
+            while (i < n) {
+                let e = vector::borrow_mut(&mut r.entries, i);
+                if (e.kind == ROLE_FREELANCER) {
+                    vector::push_back(&mut e.cids, cid);
+                    found = true;
+                    break
+                };
+                i = i + 1;
+            };
+            if (!found) {
+                let cids_vec = vector::empty<string::String>();
+                vector::push_back(&mut cids_vec, cid);
+                vector::push_back(&mut r.entries, RoleEntry { kind: ROLE_FREELANCER, role, cids: cids_vec });
+            }
         } else {
             move_to(registrar, Roles { entries: vector::empty<RoleEntry>() });
             let r2 = borrow_global_mut<Roles>(addr);
-            vector::push_back(&mut r2.entries, RoleEntry { kind: ROLE_FREELANCER, role, cid: option::some(cid) });
+            let cids_vec = vector::empty<string::String>();
+            vector::push_back(&mut cids_vec, cid);
+            vector::push_back(&mut r2.entries, RoleEntry { kind: ROLE_FREELANCER, role, cids: cids_vec });
         }
     }
 
@@ -55,12 +72,29 @@ module job_work_board::role {
         let addr = signer::address_of(registrar);
         if (exists<Roles>(addr)) {
             let r = borrow_global_mut<Roles>(addr);
-            assert!(!contains_in_entries(&r.entries, ROLE_POSTER), E_ALREADY_REGISTERED);
-            vector::push_back(&mut r.entries, RoleEntry { kind: ROLE_POSTER, role, cid: option::some(cid) });
+            let n = vector::length(&r.entries);
+            let i = 0;
+            let found = false;
+            while (i < n) {
+                let e = vector::borrow_mut(&mut r.entries, i);
+                if (e.kind == ROLE_POSTER) {
+                    vector::push_back(&mut e.cids, cid);
+                    found = true;
+                    break
+                };
+                i = i + 1;
+            };
+            if (!found) {
+                let cids_vec = vector::empty<string::String>();
+                vector::push_back(&mut cids_vec, cid);
+                vector::push_back(&mut r.entries, RoleEntry { kind: ROLE_POSTER, role, cids: cids_vec });
+            }
         } else {
             move_to(registrar, Roles { entries: vector::empty<RoleEntry>() });
             let r2 = borrow_global_mut<Roles>(addr);
-            vector::push_back(&mut r2.entries, RoleEntry { kind: ROLE_POSTER, role, cid: option::some(cid) });
+            let cids_vec = vector::empty<string::String>();
+            vector::push_back(&mut cids_vec, cid);
+            vector::push_back(&mut r2.entries, RoleEntry { kind: ROLE_POSTER, role, cids: cids_vec });
         }
     }
 
@@ -68,12 +102,26 @@ module job_work_board::role {
         let addr = signer::address_of(registrar);
         if (exists<Roles>(addr)) {
             let r = borrow_global_mut<Roles>(addr);
-            assert!(!contains_in_entries(&r.entries, ROLE_REVIEWER), E_ALREADY_REGISTERED);
-            vector::push_back(&mut r.entries, RoleEntry { kind: ROLE_REVIEWER, role: string::utf8(b"reviewer"), cid: option::none<string::String>() });
+            let n = vector::length(&r.entries);
+            let i = 0;
+            let found = false;
+            while (i < n) {
+                let e = vector::borrow(&r.entries, i);
+                if (e.kind == ROLE_REVIEWER) {
+                    found = true;
+                    break
+                };
+                i = i + 1;
+            };
+            if (!found) {
+                let cids_vec = vector::empty<string::String>();
+                vector::push_back(&mut r.entries, RoleEntry { kind: ROLE_REVIEWER, role: string::utf8(b"reviewer"), cids: cids_vec });
+            }
         } else {
             move_to(registrar, Roles { entries: vector::empty<RoleEntry>() });
             let r2 = borrow_global_mut<Roles>(addr);
-            vector::push_back(&mut r2.entries, RoleEntry { kind: ROLE_REVIEWER, role: string::utf8(b"reviewer"), cid: option::none<string::String>() });
+            let cids_vec = vector::empty<string::String>();
+            vector::push_back(&mut r2.entries, RoleEntry { kind: ROLE_REVIEWER, role: string::utf8(b"reviewer"), cids: cids_vec });
         };
         // add to reviewer pool if exists under the same address as registrar
         if (exists<ReviewerPool>(signer::address_of(registrar))) {
@@ -147,7 +195,14 @@ module job_work_board::role {
         while (i < n) {
             let e = vector::borrow(&r.entries, i);
             if (e.kind == ROLE_POSTER) {
-                if (option::is_some(&e.cid)) { let s = option::borrow(&e.cid); let bytes = string::bytes(s); return option::some(copy_bytes(bytes)); } else { return option::none<vector<u8>>(); }
+                let cids_len = vector::length(&e.cids);
+                if (cids_len > 0) {
+                    let last_cid = vector::borrow(&e.cids, cids_len - 1);
+                    let bytes = string::bytes(last_cid);
+                    return option::some(copy_bytes(bytes));
+                } else {
+                    return option::none<vector<u8>>();
+                }
             };
             i = i + 1;
         };
@@ -162,23 +217,41 @@ module job_work_board::role {
         while (i < n) {
             let e = vector::borrow(&r.entries, i);
             if (e.kind == ROLE_FREELANCER) {
-                if (option::is_some(&e.cid)) { let s = option::borrow(&e.cid); let bytes = string::bytes(s); return option::some(copy_bytes(bytes)); } else { return option::none<vector<u8>>(); }
+                let cids_len = vector::length(&e.cids);
+                if (cids_len > 0) {
+                    let last_cid = vector::borrow(&e.cids, cids_len - 1);
+                    let bytes = string::bytes(last_cid);
+                    return option::some(copy_bytes(bytes));
+                } else {
+                    return option::none<vector<u8>>();
+                }
             };
             i = i + 1;
         };
         option::none<vector<u8>>()
     }
 
-    public fun get_role_info(addr: address, kind: u8): (string::String, Option<string::String>) acquires Roles {
-if (!exists<Roles>(addr)) return (string::utf8(b""), option::none<string::String>());        let r = borrow_global<Roles>(addr);
+    public fun get_role_info(addr: address, kind: u8): (string::String, vector<string::String>) acquires Roles {
+        if (!exists<Roles>(addr)) return (string::utf8(b""), vector::empty<string::String>());
+        let r = borrow_global<Roles>(addr);
         let n = vector::length(&r.entries);
         let i = 0;
         while (i < n) {
             let e = vector::borrow(&r.entries, i);
-            if (e.kind == kind) return (e.role, e.cid);
+            if (e.kind == kind) {
+                let cids_copy = vector::empty<string::String>();
+                let cids_len = vector::length(&e.cids);
+                let j = 0;
+                while (j < cids_len) {
+                    let cid_ref = vector::borrow(&e.cids, j);
+                    vector::push_back(&mut cids_copy, *cid_ref);
+                    j = j + 1;
+                };
+                return (e.role, cids_copy);
+            };
             i = i + 1;
         };
-        (string::utf8(b""), option::none<string::String>())
+        (string::utf8(b""), vector::empty<string::String>())
     }
 }
 

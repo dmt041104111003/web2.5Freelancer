@@ -5,7 +5,7 @@ import { useWallet } from '@/contexts/WalletContext';
 
 export default function DIDActionsPanel() {
   const { account } = useWallet();
-  const [roles, setRoles] = useState<Array<{ name: string, cid?: string, desc?: string }>>([]);
+  const [roles, setRoles] = useState<Array<{ name: string, cids?: string[], desc?: string }>>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [inputs, setInputs] = useState<{[k: string]: string}>({});
@@ -18,20 +18,22 @@ export default function DIDActionsPanel() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_all_roles', args: [account], typeArgs: [] })
       });
-      const data = await res.json(); // {roles:[{name, cid}, ...]}
+      const data = await res.json(); // {roles:[{name, cids}, ...]}
       if (!Array.isArray(data?.roles)) return;
-      const results: Array<{name:string, cid?:string, desc?:string}> = [];
+      const results: Array<{name:string, cids?:string[], desc?:string}> = [];
       for(const r of data.roles) {
-        if(r.cid && typeof r.cid==='string' && r.cid.length > 16) {
+        const cids = Array.isArray(r?.cids) ? r.cids : [];
+        const lastCid = cids.length > 0 ? cids[cids.length - 1] : null;
+        if(lastCid && typeof lastCid==='string' && lastCid.length > 16) {
           try {
-            const pfres = await fetch(`/api/ipfs/get?cid=${r.cid}&mode=profile`);
+            const pfres = await fetch(`/api/ipfs/get?cid=${encodeURIComponent(lastCid)}&mode=profile`);
             const pf = await pfres.json();
-            results.push({ name: r.name, cid: r.cid, desc: pf?.about || pf?.description });
+            results.push({ name: r.name, cids, desc: pf?.about || pf?.description });
           } catch {
-            results.push({ name: r.name, cid: r.cid });
+            results.push({ name: r.name, cids });
           }
         } else {
-          results.push({ name: r.name });
+          results.push({ name: r.name, cids });
         }
       }
       if (!cancelled) setRoles(results);
@@ -84,6 +86,7 @@ export default function DIDActionsPanel() {
   const selectedRole = inputs['role'] || '';
   const isSelectedRegistered = !!roles.find(r => r.name === selectedRole);
   const actionLabel = selectedRole ? (isSelectedRegistered ? 'Update Role' : 'Register Role') : 'Register Role';
+  const isReviewer = selectedRole === 'reviewer';
 
   return (
     <Card variant="outlined" className="space-y-4 mt-6 bg-white p-4">
@@ -93,7 +96,7 @@ export default function DIDActionsPanel() {
         {roles.map(r => (
           <div key={r.name} className={`rounded p-2 text-xs mb-1 bg-blue-50 text-blue-900`}>
             Bạn đã là <b>{r.name}</b> 
-            <br />Description: {r.desc || <i>No profile data</i>}
+            {r.name !== 'reviewer' && <><br />Description: {r.desc || <i>No profile data</i>}</>}
           </div>
         ))}
       </div>
@@ -111,15 +114,17 @@ export default function DIDActionsPanel() {
             ))}
           </select>
         </div>
-        <div className="space-y-2">
-          <label className="block text-sm font-bold text-gray-900">Description</label>
-          <textarea className="w-full px-3 py-2 border border-gray-400 bg-white text-sm" rows={3}
-            value={inputs['desc'] || ''}
-            onChange={e => setInputs(i => ({ ...i, desc: e.target.value }))}
-            placeholder="About you / skills or project..."
-          />
-        </div>
-        <Button className="w-full" size="sm" variant="outline" onClick={()=>callRole(inputs.role, inputs.desc)} disabled={loading!==null || !inputs.role}>{actionLabel}</Button>
+        {!isReviewer && (
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-gray-900">Description</label>
+            <textarea className="w-full px-3 py-2 border border-gray-400 bg-white text-sm" rows={3}
+              value={inputs['desc'] || ''}
+              onChange={e => setInputs(i => ({ ...i, desc: e.target.value }))}
+              placeholder="About you / skills or project..."
+            />
+          </div>
+        )}
+        <Button className="w-full" size="sm" variant="outline" onClick={()=>callRole(inputs.role, isReviewer ? undefined : inputs.desc)} disabled={loading!==null || !inputs.role}>{actionLabel}</Button>
       </div>
       {message && <div className="text-xs text-gray-700">{message}</div>}
     </Card>

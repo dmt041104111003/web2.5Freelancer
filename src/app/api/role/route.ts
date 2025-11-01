@@ -27,14 +27,14 @@ export async function POST(req: Request) {
 				body: JSON.stringify({ function: fn, type_arguments: [], arguments: [address, kind] })
 			});
 			const viewResult = await viewResp.json();
-			let [role, cidRaw] = Array.isArray(viewResult) ? viewResult : ["", null];
-			let cid = null as string | null;
-			if (cidRaw && typeof cidRaw === "object" && Array.isArray(cidRaw.vec) && cidRaw.vec.length > 0) {
-				cid = cidRaw.vec[0];
-			} else if (typeof cidRaw === "string") {
-				cid = cidRaw;
+			let [role, cidsRaw] = Array.isArray(viewResult) ? viewResult : ["", []];
+			let cids: string[] = [];
+			if (cidsRaw && typeof cidsRaw === "object" && Array.isArray(cidsRaw)) {
+				cids = cidsRaw;
+			} else if (Array.isArray(cidsRaw)) {
+				cids = cidsRaw;
 			}
-			return NextResponse.json({ args: [role, cid] });
+			return NextResponse.json({ args: [role, cids] });
 		}
 
 		if (action === "get_all_roles") {
@@ -44,10 +44,11 @@ export async function POST(req: Request) {
 			const data = await res.json();
 			const entries = Array.isArray(data?.data?.entries) ? data.data.entries : [];
 			const roles = entries.map((e: any) => {
-				let cid: string | undefined;
-				if (e?.cid?.vec && Array.isArray(e.cid.vec) && e.cid.vec.length > 0) cid = e.cid.vec[0];
-				else if (typeof e?.cid === 'string') cid = e.cid;
-				return { name: e?.role ?? "", cid };
+				let cids: string[] = [];
+				if (e?.cids && Array.isArray(e.cids)) {
+					cids = e.cids;
+				}
+				return { name: e?.role ?? "", cids };
 			});
 			return NextResponse.json({ roles });
 		}

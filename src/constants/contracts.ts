@@ -4,7 +4,7 @@ export const APTOS_FAUCET_URL = "https://faucet.testnet.aptoslabs.com";
 export const APTOS_API_KEY = process.env.APTOS_API_KEY;
 
 
-export const CONTRACT_ADDRESS = "0x78d748252982ddd0dc0ccd8ea8c52c22a899bb78e6cdceab906203897ba97e7b";
+export const CONTRACT_ADDRESS = "0xf05c4cc0e2c07b47614b65150c9255e4ca0b6e9ee6877a6a6c6e11a7ed914917";
 
 export const ROLE = {
   REGISTER_FREELANCER: `${CONTRACT_ADDRESS}::role::register_freelancer`,
