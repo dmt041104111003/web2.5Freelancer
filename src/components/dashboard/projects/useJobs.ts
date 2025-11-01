@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CONTRACT_ADDRESS } from '@/constants/contracts';
 
-export type RoleState = 'unknown' | 'poster' | 'freelancer' | 'none';
+export type RoleState = 'unknown' | 'poster' | 'freelancer' | 'none' | 'both';
 
 export interface JobMetadata {
   title?: string;
@@ -61,14 +61,15 @@ export function useJobs(account?: string | null) {
       setCheckingRole(true);
       setRoleState('unknown');
       const [posterRes, freelancerRes] = await Promise.all([
-        fetch(`/v1/view`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ function: `${CONTRACT_ADDRESS}::role::has_poster`, type_arguments: [], arguments: [account] }) }),
-        fetch(`/v1/view`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ function: `${CONTRACT_ADDRESS}::role::has_freelancer`, type_arguments: [], arguments: [account] }) }),
+        fetch('/api/role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'has_poster', args: [account], typeArgs: [] }) }),
+        fetch('/api/role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'has_freelancer', args: [account], typeArgs: [] }) }),
       ]);
-      const poster = posterRes.ok ? await posterRes.json() : [false];
-      const freelancer = freelancerRes.ok ? await freelancerRes.json() : [false];
-      const isPoster = Array.isArray(poster) ? !!poster[0] : !!poster;
-      const isFreelancer = Array.isArray(freelancer) ? !!freelancer[0] : !!freelancer;
-      if (isPoster) setRoleState('poster'); else if (isFreelancer) setRoleState('freelancer'); else setRoleState('none');
+      const isPoster = posterRes.ok ? await posterRes.json() : false;
+      const isFreelancer = freelancerRes.ok ? await freelancerRes.json() : false;
+      if (isPoster && isFreelancer) setRoleState('both');
+      else if (isPoster) setRoleState('poster');
+      else if (isFreelancer) setRoleState('freelancer');
+      else setRoleState('none');
     } catch {
       setRoleState('unknown');
     } finally {
