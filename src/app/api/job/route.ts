@@ -160,7 +160,61 @@ export async function GET(req: Request) {
 			return NextResponse.json({ error: "Job not found" }, { status: 404 });
 		}
 
-		return NextResponse.json({ job: jobData });
+		// Parse state enum: Move enum can be { vec: ["VariantName"] }, { __variant__: "VariantName" }, or string
+		let stateStr = "Posted";
+		const stateData = jobData?.state;
+		
+		console.log(`[API] Raw state data for job ${jobId}:`, JSON.stringify(stateData));
+		
+		if (typeof stateData === 'string') {
+			stateStr = stateData;
+		} else if (stateData && typeof stateData === 'object') {
+			if (stateData.vec && Array.isArray(stateData.vec) && stateData.vec.length > 0) {
+				stateStr = String(stateData.vec[0]);
+			} else if (stateData.__variant__) {
+				stateStr = String(stateData.__variant__);
+			} else if (stateData.__name__) {
+				stateStr = String(stateData.__name__);
+			} else {
+				// Try to get first key as variant name
+				const keys = Object.keys(stateData);
+				if (keys.length > 0) {
+					stateStr = String(keys[0]);
+				}
+			}
+		}
+		
+		// Ensure stateStr is always a string
+		stateStr = String(stateStr || "Posted");
+		
+		// Parse freelancer: Option<address> returns { vec: ["0x..."] } or null
+		let freelancer = null;
+		if (jobData?.freelancer) {
+			if (typeof jobData.freelancer === 'object' && jobData.freelancer?.vec) {
+				if (jobData.freelancer.vec.length > 0) {
+					freelancer = jobData.freelancer.vec[0];
+				}
+			} else if (typeof jobData.freelancer === 'string') {
+				freelancer = jobData.freelancer;
+			}
+		}
+
+		// Parse apply_deadline
+		const applyDeadline = jobData?.apply_deadline ? Number(jobData.apply_deadline) : undefined;
+
+		const job = {
+			id: Number(jobId),
+			cid: jobData?.cid || "",
+			total_amount: Number(jobData?.job_funds?.value || jobData?.total_escrow || 0),
+			milestones_count: (jobData?.milestones || []).length,
+			has_freelancer: !!freelancer,
+			state: stateStr,
+			poster: jobData?.poster,
+			freelancer,
+			apply_deadline: applyDeadline
+		};
+
+		return NextResponse.json({ job });
 	} catch (error: any) {
 		return NextResponse.json({ error: error?.message || "Failed to fetch job" }, { status: 500 });
 	}

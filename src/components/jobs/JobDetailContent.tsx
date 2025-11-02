@@ -4,16 +4,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CONTRACT_ADDRESS } from '@/constants/contracts';
+import { useWallet } from '@/contexts/WalletContext';
+import { toast } from 'sonner';
 
 export const JobDetailContent: React.FC = () => {
   const params = useParams();
   const jobId = params.id;
+  const { account } = useWallet();
   
   const [jobDetails, setJobDetails] = useState<Record<string, unknown> | null>(null);
   const [jobData, setJobData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasFreelancerRole, setHasFreelancerRole] = useState(false);
+  const [applying, setApplying] = useState(false);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -51,7 +55,9 @@ export const JobDetailContent: React.FC = () => {
           setJobDetails(data.data);
         }
       } catch (err: unknown) {
-        setError((err as Error).message || 'Failed to fetch job details');
+        const errorMsg = (err as Error).message || 'Failed to fetch job details';
+        setError(errorMsg);
+        toast.error(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -59,6 +65,76 @@ export const JobDetailContent: React.FC = () => {
 
     fetchJobDetails();
   }, [jobId]);
+
+  // Check freelancer role from table
+  useEffect(() => {
+    if (!account) {
+      setHasFreelancerRole(false);
+      return;
+    }
+    fetch(`/api/role?address=${encodeURIComponent(account)}`)
+      .then(res => res.json())
+      .then(data => {
+        const rolesData = data.roles || [];
+        setHasFreelancerRole(rolesData.some((r: any) => r.name === 'freelancer'));
+      })
+      .catch(() => setHasFreelancerRole(false));
+  }, [account]);
+
+  const handleApply = async () => {
+    if (!account || !hasFreelancerRole || !jobId) {
+      toast.error('Bạn cần có role Freelancer để apply job. Vui lòng đăng ký role Freelancer trước!');
+      return;
+    }
+
+    try {
+      setApplying(true);
+      
+      // Get transaction payload from API
+      const res = await fetch('/api/job', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'apply',
+          job_id: Number(jobId)
+        })
+      });
+      
+      const payload = await res.json();
+      if (payload.error) {
+        throw new Error(payload.error);
+      }
+      
+      // Sign and submit transaction
+      const wallet = (window as any).aptos;
+      if (!wallet) {
+        throw new Error('Wallet not found. Please connect your wallet first.');
+      }
+      
+      const tx = await wallet.signAndSubmitTransaction({
+        type: "entry_function_payload",
+        function: payload.function,
+        type_arguments: payload.type_args || [],
+        arguments: payload.args
+      });
+      
+      if (tx?.hash) {
+        toast.success(`Apply thành công! TX: ${tx.hash}`);
+      } else {
+        toast.success('Apply transaction đã được gửi!');
+      }
+      
+      // Reload job data to update state
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err: unknown) {
+      console.error('[JobDetailContent] Error applying:', err);
+      toast.error(`Lỗi khi apply: ${(err as Error)?.message || 'Unknown error'}`);
+    } finally {
+      setApplying(false);
+    }
+  };
 
 
   if (loading) {
@@ -131,7 +207,7 @@ export const JobDetailContent: React.FC = () => {
         </div>
 
         {/* Sidebar - Blockchain Data */}
-        <div>
+        <div className="space-y-6">
           <Card variant="outlined" className="p-6">
             <h3 className="text-lg font-bold text-blue-800 mb-4">Thông tin Job</h3>
             <div className="space-y-4">
@@ -217,6 +293,91 @@ export const JobDetailContent: React.FC = () => {
               )}
             </div>
           </Card>
+
+          {/* Apply Button */}
+          {jobData && (
+            <Card variant="outlined" className="p-6 bg-white">
+              {!account ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-900 mb-2 font-medium">Vui lòng kết nối wallet để apply</p>
+                </div>
+              ) : !hasFreelancerRole ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-red-700 mb-2 font-bold">Bạn cần có role Freelancer để apply job</p>
+                  <Button
+                    onClick={() => window.location.href = '/auth/did-verification'}
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                  >
+                    Đăng ký role Freelancer
+                  </Button>
+                </div>
+              ) : (() => {
+                // Parse freelancer - API should already parse it, but check anyway
+                let hasFreelancer = false;
+                if (jobData.freelancer) {
+                  if (typeof jobData.freelancer === 'string') {
+                    hasFreelancer = true;
+                  } else if (jobData.freelancer.vec && Array.isArray(jobData.freelancer.vec) && jobData.freelancer.vec.length > 0) {
+                    hasFreelancer = true;
+                  }
+                }
+                
+                // Parse state - API should already parse it to string, but ensure it's a string
+                let stateStr = 'Posted';
+                if (typeof jobData.state === 'string') {
+                  stateStr = jobData.state;
+                } else if (jobData.state && typeof jobData.state === 'object') {
+                  if (jobData.state.vec && Array.isArray(jobData.state.vec) && jobData.state.vec.length > 0) {
+                    stateStr = String(jobData.state.vec[0]);
+                  } else if (jobData.state.__variant__) {
+                    stateStr = String(jobData.state.__variant__);
+                  }
+                }
+                
+                const isPosted = stateStr === 'Posted';
+                const isExpired = jobData.apply_deadline && Number(jobData.apply_deadline) * 1000 < Date.now();
+                
+                console.log('[JobDetailContent] Apply button check:', { stateStr, isPosted, hasFreelancer, isExpired, applyDeadline: jobData.apply_deadline });
+                
+                if (!isPosted) {
+                  return (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-900 font-medium">Job không còn ở trạng thái Open (state: {stateStr})</p>
+                    </div>
+                  );
+                }
+                
+                if (hasFreelancer) {
+                  return (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-900 font-medium">Job đã có freelancer</p>
+                    </div>
+                  );
+                }
+                
+                if (isExpired) {
+                  return (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-red-700 font-bold">Đã hết hạn apply</p>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <Button
+                    onClick={handleApply}
+                    disabled={applying}
+                    size="lg"
+                    className="w-full bg-blue-800 text-black hover:bg-blue-900 disabled:bg-blue-400 disabled:text-white py-4 text-lg font-bold"
+                  >
+                    {applying ? 'Đang apply...' : 'Apply Job'}
+                  </Button>
+                );
+              })()}
+            </Card>
+          )}
         </div>
       </div>
     </>
