@@ -11,6 +11,9 @@ interface Job {
   milestones_count?: number;
   has_freelancer?: boolean;
   state?: string;
+  apply_deadline?: number;
+  poster?: string;
+  freelancer?: string | null;
 }
 
 export const JobsContent: React.FC = () => {
@@ -33,7 +36,9 @@ export const JobsContent: React.FC = () => {
         }
         
         console.log('[JobsContent] Fetched jobs:', data);
-        setJobs(data.jobs || []);
+        const jobsList = data.jobs || [];
+        console.log('[JobsContent] Jobs array length:', jobsList.length);
+        setJobs(jobsList);
       } catch (err) {
         console.error('[JobsContent] Error fetching jobs:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch jobs');
@@ -110,22 +115,43 @@ export const JobsContent: React.FC = () => {
                      (typeof job.state === 'string' && job.state === 'Disputed') ? 'Disputed' :
                      (typeof job.state === 'string' ? job.state : 'Active')}
                   </span>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="pt-2 border-t border-gray-400">
-                    <p className="text-xs text-gray-600 break-all">CID: {job.cid}</p>
                   </div>
-                  {typeof job.has_freelancer === 'boolean' && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-700">Worker:</span>
-                      <span className={`font-bold ${job.has_freelancer ? 'text-blue-800' : 'text-gray-600'}`}>
-                        {job.has_freelancer ? 'Assigned' : 'Open'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Card>
+                  
+                  <div className="space-y-2 pt-2 border-t border-gray-200">
+                    {typeof job.has_freelancer === 'boolean' && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-700">Worker:</span>
+                        <span className={`font-bold ${job.has_freelancer ? 'text-blue-800' : 'text-gray-600'}`}>
+                          {job.has_freelancer ? 'Assigned' : 'Open'}
+                        </span>
+                      </div>
+                    )}
+                    {job.apply_deadline && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-700">Hạn đăng ký:</span>
+                        <span className={`font-bold text-xs ${
+                          job.apply_deadline * 1000 < Date.now() ? 'text-red-600' : 'text-gray-800'
+                        }`}>
+                          {(() => {
+                            const deadline = Number(job.apply_deadline);
+                            const date = new Date(deadline * 1000);
+                            const isExpired = deadline * 1000 < Date.now();
+                            return (
+                              <>
+                                {date.toLocaleDateString('vi-VN', { 
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })}
+                                {isExpired && 'Hết hạn'}
+                              </>
+                            );
+                          })()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </Card>
             </div>
           ))}
         </div>

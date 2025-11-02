@@ -133,7 +133,8 @@ export async function GET(req: Request) {
 						has_freelancer: !!freelancer,
 						state: stateStr,
 						poster: jobData?.poster,
-						freelancer
+						freelancer,
+						apply_deadline: jobData?.apply_deadline ? Number(jobData.apply_deadline) : undefined
 					};
 					jobs.push(job);
 					console.log(`[API] Found job #${id}: state=${job.state}, cid=${job.cid.substring(0, 20)}...`);

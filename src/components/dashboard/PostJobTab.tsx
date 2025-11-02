@@ -134,6 +134,10 @@ export const PostJobTab: React.FC = () => {
         (parseFloat(m.duration) || 0) * (TIME_MULTIPLIERS[m.unit as keyof typeof TIME_MULTIPLIERS] || 1)
       );
       
+      // Calculate apply deadline timestamp (days from now)
+      const applyDeadlineDays = parseFloat(jobDuration) || 7;
+      const applyDeadlineTimestamp = Math.floor(Date.now() / 1000) + (applyDeadlineDays * 24 * 60 * 60);
+      
       // Get transaction payload from API
       const apiRes = await fetch('/api/job/post', {
         method: 'POST',
@@ -141,7 +145,8 @@ export const PostJobTab: React.FC = () => {
         body: JSON.stringify({ 
           job_details_cid: jobDetailsCid, 
           milestones: contractMilestones, 
-          milestone_durations: contractMilestoneDurations 
+          milestone_durations: contractMilestoneDurations,
+          apply_deadline: applyDeadlineTimestamp
         })
       });
       const payload = await apiRes.json();

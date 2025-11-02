@@ -19,6 +19,10 @@ export async function POST(req: Request) {
 
 		// Calculate total deposit (sum of all milestones)
 		const poster_deposit = milestones.reduce((sum: number, m: number) => sum + m, 0);
+		
+		// apply_deadline is Unix timestamp in seconds
+		// If not provided, default to 7 days from now
+		const apply_deadline = body.apply_deadline || (Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60));
 
 		return NextResponse.json({
 			function: ESCROW.CREATE_JOB,
@@ -27,7 +31,8 @@ export async function POST(req: Request) {
 				job_details_cid,
 				milestone_durations,
 				milestones,
-				poster_deposit
+				poster_deposit,
+				apply_deadline
 			]
 		});
 	} catch (error: any) {

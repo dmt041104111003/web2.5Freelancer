@@ -52,6 +52,7 @@ module job_work_board::escrow {
         state: JobState,
         dispute_id: Option<u64>,
         dispute_winner: Option<bool>,  // true = freelancer wins, false = poster wins
+        apply_deadline: u64,  // Deadline for freelancers to apply (Unix timestamp in seconds)
         job_funds: coin::Coin<AptosCoin>,
         stake_pool: coin::Coin<AptosCoin>,
         dispute_pool: coin::Coin<AptosCoin>,
@@ -74,7 +75,8 @@ module job_work_board::escrow {
         cid: String,
         milestone_deadlines: vector<u64>,
         milestone_amounts: vector<u64>,
-        poster_deposit: u64
+        poster_deposit: u64,
+        apply_deadline: u64
     ) acquires EscrowStore {
         let poster_addr = signer::address_of(poster);
         assert!(role::has_poster(poster_addr), 1);
@@ -123,6 +125,7 @@ module job_work_board::escrow {
             state: JobState::Posted,
             dispute_id: option::none(),
             dispute_winner: option::none(),
+            apply_deadline,
             job_funds,
             stake_pool: stake,
             dispute_pool: fee,
@@ -136,6 +139,8 @@ module job_work_board::escrow {
         let store = borrow_global_mut<EscrowStore>(@job_work_board);
         let job = table::borrow_mut(&mut store.table, job_id);
         
+        let now = timestamp::now_seconds();
+        assert!(now <= job.apply_deadline, 2);  // E_APPLY_DEADLINE_PASSED
         assert!(option::is_none(&job.freelancer), 1);
         assert!(job.state == JobState::Posted, 1);
         
