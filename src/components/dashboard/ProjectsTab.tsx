@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
+import { MilestonesList } from './MilestonesList';
 
 interface Job {
   id: number;
@@ -12,6 +13,7 @@ interface Job {
   freelancer: string | null;
   total_amount: number;
   milestones_count: number;
+  milestones?: any[];
   has_freelancer: boolean;
   state: string;
 }
@@ -82,7 +84,7 @@ export const ProjectsTab: React.FC = () => {
       const allJobs = data.jobs || [];
       
       // Filter jobs: posted = jobs where poster === account, applied = jobs where freelancer === account
-      const filteredJobs = allJobs.filter((job: Job) => {
+      let filteredJobs = allJobs.filter((job: Job) => {
         if (activeTab === 'posted') {
           return job.poster?.toLowerCase() === account.toLowerCase();
         } else {
@@ -90,7 +92,23 @@ export const ProjectsTab: React.FC = () => {
         }
       });
 
-      setJobs(filteredJobs);
+      // Fetch full job details with milestones for each job
+      const jobsWithMilestones = await Promise.all(
+        filteredJobs.map(async (job: Job) => {
+          try {
+            const detailRes = await fetch(`/api/job?job_id=${job.id}`);
+            if (detailRes.ok) {
+              const detailData = await detailRes.json();
+              return { ...job, ...detailData.job };
+            }
+          } catch {
+            // If fetch fails, return original job
+          }
+          return job;
+        })
+      );
+
+      setJobs(jobsWithMilestones);
     } catch (err) {
       console.error('[ProjectsTab] Error fetching jobs:', err);
       setJobs([]);
@@ -227,6 +245,18 @@ export const ProjectsTab: React.FC = () => {
                       <div><span className="font-bold">Assigned:</span> {job.has_freelancer ? 'Yes' : 'No'}</div>
                     </div>
                   </div>
+
+                  {/* Milestones List */}
+                  {job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0 && (
+                    <MilestonesList
+                      jobId={job.id}
+                      milestones={job.milestones}
+                      poster={job.poster || ''}
+                      freelancer={job.freelancer}
+                      jobState={job.state || 'Posted'}
+                      onUpdate={fetchJobs}
+                    />
+                  )}
                 </div>
               ))}
 

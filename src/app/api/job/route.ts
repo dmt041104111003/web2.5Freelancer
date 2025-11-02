@@ -202,11 +202,43 @@ export async function GET(req: Request) {
 		// Parse apply_deadline
 		const applyDeadline = jobData?.apply_deadline ? Number(jobData.apply_deadline) : undefined;
 
+		// Parse milestones with their status
+		const milestones = (jobData?.milestones || []).map((m: any) => {
+			// Parse milestone status enum
+			let statusStr = "Pending";
+			const statusData = m?.status;
+			if (typeof statusData === 'string') {
+				statusStr = statusData;
+			} else if (statusData && typeof statusData === 'object') {
+				if (statusData.vec && Array.isArray(statusData.vec) && statusData.vec.length > 0) {
+					statusStr = String(statusData.vec[0]);
+				} else if (statusData.__variant__) {
+					statusStr = String(statusData.__variant__);
+				} else if (statusData.__name__) {
+					statusStr = String(statusData.__name__);
+				} else {
+					const keys = Object.keys(statusData);
+					if (keys.length > 0) {
+						statusStr = String(keys[0]);
+					}
+				}
+			}
+
+			return {
+				id: String(m?.id || 0),
+				amount: String(m?.amount || 0),
+				deadline: String(m?.deadline || 0),
+				status: statusStr,
+				evidence_cid: m?.evidence_cid || null
+			};
+		});
+
 		const job = {
 			id: Number(jobId),
 			cid: jobData?.cid || "",
 			total_amount: Number(jobData?.job_funds?.value || jobData?.total_escrow || 0),
-			milestones_count: (jobData?.milestones || []).length,
+			milestones_count: milestones.length,
+			milestones: milestones,
 			has_freelancer: !!freelancer,
 			state: stateStr,
 			poster: jobData?.poster,
@@ -238,16 +270,9 @@ export async function POST(req: Request) {
 					]
 				});
 
-			case "apply": // apply_job
+			case "apply": // apply_job (now includes stake + fee automatically)
 				return NextResponse.json({
 					function: ESCROW.APPLY_JOB,
-					type_args: [],
-					args: [params.job_id]
-				});
-
-			case "stake": // freelancer_stake
-				return NextResponse.json({
-					function: ESCROW.FREELANCER_STAKE,
 					type_args: [],
 					args: [params.job_id]
 				});

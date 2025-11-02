@@ -35,7 +35,8 @@ module job_work_board::escrow {
     struct Milestone has store {
         id: u64,
         amount: u64,
-        deadline: u64,
+        duration: u64,  // Original duration in seconds
+        deadline: u64,  // Absolute timestamp (calculated from started_at or previous milestone acceptance)
         status: MilestoneStatus,
         evidence_cid: Option<String>
     }
@@ -53,6 +54,7 @@ module job_work_board::escrow {
         dispute_id: Option<u64>,
         dispute_winner: Option<bool>,  // true = freelancer wins, false = poster wins
         apply_deadline: u64,  // Deadline for freelancers to apply (Unix timestamp in seconds)
+        started_at: Option<u64>,  // Timestamp when freelancer applied (to calculate milestone deadlines)
         job_funds: coin::Coin<AptosCoin>,
         stake_pool: coin::Coin<AptosCoin>,
         dispute_pool: coin::Coin<AptosCoin>,
@@ -100,13 +102,17 @@ module job_work_board::escrow {
         let job_id = store.next_job_id;
         store.next_job_id = store.next_job_id + 1;
 
+        // milestone_deadlines stores duration in seconds (relative to previous milestone acceptance or start)
+        // Store both duration and placeholder deadline (will be calculated when freelancer applies)
         let milestones = vector::empty<Milestone>();
         i = 0;
         while (i < n) {
+            let deadline_duration = *vector::borrow(&milestone_deadlines, i);
             vector::push_back(&mut milestones, Milestone {
                 id: i,
                 amount: *vector::borrow(&milestone_amounts, i),
-                deadline: *vector::borrow(&milestone_deadlines, i),
+                duration: deadline_duration,  // Store original duration
+                deadline: 0,  // Will be calculated when freelancer applies
                 status: MilestoneStatus::Pending,
                 evidence_cid: option::none()
             });
@@ -126,6 +132,7 @@ module job_work_board::escrow {
             dispute_id: option::none(),
             dispute_winner: option::none(),
             apply_deadline,
+            started_at: option::none(),
             job_funds,
             stake_pool: stake,
             dispute_pool: fee,
@@ -146,26 +153,31 @@ module job_work_board::escrow {
         assert!(now <= job.apply_deadline, 2);  // E_APPLY_DEADLINE_PASSED
         assert!(option::is_none(&job.freelancer), 1);
         assert!(job.state == JobState::Posted, 1);
-        
-        job.freelancer = option::some(freelancer_addr);
-        job.state = JobState::InProgress;
-    }
-
-    public entry fun freelancer_stake(freelancer: &signer, job_id: u64) acquires EscrowStore {
-        let freelancer_addr = signer::address_of(freelancer);
-        let store = borrow_global_mut<EscrowStore>(@job_work_board);
-        let job = table::borrow_mut(&mut store.table, job_id);
-
-        assert!(option::is_some(&job.freelancer) && *option::borrow(&job.freelancer) == freelancer_addr, 1);
         assert!(job.freelancer_stake == 0, 1);
-
+        
+        // Withdraw stake and fee when applying
         let stake = coin::withdraw<AptosCoin>(freelancer, STAKE_AMOUNT);
         let fee = coin::withdraw<AptosCoin>(freelancer, FREELANCER_FEE);
-
+        
+        // Set started_at when freelancer applies (for milestone deadline calculation)
+        job.started_at = option::some(now);
+        
+        // Calculate deadline for first milestone: started_at + duration
+        let len = vector::length(&job.milestones);
+        if (len > 0) {
+            let first_milestone = vector::borrow_mut(&mut job.milestones, 0);
+            first_milestone.deadline = now + first_milestone.duration;
+        };
+        
+        job.freelancer = option::some(freelancer_addr);
         job.freelancer_stake = STAKE_AMOUNT;
+        job.state = JobState::InProgress;
+        
+        // Merge stake and fee into pools
         coin::merge(&mut job.stake_pool, stake);
         coin::merge(&mut job.dispute_pool, fee);
     }
+
 
     public entry fun submit_milestone(
         freelancer: &signer,
@@ -223,7 +235,9 @@ module job_work_board::escrow {
         assert!(milestone.status == MilestoneStatus::Submitted, 1);
 
         milestone.status = MilestoneStatus::Accepted;
-
+        
+        // When milestone is accepted, recalculate deadline for next milestone
+        // The next milestone should start counting from now (when this milestone is accepted)
         if (option::is_some(&job.freelancer)) {
             let freelancer = *option::borrow(&job.freelancer);
             let payment = coin::extract(&mut job.job_funds, milestone.amount);
@@ -234,6 +248,17 @@ module job_work_board::escrow {
             };
             if (role::has_poster(poster_addr)) {
                 reputation::inc_utp(poster_addr, 1);
+            };
+            
+            // Recalculate deadline for the next milestone (if exists and not yet accepted)
+            let now = timestamp::now_seconds();
+            let next_idx = i + 1;
+            if (next_idx < len) {
+                let next_milestone = vector::borrow_mut(&mut job.milestones, next_idx);
+                // Only recalculate if milestone hasn't passed its deadline yet or status is still Pending
+                if (next_milestone.status == MilestoneStatus::Pending || now < next_milestone.deadline) {
+                    next_milestone.deadline = now + next_milestone.duration;
+                };
             };
         };
 
