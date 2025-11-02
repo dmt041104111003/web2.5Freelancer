@@ -20,6 +20,7 @@ interface MilestonesListProps {
   poster: string;
   freelancer: string | null;
   jobState: string;
+  mutualCancelRequestedBy?: string | null;
   onUpdate?: () => void;
 }
 
@@ -29,6 +30,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
   poster,
   freelancer,
   jobState,
+  mutualCancelRequestedBy,
   onUpdate
 }) => {
   const { account } = useWallet();
@@ -325,7 +327,8 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
   };
 
   const handleMutualCancel = async () => {
-    if (!account || !isPoster || !freelancer) return;
+    if (!account || !freelancer) return;
+    if (!isPoster && !isFreelancer) return;
 
     toast.warning('Bạn có chắc muốn đồng thuận hủy job? Poster sẽ nhận escrow, cả 2 stake sẽ về freelancer.', {
       action: {
@@ -348,10 +351,6 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
 
             const wallet = (window as any).aptos;
             if (!wallet) throw new Error('Wallet not found');
-
-            toast.info('Freelancer cũng cần ký transaction này. Vui lòng thông báo cho freelancer.', {
-              duration: 5000
-            });
 
             const tx = await wallet.signAndSubmitTransaction({
               type: "entry_function_payload",
@@ -404,10 +403,6 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
 
             const wallet = (window as any).aptos;
             if (!wallet) throw new Error('Wallet not found');
-
-            toast.info('Poster cũng cần ký transaction này. Vui lòng thông báo cho poster.', {
-              duration: 5000
-            });
 
             const tx = await wallet.signAndSubmitTransaction({
               type: "entry_function_payload",
@@ -615,26 +610,63 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
         {canInteract && !isCancelled && freelancer && (
           <div className="mt-4 p-3 border-2 border-orange-300 bg-orange-50 rounded">
             <h5 className="text-sm font-bold text-orange-800 mb-2">Dừng dự án</h5>
+            
+            {/* Mutual Cancel Status */}
+            {mutualCancelRequestedBy && (
+              <div className="mb-2 p-2 bg-blue-100 border border-blue-300 rounded">
+                {mutualCancelRequestedBy.toLowerCase() === account?.toLowerCase() ? (
+                  <p className="text-xs text-blue-800 font-bold">
+                    ✓ Bạn đã yêu cầu hủy. Đang chờ bên kia xác nhận...
+                  </p>
+                ) : (
+                  <p className="text-xs text-blue-800 font-bold">
+                    ⚠ {mutualCancelRequestedBy.toLowerCase() === poster.toLowerCase() ? 'Poster' : 'Freelancer'} đã yêu cầu hủy. Bạn có muốn đồng ý không?
+                  </p>
+                )}
+              </div>
+            )}
+            
             <div className="flex gap-2 flex-wrap">
               {isPoster && (
                 <Button
                   size="sm"
                   onClick={() => handleMutualCancel()}
                   disabled={cancelling}
-                  className="bg-blue-600 text-black  hover:bg-blue-700 text-xs px-3 py-1"
+                  className="bg-blue-600 text-black hover:bg-blue-700 text-xs px-3 py-1"
                 >
-                  {cancelling ? 'Đang xử lý...' : 'Đồng thuận hủy (Mutual Cancel)'}
+                  {cancelling ? 'Đang xử lý...' : 
+                   mutualCancelRequestedBy?.toLowerCase() === account?.toLowerCase() ? 
+                     'Đã yêu cầu (Chờ freelancer)' : 
+                   mutualCancelRequestedBy?.toLowerCase() === freelancer?.toLowerCase() ?
+                     'Xác nhận hủy (Freelancer đã yêu cầu)' :
+                     'Đồng thuận hủy (Mutual Cancel)'}
                 </Button>
               )}
               {isFreelancer && (
-                <Button
-                  size="sm"
-                  onClick={() => handleFreelancerWithdraw()}
-                  disabled={withdrawing}
-                  className="bg-red-600 text-black hover:text-white hover:bg-red-700 text-xs px-3 py-1"
-                >
-                  {withdrawing ? 'Đang xử lý...' : 'Xin rút (Mất stake)'}
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    onClick={() => handleMutualCancel()}
+                    disabled={cancelling}
+                    className="bg-blue-600 text-black hover:bg-blue-700 text-xs px-3 py-1"
+                  >
+                    {cancelling ? 'Đang xử lý...' : 
+                     mutualCancelRequestedBy?.toLowerCase() === account?.toLowerCase() ? 
+                       'Đã yêu cầu (Chờ poster)' : 
+                     mutualCancelRequestedBy?.toLowerCase() === poster?.toLowerCase() ?
+                       'Xác nhận hủy (Poster đã yêu cầu)' :
+                       'Đồng thuận hủy (Mutual Cancel)'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleFreelancerWithdraw()}
+                    disabled={withdrawing || !!mutualCancelRequestedBy}
+                    className="bg-red-600 text-black hover:text-white hover:bg-red-700 text-xs px-3 py-1 disabled:opacity-50"
+                    title={mutualCancelRequestedBy ? 'Không thể rút khi đang có yêu cầu mutual cancel' : ''}
+                  >
+                    {withdrawing ? 'Đang xử lý...' : 'Xin rút (Mất stake)'}
+                  </Button>
+                </>
               )}
             </div>
           </div>

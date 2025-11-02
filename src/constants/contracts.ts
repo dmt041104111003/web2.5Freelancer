@@ -2,7 +2,7 @@ export const APTOS_NETWORK = "testnet";
 export const APTOS_NODE_URL = "https://api.testnet.aptoslabs.com";
 export const APTOS_FAUCET_URL = "https://faucet.testnet.aptoslabs.com";
 
-export const CONTRACT_ADDRESS = "0xe66a2dfa9123fc8393c9530e8e110a706ca50513229e379c4e7a312f3b291f96";
+export const CONTRACT_ADDRESS = "0xe98ac1dd8f56ae2750a6b867be91ffb4f16cf62cc4a73229fb6f35a06f16b290";
 
 export const ROLE_KIND = {
   FREELANCER: 1,
@@ -27,6 +27,7 @@ export const ESCROW = {
   CLAIM_TIMEOUT: `${CONTRACT_ADDRESS}::escrow::claim_timeout`,
   MUTUAL_CANCEL: `${CONTRACT_ADDRESS}::escrow::mutual_cancel`,
   FREELANCER_WITHDRAW: `${CONTRACT_ADDRESS}::escrow::freelancer_withdraw`,
+  POSTER_WITHDRAW_UNFILLED: `${CONTRACT_ADDRESS}::escrow::poster_withdraw_unfilled_job`,
   UNLOCK_NON_DISPUTED_MILESTONES: `${CONTRACT_ADDRESS}::escrow::unlock_non_disputed_milestones`,
   CLAIM_DISPUTE_PAYMENT: `${CONTRACT_ADDRESS}::escrow::claim_dispute_payment`,
   CLAIM_DISPUTE_REFUND: `${CONTRACT_ADDRESS}::escrow::claim_dispute_refund`,

@@ -202,6 +202,18 @@ export async function GET(req: Request) {
 		// Parse apply_deadline
 		const applyDeadline = jobData?.apply_deadline ? Number(jobData.apply_deadline) : undefined;
 
+		// Parse mutual_cancel_requested_by: Option<address>
+		let mutualCancelRequestedBy = null;
+		if (jobData?.mutual_cancel_requested_by) {
+			if (typeof jobData.mutual_cancel_requested_by === 'object' && jobData.mutual_cancel_requested_by?.vec) {
+				if (jobData.mutual_cancel_requested_by.vec.length > 0) {
+					mutualCancelRequestedBy = jobData.mutual_cancel_requested_by.vec[0];
+				}
+			} else if (typeof jobData.mutual_cancel_requested_by === 'string') {
+				mutualCancelRequestedBy = jobData.mutual_cancel_requested_by;
+			}
+		}
+
 		// Parse milestones with their status
 		const milestones = (jobData?.milestones || []).map((m: any) => {
 			// Parse milestone status enum
@@ -243,7 +255,8 @@ export async function GET(req: Request) {
 			state: stateStr,
 			poster: jobData?.poster,
 			freelancer,
-			apply_deadline: applyDeadline
+			apply_deadline: applyDeadline,
+			mutual_cancel_requested_by: mutualCancelRequestedBy
 		};
 
 		return NextResponse.json({ job });
@@ -326,6 +339,13 @@ export async function POST(req: Request) {
 			case "freelancer_withdraw": // freelancer_withdraw
 				return NextResponse.json({
 					function: ESCROW.FREELANCER_WITHDRAW,
+					type_args: [],
+					args: [params.job_id]
+				});
+
+			case "poster_withdraw_unfilled": // poster_withdraw_unfilled_job
+				return NextResponse.json({
+					function: ESCROW.POSTER_WITHDRAW_UNFILLED,
 					type_args: [],
 					args: [params.job_id]
 				});

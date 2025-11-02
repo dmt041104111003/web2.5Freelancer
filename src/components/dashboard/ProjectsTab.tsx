@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/contexts/WalletContext';
 import { MilestonesList } from './MilestonesList';
+import { toast } from 'sonner';
 
 interface Job {
   id: number;
@@ -16,6 +17,8 @@ interface Job {
   milestones?: any[];
   has_freelancer: boolean;
   state: string;
+  mutual_cancel_requested_by?: string | null;
+  apply_deadline?: number;
 }
 
 export const ProjectsTab: React.FC = () => {
@@ -243,8 +246,80 @@ export const ProjectsTab: React.FC = () => {
                       <div><span className="font-bold">Total:</span> {job.total_amount ? `${(job.total_amount / 100_000_000).toFixed(2)} APT` : '-'}</div>
                       <div><span className="font-bold">Milestones:</span> {job.milestones_count || 0}</div>
                       <div><span className="font-bold">Assigned:</span> {job.has_freelancer ? 'Yes' : 'No'}</div>
+                      {job.apply_deadline && (
+                        <div className="col-span-2">
+                          <span className="font-bold">Apply Deadline:</span> {
+                            new Date(job.apply_deadline * 1000).toLocaleString('vi-VN')
+                          }
+                          {job.apply_deadline * 1000 < Date.now() && (
+                            <span className="ml-2 text-red-600 font-bold">(Đã hết hạn)</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Poster Withdraw Unfilled Job Button */}
+                  {activeTab === 'posted' && 
+                   !job.has_freelancer && 
+                   job.state === 'Posted' && 
+                   account?.toLowerCase() === job.poster?.toLowerCase() && (
+                    <div className="mt-3 mb-3 p-3 border-2 border-orange-300 bg-orange-50 rounded">
+                      <p className="text-xs text-orange-800 mb-2">
+                        ⚠ Job chưa có freelancer apply. Bạn có thể rút lại stake và escrow về ví.
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          toast.warning('Bạn có chắc muốn rút lại job này? Stake và escrow sẽ được hoàn về ví của bạn.', {
+                            action: {
+                              label: 'Xác nhận',
+                              onClick: async () => {
+                                try {
+                                  const res = await fetch('/api/job', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      action: 'poster_withdraw_unfilled',
+                                      job_id: job.id
+                                    })
+                                  });
+                                  const payload = await res.json();
+                                  if (payload.error) throw new Error(payload.error);
+
+                                  const wallet = (window as any).aptos;
+                                  if (!wallet) throw new Error('Wallet not found');
+
+                                  const tx = await wallet.signAndSubmitTransaction({
+                                    type: "entry_function_payload",
+                                    function: payload.function,
+                                    type_arguments: payload.type_args || [],
+                                    arguments: payload.args
+                                  });
+
+                                  toast.success(`Rút job thành công! TX: ${tx?.hash || 'N/A'}`);
+                                  setTimeout(() => {
+                                    fetchJobs();
+                                  }, 2000);
+                                } catch (err: any) {
+                                  console.error('[ProjectsTab] Withdraw error:', err);
+                                  toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+                                }
+                              }
+                            },
+                            cancel: {
+                              label: 'Hủy',
+                              onClick: () => {}
+                            },
+                            duration: 10000
+                          });
+                        }}
+                        className="bg-orange-600 text-black hover:bg-orange-700 text-xs px-3 py-1"
+                      >
+                        Rút lại job (Nhận stake + escrow)
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Milestones List */}
                   {job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0 && (
@@ -254,6 +329,7 @@ export const ProjectsTab: React.FC = () => {
                       poster={job.poster || ''}
                       freelancer={job.freelancer}
                       jobState={job.state || 'Posted'}
+                      mutualCancelRequestedBy={job.mutual_cancel_requested_by || null}
                       onUpdate={fetchJobs}
                     />
                   )}
