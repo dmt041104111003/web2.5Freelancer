@@ -3,71 +3,46 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
-import { CONTRACT_ADDRESS } from '@/constants/contracts';
+
+interface Job {
+  id: number;
+  cid: string;
+  total_amount?: number;
+  milestones_count?: number;
+  has_freelancer?: boolean;
+  state?: string;
+}
 
 export const JobsContent: React.FC = () => {
   const router = useRouter();
-  const [jobs, setJobs] = useState<Array<{ id: number; cid: string; total_amount?: number; milestones_count?: number; has_freelancer?: boolean; locked?: boolean }>>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const scanJobsFromChain = async () => {
+    const fetchJobs = async () => {
       try {
         setLoading(true);
         setError(null);
-        const fn = `${CONTRACT_ADDRESS}::escrow::get_job_cid`;
-        const fnTotal = `${CONTRACT_ADDRESS}::escrow::get_total_amount`;
-        const fnMilestones = `${CONTRACT_ADDRESS}::escrow::get_milestone_count`;
-        const fnHasFreelancer = `${CONTRACT_ADDRESS}::escrow::has_freelancer`;
-        const fnLocked = `${CONTRACT_ADDRESS}::escrow::is_locked`;
-        const maxScan = 200;
-        const firstId = 1;
-        const list: Array<{ id: number; cid: string; total_amount?: number; milestones_count?: number; has_freelancer?: boolean; locked?: boolean }> = [];
-        for (let id = firstId; id < firstId + maxScan; id++) {
-          try {
-            const res = await fetch('/v1/view', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ function: fn, type_arguments: [], arguments: [id] })
-            });
-            if (!res.ok) continue;
-            const out = await res.json();
-            // Expect vector<u8> → base64 or hex depends on node; attempt to stringify
-            const cidBytes = Array.isArray(out) ? out[0] : out;
-            if (!cidBytes) continue;
-            // Represent as hex string for list (no IPFS fetch here)
-            const cid = typeof cidBytes === 'string' ? cidBytes : JSON.stringify(cidBytes);
-
-            const [tRes, mRes, fRes, lRes] = await Promise.all([
-              fetch('/v1/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ function: fnTotal, type_arguments: [], arguments: [id] }) }).catch(() => null),
-              fetch('/v1/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ function: fnMilestones, type_arguments: [], arguments: [id] }) }).catch(() => null),
-              fetch('/v1/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ function: fnHasFreelancer, type_arguments: [], arguments: [id] }) }).catch(() => null),
-              fetch('/v1/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ function: fnLocked, type_arguments: [], arguments: [id] }) }).catch(() => null),
-            ]);
-            const totalOut = tRes && tRes.ok ? await tRes.json() : undefined;
-            const milesOut = mRes && mRes.ok ? await mRes.json() : undefined;
-            const hasFOut = fRes && fRes.ok ? await fRes.json() : undefined;
-            const lockedOut = lRes && lRes.ok ? await lRes.json() : undefined;
-
-            const total_amount = Array.isArray(totalOut) ? Number(totalOut[0]) : Number(totalOut);
-            const milestones_count = Array.isArray(milesOut) ? Number(milesOut[0]) : Number(milesOut);
-            const has_freelancer = Array.isArray(hasFOut) ? !!hasFOut[0] : !!hasFOut;
-            const locked = Array.isArray(lockedOut) ? !!lockedOut[0] : !!lockedOut;
-
-            list.push({ id, cid, total_amount, milestones_count, has_freelancer, locked });
-          } catch (_) {
-            // ignore individual failures
-          }
+        
+        const res = await fetch('/api/job?list=true');
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || `HTTP ${res.status}: Failed to fetch jobs`);
         }
-        setJobs(list);
-      } catch {
-        setError('Failed to fetch jobs from blockchain');
+        
+        console.log('[JobsContent] Fetched jobs:', data);
+        setJobs(data.jobs || []);
+      } catch (err) {
+        console.error('[JobsContent] Error fetching jobs:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch jobs');
       } finally {
         setLoading(false);
       }
     };
-    scanJobsFromChain();
+    
+    fetchJobs();
   }, []);
 
   if (loading) {
@@ -104,10 +79,7 @@ export const JobsContent: React.FC = () => {
             <div 
               key={job.id} 
               className="cursor-pointer"
-              onClick={() => {
-                console.log('Clicking job:', job.id);
-                router.push(`/jobs/${job.id}`);
-              }}
+              onClick={() => router.push(`/jobs/${job.id}`)}
             >
               <Card 
                 variant="outlined"
@@ -117,18 +89,32 @@ export const JobsContent: React.FC = () => {
                   <div>
                     <h3 className="text-lg font-bold text-blue-800">Job #{job.id}</h3>
                     <p className="text-sm text-gray-700">
-                      {(typeof job.total_amount === 'number') ? `${(job.total_amount / 100_000_000).toFixed(2)} APT` : '—'}
-                      {typeof job.milestones_count === 'number' ? ` • ${job.milestones_count} milestones` : ''}
+                      {typeof job.total_amount === 'number' 
+                        ? `${(job.total_amount / 100_000_000).toFixed(2)} APT` 
+                        : '—'}
+                      {typeof job.milestones_count === 'number' 
+                        ? ` • ${job.milestones_count} milestones` 
+                        : ''}
                     </p>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-bold border-2 bg-gray-100 text-gray-800 border-gray-300`}>
-                    {job.locked ? 'In progress' : 'Active'}
+                  <span className={`px-2 py-1 text-xs font-bold border-2 ${
+                    (typeof job.state === 'string' && job.state === 'Posted') ? 'bg-green-100 text-green-800 border-green-300' :
+                    (typeof job.state === 'string' && job.state === 'InProgress') ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                    (typeof job.state === 'string' && job.state === 'Completed') ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                    (typeof job.state === 'string' && job.state === 'Disputed') ? 'bg-red-100 text-red-800 border-red-300' :
+                    'bg-gray-100 text-gray-800 border-gray-300'
+                  }`}>
+                    {(typeof job.state === 'string' && job.state === 'Posted') ? 'Open' :
+                     (typeof job.state === 'string' && job.state === 'InProgress') ? 'In Progress' :
+                     (typeof job.state === 'string' && job.state === 'Completed') ? 'Completed' :
+                     (typeof job.state === 'string' && job.state === 'Disputed') ? 'Disputed' :
+                     (typeof job.state === 'string' ? job.state : 'Active')}
                   </span>
                 </div>
                 
                 <div className="space-y-3">
                   <div className="pt-2 border-t border-gray-400">
-                    <p className="text-xs text-gray-600 break-all">CID bytes: {job.cid}</p>
+                    <p className="text-xs text-gray-600 break-all">CID: {job.cid}</p>
                   </div>
                   {typeof job.has_freelancer === 'boolean' && (
                     <div className="flex justify-between text-sm">

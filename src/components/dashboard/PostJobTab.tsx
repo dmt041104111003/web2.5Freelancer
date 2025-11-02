@@ -12,6 +12,21 @@ interface Milestone { amount: string; duration: string; unit: string; }
 const TIME_MULTIPLIERS = { 'giây': 1, 'phút': 60, 'giờ': 3600, 'ngày': 86400, 'tuần': 604800, 'tháng': 2592000 } as const;
 const APT_TO_UNITS = 100_000_000;
 
+const checkPosterRoleFromTable = async (address: string): Promise<boolean> => {
+  try {
+    const res = await fetch(`/api/role?address=${encodeURIComponent(address)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    const rolesData = data.roles || [];
+    return rolesData.some((r: any) => r.name === 'poster');
+  } catch {
+    return false;
+  }
+};
+
 export const PostJobTab: React.FC = () => {
   const { account } = useWallet();
   const [jobTitle, setJobTitle] = useState('');
@@ -26,21 +41,6 @@ export const PostJobTab: React.FC = () => {
   const [currentMilestone, setCurrentMilestone] = useState<Milestone>({amount: '', duration: '', unit: 'ngày'});
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [inputMode, setInputMode] = useState<'manual' | 'json'>('manual');
-
-  const checkPosterRoleFromTable = async (address: string): Promise<boolean> => {
-    try {
-      const res = await fetch(`/api/role?address=${encodeURIComponent(address)}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!res.ok) return false;
-      const data = await res.json();
-      const rolesData = data.roles || [];
-      return rolesData.some((r: any) => r.name === 'poster');
-    } catch {
-      return false;
-    }
-  };
 
   useEffect(() => {
     if (!account) return;
@@ -117,28 +117,45 @@ export const PostJobTab: React.FC = () => {
     if (!account) return;
     try {
       setJobResult('Đang tạo job...');
-      const ipfsData = await fetch('/api/ipfs/upload', {
+      
+      // Upload job details to IPFS
+      const ipfsRes = await fetch('/api/ipfs/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'job', title: jobTitle, description: jobDescription, requirements: skillsList })
-      }).then(r => r.json());
+      });
+      const ipfsData = await ipfsRes.json();
       if (!ipfsData.success) throw new Error(ipfsData.error);
-      const encCid = ipfsData.encCid || ipfsData.ipfsHash;
+      const jobDetailsCid = ipfsData.encCid || ipfsData.ipfsHash;
+      
+      // Convert milestones to contract format
       const contractMilestones = milestonesList.map(m => Math.floor(parseFloat(m.amount) * APT_TO_UNITS));
-      const contractMilestoneDurations = milestonesList.map(m => (parseFloat(m.duration) || 0) * (TIME_MULTIPLIERS[m.unit as keyof typeof TIME_MULTIPLIERS] || 1));
-      const data = await fetch('/api/job/post', {
+      const contractMilestoneDurations = milestonesList.map(m => 
+        (parseFloat(m.duration) || 0) * (TIME_MULTIPLIERS[m.unit as keyof typeof TIME_MULTIPLIERS] || 1)
+      );
+      
+      // Get transaction payload from API
+      const apiRes = await fetch('/api/job/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_details_cid: encCid, milestones: contractMilestones, milestone_durations: contractMilestoneDurations })
-      }).then(r => r.json());
-      if (data.error) throw new Error(data.error);
+        body: JSON.stringify({ 
+          job_details_cid: jobDetailsCid, 
+          milestones: contractMilestones, 
+          milestone_durations: contractMilestoneDurations 
+        })
+      });
+      const payload = await apiRes.json();
+      if (payload.error) throw new Error(payload.error);
+      
+      // Sign and submit transaction
       setJobResult('Đang ký transaction...');
       const tx = await (window as { aptos: { signAndSubmitTransaction: (payload: unknown) => Promise<{ hash: string }> } }).aptos.signAndSubmitTransaction({
         type: "entry_function_payload",
-        function: data.function,
-        type_arguments: data.type_args,
-        arguments: data.args
+        function: payload.function,
+        type_arguments: payload.type_args,
+        arguments: payload.args
       });
+      
       setJobResult(tx?.hash ? `Job đã được tạo thành công! TX: ${tx.hash}` : 'Job đã được gửi transaction!');
     } catch (e: unknown) {
       setJobResult(`Lỗi: ${(e as Error)?.message || 'thất bại'}`);

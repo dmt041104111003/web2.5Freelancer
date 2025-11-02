@@ -51,6 +51,7 @@ module job_work_board::escrow {
         milestones: vector<Milestone>,
         state: JobState,
         dispute_id: Option<u64>,
+        dispute_winner: Option<bool>,  // true = freelancer wins, false = poster wins
         job_funds: coin::Coin<AptosCoin>,
         stake_pool: coin::Coin<AptosCoin>,
         dispute_pool: coin::Coin<AptosCoin>,
@@ -121,6 +122,7 @@ module job_work_board::escrow {
             milestones,
             state: JobState::Posted,
             dispute_id: option::none(),
+            dispute_winner: option::none(),
             job_funds,
             stake_pool: stake,
             dispute_pool: fee,
@@ -415,28 +417,8 @@ module job_work_board::escrow {
         let milestone = vector::borrow_mut(&mut job.milestones, i);
         milestone.status = MilestoneStatus::Accepted;
 
-        if (winner_is_freelancer) {
-            if (option::is_some(&job.freelancer)) {
-                let freelancer = *option::borrow(&job.freelancer);
-                let payment = coin::extract(&mut job.job_funds, milestone.amount);
-                coin::deposit(freelancer, payment);
-                if (role::has_freelancer(freelancer)) {
-                    reputation::inc_utf(freelancer, 1);
-                };
-                if (role::has_poster(job.poster)) {
-                    reputation::inc_utp(job.poster, 1);
-                };
-            };
-        } else {
-            let refund = coin::extract(&mut job.job_funds, milestone.amount);
-            coin::deposit(job.poster, refund);
-            if (job.freelancer_stake > 0) {
-                let penalty = coin::extract(&mut job.stake_pool, job.freelancer_stake);
-                coin::deposit(job.poster, penalty);
-                job.freelancer_stake = 0;
-            };
-        };
-
+        // Store winner, let holders claim later
+        job.dispute_winner = option::some(winner_is_freelancer);
         job.dispute_id = option::none();
         
         let all_accepted = true;
@@ -467,6 +449,87 @@ module job_work_board::escrow {
             coin::deposit(freelancer, back);
             job.freelancer_stake = 0;
         };
+    }
+
+    public entry fun claim_dispute_payment(
+        freelancer: &signer,
+        job_id: u64,
+        milestone_id: u64
+    ) acquires EscrowStore {
+        let freelancer_addr = signer::address_of(freelancer);
+        let store = borrow_global_mut<EscrowStore>(@job_work_board);
+        let job = table::borrow_mut(&mut store.table, job_id);
+
+        assert!(option::is_some(&job.freelancer) && *option::borrow(&job.freelancer) == freelancer_addr, 1);
+        assert!(option::is_some(&job.dispute_winner), 1);
+        assert!(*option::borrow(&job.dispute_winner) == true, 1);
+
+        let len = vector::length(&job.milestones);
+        let i = 0;
+        let found = false;
+        while (i < len && !found) {
+            if (vector::borrow(&job.milestones, i).id == milestone_id) {
+                found = true;
+            } else {
+                i = i + 1;
+            };
+        };
+        assert!(found, 1);
+
+        let milestone = vector::borrow_mut(&mut job.milestones, i);
+        assert!(milestone.status == MilestoneStatus::Accepted, 1);
+
+        let payment = coin::extract(&mut job.job_funds, milestone.amount);
+        coin::deposit(freelancer_addr, payment);
+
+        if (role::has_freelancer(freelancer_addr)) {
+            reputation::inc_utf(freelancer_addr, 1);
+        };
+        if (role::has_poster(job.poster)) {
+            reputation::inc_utp(job.poster, 1);
+        };
+
+        job.dispute_winner = option::none();
+    }
+
+    public entry fun claim_dispute_refund(
+        poster: &signer,
+        job_id: u64,
+        milestone_id: u64
+    ) acquires EscrowStore {
+        let poster_addr = signer::address_of(poster);
+        let store = borrow_global_mut<EscrowStore>(@job_work_board);
+        let job = table::borrow_mut(&mut store.table, job_id);
+
+        assert!(job.poster == poster_addr, 1);
+        assert!(option::is_some(&job.dispute_winner), 1);
+        assert!(*option::borrow(&job.dispute_winner) == false, 1);
+
+        let len = vector::length(&job.milestones);
+        let i = 0;
+        let found = false;
+        while (i < len && !found) {
+            if (vector::borrow(&job.milestones, i).id == milestone_id) {
+                found = true;
+            } else {
+                i = i + 1;
+            };
+        };
+        assert!(found, 1);
+
+        let milestone = vector::borrow_mut(&mut job.milestones, i);
+        assert!(milestone.status == MilestoneStatus::Accepted, 1);
+
+        let refund = coin::extract(&mut job.job_funds, milestone.amount);
+        coin::deposit(poster_addr, refund);
+
+        if (job.freelancer_stake > 0) {
+            let penalty = coin::extract(&mut job.stake_pool, job.freelancer_stake);
+            coin::deposit(poster_addr, penalty);
+            job.freelancer_stake = 0;
+        };
+
+        job.dispute_winner = option::none();
     }
 
     public fun get_job_parties(job_id: u64): (address, Option<address>) acquires EscrowStore {

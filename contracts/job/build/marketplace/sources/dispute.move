@@ -3,16 +3,12 @@ module job_work_board::dispute {
     use std::option;
     use std::string::String;
     use aptos_framework::signer;
-    use aptos_framework::coin;
-    use aptos_framework::aptos_coin::AptosCoin;
     use aptos_std::table::{Self, Table};
     use job_work_board::role;
     use job_work_board::reputation;
     use job_work_board::escrow;
 
-    const OCTA: u64 = 100_000_000;
     const MIN_REVIEWERS: u64 = 3;
-    const REVIEWER_STAKE: u64 = 1 * OCTA;
 
     enum DisputeStatus has copy, drop, store {
         Open,
@@ -34,7 +30,6 @@ module job_work_board::dispute {
         evidence_cid: String,
         status: DisputeStatus,
         votes: vector<Vote>,
-        reviewer_stakes: coin::Coin<AptosCoin>,
     }
 
     struct DisputeStore has key {
@@ -75,7 +70,6 @@ module job_work_board::dispute {
             evidence_cid,
             status: DisputeStatus::Open,
             votes: vector::empty<Vote>(),
-            reviewer_stakes: coin::zero<AptosCoin>(),
         });
 
         escrow::lock_for_dispute(job_id, milestone_id, dispute_id);
@@ -104,7 +98,7 @@ module job_work_board::dispute {
         dispute.status = DisputeStatus::Voting;
     }
 
-    public entry fun reviewer_stake_and_vote(
+    public entry fun reviewer_vote(
         reviewer: &signer,
         dispute_id: u64,
         vote_choice: bool
@@ -131,9 +125,6 @@ module job_work_board::dispute {
             };
             i = i + 1;
         };
-
-        let stake = coin::withdraw<AptosCoin>(reviewer, REVIEWER_STAKE);
-        coin::merge(&mut dispute.reviewer_stakes, stake);
 
         vector::push_back(&mut dispute.votes, Vote {
             reviewer: reviewer_addr,
