@@ -131,7 +131,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, account, activeTab, onUpd
           <Button
             size="sm"
             onClick={handleWithdraw}
-            className="bg-orange-600 text-black hover:bg-orange-700 text-xs px-3 py-1"
+            className="bg-orange-100 text-black hover:bg-orange-200 text-xs px-3 py-1"
           >
             Rút lại job (Nhận stake + escrow)
           </Button>

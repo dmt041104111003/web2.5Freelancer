@@ -26,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </div>
               <div className="relative min-h-screen">{children}</div>
               <Toaster />
-              <SonnerToaster position="top-right" richColors />
+              <SonnerToaster position="bottom-right" richColors />
           </WalletProvider>
         </AuthSessionProvider>
       </body>

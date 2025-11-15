@@ -26,7 +26,7 @@ export const MilestoneReviewActions: React.FC<MilestoneReviewActionsProps> = ({
           size="sm"
           onClick={onClaimTimeout}
           disabled={claiming || isCancelled}
-          className="bg-orange-600 text-black hover:bg-orange-700 text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-orange-100 text-black hover:bg-orange-200 text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {claiming ? 'Đang claim...' : 'Claim Timeout (Nhận stake freelancer)'}
         </Button>
@@ -41,7 +41,7 @@ export const MilestoneReviewActions: React.FC<MilestoneReviewActionsProps> = ({
             size="sm"
             onClick={onConfirm}
             disabled={confirming}
-            className="bg-green-600 text-black hover:bg-green-700 text-xs px-3 py-1"
+            className="bg-green-100 text-black hover:bg-green-200 text-xs px-3 py-1"
           >
             {confirming ? 'Đang confirm...' : 'Confirm'}
           </Button>

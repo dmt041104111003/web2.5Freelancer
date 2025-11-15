@@ -98,7 +98,7 @@ export const MilestoneFileUpload: React.FC<MilestoneFileUploadProps> = ({
             size="sm"
             onClick={() => onSubmit(milestoneId)}
             disabled={submitting || uploading || !evidenceCid?.trim() || isOverdue}
-            className="bg-blue-800 text-black hover:bg-blue-900 text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-100 text-black hover:bg-blue-200 text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? 'Đang submit...' : 'Submit'}
           </Button>

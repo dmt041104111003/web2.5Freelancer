@@ -57,6 +57,13 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
     return status === 'Pending' || status === 'Submitted';
   });
 
+  const hasPendingConfirmMilestone = milestones.some(m => {
+    const status = parseStatus(m.status);
+    return status === 'Submitted';
+  });
+
+  const shouldHideCancelActions = hasPendingConfirmMilestone || hasDisputeId;
+
   const handleFileUploaded = (milestoneId: number, cid: string) => {
     setEvidenceCids(prev => ({ ...prev, [milestoneId]: cid }));
   };
@@ -128,8 +135,8 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
       setConfirmingId(milestoneId);
       try {
         const jobRes = await fetch(`/api/job/${jobId}`);
-        if (jobRes.ok) {
-          const jobData = await jobRes.json();
+        const jobData = jobRes.ok ? await jobRes.json() : null;
+        if (jobData) {
           const milestone = jobData?.job?.milestones?.find((m: any) => Number(m.id) === milestoneId);
           if (milestone) {
             const reviewDeadline = Number(milestone.review_deadline || 0);
@@ -172,8 +179,8 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             setRejectingId(milestoneId);
             try {
               const jobRes = await fetch(`/api/job/${jobId}`);
-              if (jobRes.ok) {
-                const jobData = await jobRes.json();
+              const jobData = jobRes.ok ? await jobRes.json() : null;
+              if (jobData) {
                 const milestone = jobData?.job?.milestones?.find((m: any) => Number(m.id) === milestoneId);
                 if (milestone) {
                   const reviewDeadline = Number(milestone.review_deadline || 0);
@@ -243,7 +250,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
     try {
       setSubmittingEvidenceId(milestoneId);
       const jobRes = await fetch(`/api/job/${jobId}`);
-      const jobData = await jobRes.json();
+      const jobData = jobRes.ok ? await jobRes.json() : null;
       const disputeOpt = jobData?.job?.dispute_id || jobData?.dispute_id;
       const disputeId = Array.isArray(disputeOpt?.vec) ? Number(disputeOpt.vec[0]) : Number(disputeOpt);
       if (!disputeId) throw new Error('Không tìm thấy dispute_id cho job này');
@@ -581,7 +588,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
               <button
                 onClick={handleUnlockNonDisputedMilestones}
                 disabled={unlockingNonDisputed}
-                className="bg-yellow-600 text-black hover:bg-yellow-700 text-sm px-4 py-2 rounded border-2 border-yellow-700 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-yellow-100 text-black hover:bg-yellow-200 text-sm px-4 py-2 rounded border-2 border-yellow-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {unlockingNonDisputed ? 'Đang rút...' : 'Rút Escrow Các Milestone Không Tranh Chấp'}
               </button>
@@ -593,28 +600,30 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
           </div>
         )}
 
-        <JobCancelActions
-          jobId={jobId}
-          account={account}
-          poster={poster}
-          freelancer={freelancer}
-          canInteract={canInteract}
-          isCancelled={isCancelled}
-          mutualCancelRequestedBy={mutualCancelRequestedBy || null}
-          freelancerWithdrawRequestedBy={freelancerWithdrawRequestedBy || null}
-          onMutualCancel={handleMutualCancel}
-          onAcceptMutualCancel={handleAcceptMutualCancel}
-          onRejectMutualCancel={handleRejectMutualCancel}
-          onFreelancerWithdraw={handleFreelancerWithdraw}
-          onAcceptFreelancerWithdraw={handleAcceptFreelancerWithdraw}
-          onRejectFreelancerWithdraw={handleRejectFreelancerWithdraw}
-          cancelling={cancelling}
-          withdrawing={withdrawing}
-          acceptingCancel={acceptingCancel}
-          rejectingCancel={rejectingCancel}
-          acceptingWithdraw={acceptingWithdraw}
-          rejectingWithdraw={rejectingWithdraw}
-        />
+        {!shouldHideCancelActions && (
+          <JobCancelActions
+            jobId={jobId}
+            account={account}
+            poster={poster}
+            freelancer={freelancer}
+            canInteract={canInteract}
+            isCancelled={isCancelled}
+            mutualCancelRequestedBy={mutualCancelRequestedBy || null}
+            freelancerWithdrawRequestedBy={freelancerWithdrawRequestedBy || null}
+            onMutualCancel={handleMutualCancel}
+            onAcceptMutualCancel={handleAcceptMutualCancel}
+            onRejectMutualCancel={handleRejectMutualCancel}
+            onFreelancerWithdraw={handleFreelancerWithdraw}
+            onAcceptFreelancerWithdraw={handleAcceptFreelancerWithdraw}
+            onRejectFreelancerWithdraw={handleRejectFreelancerWithdraw}
+            cancelling={cancelling}
+            withdrawing={withdrawing}
+            acceptingCancel={acceptingCancel}
+            rejectingCancel={rejectingCancel}
+            acceptingWithdraw={acceptingWithdraw}
+            rejectingWithdraw={rejectingWithdraw}
+          />
+        )}
       </div>
     </Card>
   );

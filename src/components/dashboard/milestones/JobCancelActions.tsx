@@ -68,7 +68,7 @@ export const JobCancelActions: React.FC<JobCancelActionsProps> = ({
             size="sm"
             onClick={onMutualCancel}
             disabled={cancelling || !!freelancerWithdrawRequestedBy}
-            className="bg-blue-600 text-black hover:bg-blue-700 text-xs px-3 py-1 disabled:opacity-50"
+            className="bg-blue-100 text-black hover:bg-blue-200 text-xs px-3 py-1 disabled:opacity-50"
             title={freelancerWithdrawRequestedBy ? 'Không thể yêu cầu khi đang có yêu cầu rút từ freelancer' : ''}
           >
             {cancelling ? 'Đang xử lý...' : 'Yêu cầu hủy (Mutual Cancel)'}
@@ -81,7 +81,7 @@ export const JobCancelActions: React.FC<JobCancelActionsProps> = ({
               size="sm"
               onClick={onAcceptFreelancerWithdraw}
               disabled={acceptingWithdraw || rejectingWithdraw}
-              className="bg-green-600 text-black hover:bg-green-700 text-xs px-3 py-1"
+              className="bg-green-100 text-black hover:bg-green-200 text-xs px-3 py-1"
             >
               {acceptingWithdraw ? 'Đang xử lý...' : 'Chấp nhận rút'}
             </Button>
@@ -89,7 +89,7 @@ export const JobCancelActions: React.FC<JobCancelActionsProps> = ({
               size="sm"
               onClick={onRejectFreelancerWithdraw}
               disabled={acceptingWithdraw || rejectingWithdraw}
-              className="bg-red-600 text-black hover:bg-red-700 text-xs px-3 py-1"
+              className="bg-red-100 text-black hover:bg-red-200 text-xs px-3 py-1"
             >
               {rejectingWithdraw ? 'Đang xử lý...' : 'Từ chối rút'}
             </Button>
@@ -102,7 +102,7 @@ export const JobCancelActions: React.FC<JobCancelActionsProps> = ({
               size="sm"
               onClick={onAcceptMutualCancel}
               disabled={acceptingCancel || rejectingCancel}
-              className="bg-green-600 text-black hover:bg-green-700 text-xs px-3 py-1"
+              className="bg-green-100 text-black hover:bg-green-200 text-xs px-3 py-1"
             >
               {acceptingCancel ? 'Đang xử lý...' : 'Chấp nhận hủy'}
             </Button>
@@ -110,7 +110,7 @@ export const JobCancelActions: React.FC<JobCancelActionsProps> = ({
               size="sm"
               onClick={onRejectMutualCancel}
               disabled={acceptingCancel || rejectingCancel}
-              className="bg-red-600 text-black hover:bg-red-700 text-xs px-3 py-1"
+              className="bg-red-100 text-black hover:bg-red-200 text-xs px-3 py-1"
             >
               {rejectingCancel ? 'Đang xử lý...' : 'Từ chối hủy'}
             </Button>
@@ -122,7 +122,7 @@ export const JobCancelActions: React.FC<JobCancelActionsProps> = ({
             size="sm"
             onClick={onFreelancerWithdraw}
             disabled={withdrawing}
-            className="bg-red-600 text-black hover:text-white hover:bg-red-700 text-xs px-3 py-1"
+            className="bg-red-100 text-black hover:bg-red-200 text-xs px-3 py-1"
           >
             {withdrawing ? 'Đang xử lý...' : 'Yêu cầu rút (Mất stake nếu được chấp nhận)'}
           </Button>

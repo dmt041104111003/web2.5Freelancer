@@ -191,7 +191,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
           <button
             onClick={() => onClaimTimeout(Number(milestone.id))}
             disabled={claiming}
-            className="bg-orange-600 text-black hover:bg-orange-700 text-xs px-3 py-2 rounded border-2 border-orange-700 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-orange-100 text-black hover:bg-orange-200 text-xs px-3 py-2 rounded border-2 border-orange-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {claiming ? 'Đang claim...' : 'Claim Timeout (Poster không phản hồi)'}
           </button>
@@ -224,7 +224,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
               (disputeWinner && isFreelancer) || (!disputeWinner && isPoster) ? (
                 <button
                   onClick={() => onClaimDispute && onClaimDispute(Number(milestone.id))}
-                  className="bg-purple-600 text-black hover:bg-purple-700 text-xs px-3 py-2 rounded border-2 border-purple-700 font-bold"
+                  className="bg-purple-100 text-black hover:bg-purple-200 text-xs px-3 py-2 rounded border-2 border-purple-300 font-bold"
                 >
                   Claim dispute {disputeWinner ? 'payment' : 'refund'}
                 </button>
@@ -264,7 +264,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                   <button
                     onClick={() => onOpenDispute && onOpenDispute(Number(milestone.id))}
                     disabled={openingDispute || !disputeEvidenceCid || disputeUploading}
-                    className="bg-red-600 text-white hover:bg-red-700 text-xs px-3 py-2 rounded border-2 border-red-700 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-red-100 text-black hover:bg-red-200 text-xs px-3 py-2 rounded border-2 border-red-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {openingDispute ? 'Đang mở dispute...' : 'Mở Dispute'}
                   </button>
@@ -272,7 +272,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                 <button
                   onClick={() => onSubmitEvidence && onSubmitEvidence(Number(milestone.id))}
                   disabled={submittingEvidence || !disputeEvidenceCid || disputeUploading}
-                  className="bg-blue-800 text-white hover:bg-blue-900 text-xs px-3 py-2 rounded border-2 border-blue-900 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-100 text-black hover:bg-blue-200 text-xs px-3 py-2 rounded border-2 border-blue-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submittingEvidence ? 'Đang gửi...' : 'Gửi Evidence'}
                 </button>
