@@ -206,6 +206,7 @@ export interface JsonJobParseData {
 export interface JsonJobInputProps {
   onParse: (data: JsonJobParseData) => void;
   canPostJobs: boolean;
+  isSubmitting?: boolean;
 }
 
 export interface ManualJobFormProps {

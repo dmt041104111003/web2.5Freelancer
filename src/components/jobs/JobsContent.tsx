@@ -23,16 +23,13 @@ export const JobsContent: React.FC = () => {
         const data = await res.json();
         
         if (!res.ok) {
-          throw new Error(data.error || `HTTP ${res.status}: Failed to fetch jobs`);
+          throw new Error(data.error || `HTTP ${res.status}: Không thể tải danh sách công việc`);
         }
         
-        console.log('[JobsContent] Fetched jobs:', data);
         const jobsList = data.jobs || [];
-        console.log('[JobsContent] Jobs array length:', jobsList.length);
         setJobs(jobsList);
       } catch (err) {
-        console.error('[JobsContent] Error fetching jobs:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch jobs');
+        setError(err instanceof Error ? err.message : 'Không thể tải danh sách công việc');
       } finally {
         setLoading(false);
       }
@@ -44,7 +41,7 @@ export const JobsContent: React.FC = () => {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-700 text-lg">Loading jobs...</p>
+        <p className="text-gray-700 text-lg">Đang tải công việc...</p>
       </div>
     );
   }
@@ -52,7 +49,7 @@ export const JobsContent: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500 text-lg">Error: {error}</p>
+        <p className="text-red-500 text-lg">Lỗi: {error}</p>
       </div>
     );
   }
@@ -60,25 +57,23 @@ export const JobsContent: React.FC = () => {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-blue-800 mb-2">Find a Job</h1>
-        <p className="text-lg text-gray-700">On-chain jobs (click to view details from CID)</p>
+        <h1 className="text-3xl font-bold text-blue-800 mb-2">Tìm công việc</h1>
+        <p className="text-lg text-gray-700">Công việc trên blockchain (nhấp để xem chi tiết từ CID)</p>
       </div>
 
       {jobs.length === 0 ? (
         <Card variant="outlined" className="p-8 text-center">
-          <h3 className="text-lg font-bold text-blue-800 mb-2">No jobs found</h3>
-          <p className="text-gray-700">Be the first to post a job and start earning!</p>
+          <h3 className="text-lg font-bold text-blue-800 mb-2">Không tìm thấy công việc</h3>
+          <p className="text-gray-700">Hãy là người đầu tiên đăng công việc và bắt đầu kiếm tiền!</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job: JobListItem) => {
-            // Parse state and check freelancer (same logic as JobDetailContent)
             let stateStr = 'Posted';
             if (typeof job.state === 'string') {
               stateStr = job.state;
             }
             
-            // Check if user is freelancer of this job
             let isFreelancerOfJob = false;
             if (account && job.freelancer) {
               const freelancerAddr = typeof job.freelancer === 'string' 
@@ -96,13 +91,13 @@ export const JobsContent: React.FC = () => {
             const isExpiredPosted = stateStr === 'Posted' && applyDeadlineExpired && !hasFreelancer;
             
             const displayState = (stateStr === 'Cancelled' && !isFreelancerOfJob) ? 'Posted' : stateStr;
-            const displayText = isExpiredPosted ? 'Hết hạn đăng ký' :
-                               displayState === 'Posted' ? 'Open' :
-                               displayState === 'InProgress' ? 'In Progress' :
-                               displayState === 'Completed' ? 'Completed' :
-                               displayState === 'Disputed' ? 'Disputed' :
-                               displayState === 'Cancelled' ? 'Cancelled' :
-                               displayState || 'Active';
+            const                               displayText = isExpiredPosted ? 'Hết hạn đăng ký' :
+                               displayState === 'Posted' ? 'Mở' :
+                               displayState === 'InProgress' ? 'Đang thực hiện' :
+                               displayState === 'Completed' ? 'Hoàn thành' :
+                               displayState === 'Disputed' ? 'Tranh chấp' :
+                               displayState === 'Cancelled' ? 'Đã hủy' :
+                               displayState || 'Hoạt động';
             
             return (
               <div 
@@ -122,7 +117,7 @@ export const JobsContent: React.FC = () => {
                           ? `${(job.total_amount / 100_000_000).toFixed(2)} APT` 
                           : '—'}
                         {typeof job.milestones_count === 'number' 
-                          ? ` • ${job.milestones_count} milestones` 
+                          ? ` • ${job.milestones_count} cột mốc` 
                           : ''}
                       </p>
                     </div>
@@ -142,9 +137,9 @@ export const JobsContent: React.FC = () => {
                   <div className="space-y-2 pt-2 border-t border-gray-200">
                     {typeof job.has_freelancer === 'boolean' && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-700">Worker:</span>
+                        <span className="text-gray-700">Người làm:</span>
                         <span className={`font-bold ${job.has_freelancer ? 'text-blue-800' : 'text-gray-600'}`}>
-                          {job.has_freelancer ? 'Assigned' : 'Open'}
+                          {job.has_freelancer ? 'Đã giao' : 'Mở'}
                         </span>
                       </div>
                     )}

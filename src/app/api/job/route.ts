@@ -8,10 +8,9 @@ export async function GET(req: Request) {
 		const list = url.searchParams.get("list");
 		
 		if (list === "true") {
-			console.log(`[API] Listing jobs`);
 			const store = await getTableHandle();
 			if (!store) {
-				return NextResponse.json({ error: "EscrowStore not found" }, { status: 404 });
+				return NextResponse.json({ error: "Không tìm thấy EscrowStore" }, { status: 404 });
 			}
 
 			const jobs = [];
@@ -42,19 +41,18 @@ export async function GET(req: Request) {
 			return NextResponse.json({ jobs });
 		}
 
-		// Query single job
 		if (!jobId) {
-			return NextResponse.json({ error: "job_id required" }, { status: 400 });
+			return NextResponse.json({ error: "job_id là bắt buộc" }, { status: 400 });
 		}
 
 		const store = await getTableHandle();
 		if (!store) {
-			return NextResponse.json({ error: "EscrowStore not found" }, { status: 404 });
+			return NextResponse.json({ error: "Không tìm thấy EscrowStore" }, { status: 404 });
 		}
 
 		const jobData = await queryJobFromTable(store.handle, Number(jobId));
 		if (!jobData) {
-			return NextResponse.json({ error: "Job not found" }, { status: 404 });
+			return NextResponse.json({ error: "Không tìm thấy công việc" }, { status: 404 });
 		}
 
 		const stateStr = parseState(jobData?.state);
@@ -91,6 +89,6 @@ export async function GET(req: Request) {
 
 		return NextResponse.json({ job });
 	} catch (error: any) {
-		return NextResponse.json({ error: error?.message || "Failed to fetch job" }, { status: 500 });
+		return NextResponse.json({ error: error?.message || "Không thể lấy công việc" }, { status: 500 });
 	}
 }

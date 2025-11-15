@@ -16,7 +16,7 @@ export const ReputationContent: React.FC = () => {
   const handleCheckAddress = async () => {
     const address = checkAddress.trim() || account;
     if (!address) {
-      setCheckError('Please enter an address or connect wallet');
+      setCheckError('Vui lòng nhập địa chỉ hoặc kết nối ví');
       return;
     }
     
@@ -24,14 +24,14 @@ export const ReputationContent: React.FC = () => {
     setCheckError('');
     try {
       const res = await fetch(`/api/reputation?address=${encodeURIComponent(address)}`);
-      if (!res.ok) throw new Error('Failed to fetch reputation');
+      if (!res.ok) throw new Error('Không thể lấy danh tiếng');
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to fetch reputation');
+      if (!data.success) throw new Error(data.error || 'Không thể lấy danh tiếng');
       
       setCheckedAddress(address);
       setCheckedUT(data.ut || 0);
     } catch (e: any) {
-      setCheckError(e?.message || 'Failed to check reputation');
+      setCheckError(e?.message || 'Không thể kiểm tra danh tiếng');
       setCheckedAddress(null);
       setCheckedUT(null);
     } finally {
@@ -42,15 +42,15 @@ export const ReputationContent: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-blue-800 mb-2">Reputation Points</h1>
-        <p className="text-lg text-gray-700">Check UT points for any address.</p>
+        <h1 className="text-3xl font-bold text-blue-800 mb-2">Điểm Danh Tiếng</h1>
+        <p className="text-lg text-gray-700">Kiểm tra điểm UT cho bất kỳ địa chỉ nào.</p>
       </div>
 
       <Card variant="outlined" className="p-6">
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Wallet Address {account && <span className="text-gray-500 font-normal">(leave empty to check your address)</span>}
+              Địa chỉ ví {account && <span className="text-gray-500 font-normal">(để trống để kiểm tra địa chỉ của bạn)</span>}
             </label>
             <div className="flex gap-2">
               <input
@@ -62,7 +62,7 @@ export const ReputationContent: React.FC = () => {
                 onKeyPress={(e) => e.key === 'Enter' && handleCheckAddress()}
               />
               <Button onClick={handleCheckAddress} disabled={checking} variant="primary">
-                {checking ? 'Checking...' : 'Check'}
+                {checking ? 'Đang kiểm tra...' : 'Kiểm tra'}
               </Button>
             </div>
             {checkError && <p className="mt-2 text-sm text-red-600">{checkError}</p>}
@@ -70,9 +70,9 @@ export const ReputationContent: React.FC = () => {
 
           {checkedAddress && checkedUT !== null && (
             <div className="mt-4 p-4 bg-gray-50 rounded-md">
-              <div className="text-sm text-gray-600 mb-1">Address:</div>
+              <div className="text-sm text-gray-600 mb-1">Địa chỉ:</div>
               <div className="text-sm font-mono text-gray-800 mb-3 break-all">{checkedAddress}</div>
-              <div className="text-sm text-gray-600 mb-1">UT Points:</div>
+              <div className="text-sm text-gray-600 mb-1">Điểm UT:</div>
               <div className="text-2xl font-bold text-blue-800">{checkedUT}</div>
             </div>
           )}

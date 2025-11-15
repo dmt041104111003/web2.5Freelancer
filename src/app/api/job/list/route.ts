@@ -3,10 +3,9 @@ import { getTableHandle, queryJobFromTable, parseState, parseOptionAddress } fro
 
 export async function GET(req: Request) {
 	try {
-		console.log(`[API] Listing jobs`);
 		const store = await getTableHandle();
 		if (!store) {
-			return NextResponse.json({ error: "EscrowStore not found" }, { status: 404 });
+			return NextResponse.json({ error: "Không tìm thấy EscrowStore" }, { status: 404 });
 		}
 
 		const jobs = [];
@@ -36,7 +35,7 @@ export async function GET(req: Request) {
 
 		return NextResponse.json({ jobs });
 	} catch (error: any) {
-		return NextResponse.json({ error: error?.message || "Failed to fetch jobs" }, { status: 500 });
+		return NextResponse.json({ error: error?.message || "Không thể lấy danh sách công việc" }, { status: 500 });
 	}
 }
 

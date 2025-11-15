@@ -196,12 +196,12 @@ export const PostJobTab: React.FC = () => {
           )}
         </div>
         <Tabs className="mb-6" defaultValue={inputMode}>
-          <TabsList className="flex w-full" activeTab={inputMode} setActiveTab={(v) => setInputMode(v as 'manual' | 'json')}>
-            <TabsTrigger value="manual" className="flex-1">Nhập thủ công</TabsTrigger>
-            <TabsTrigger value="json" className="flex-1">Paste JSON</TabsTrigger>
+          <TabsList className="flex w-full" activeTab={inputMode} setActiveTab={(v) => !isSubmitting && setInputMode(v as 'manual' | 'json')}>
+            <TabsTrigger value="manual" className="flex-1" disabled={isSubmitting}>Nhập thủ công</TabsTrigger>
+            <TabsTrigger value="json" className="flex-1" disabled={isSubmitting}>Paste JSON</TabsTrigger>
           </TabsList>
           <TabsContent value="json">
-            <JsonJobInput onParse={handleJsonParse} canPostJobs={canPostJobs} />
+            <JsonJobInput onParse={handleJsonParse} canPostJobs={canPostJobs} isSubmitting={isSubmitting} />
           </TabsContent>
           <TabsContent value="manual">
             <ManualJobForm

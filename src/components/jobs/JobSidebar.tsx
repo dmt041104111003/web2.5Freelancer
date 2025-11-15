@@ -82,8 +82,6 @@ export const JobSidebar: React.FC<JobSidebarProps> = ({
 
     const isReopenedAfterTimeout = (isCancelled && freelancerStake === 0) || hasTimedOutMilestone;
     
-    // Cannot apply if expired and not reopened after timeout
-    // Even if reopened, if apply_deadline expired, contract will reject
     if (isExpiredPosted && !isReopenedAfterTimeout) {
       return (
         <div className="text-center py-4">
@@ -92,10 +90,8 @@ export const JobSidebar: React.FC<JobSidebarProps> = ({
       );
     }
     
-    // Check if apply_deadline expired (even for reopened jobs)
     const applyDeadlineExpiredForApply = applyDeadline > 0 && applyDeadline * 1000 < Date.now();
     
-    // Can apply if: (Posted and not expired) OR (reopened after timeout and not expired)
     const canApply = (isPosted && !hasFreelancer && !applyDeadlineExpiredForApply) || 
                      (isReopenedAfterTimeout && !hasFreelancer && !applyDeadlineExpiredForApply);
 
@@ -117,7 +113,6 @@ export const JobSidebar: React.FC<JobSidebarProps> = ({
       );
     }
 
-    // Show error if apply_deadline expired (even for reopened jobs)
     if (applyDeadlineExpiredForApply) {
       return (
         <div className="text-center py-4">

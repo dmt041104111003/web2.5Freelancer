@@ -55,16 +55,20 @@ interface TabsTriggerProps {
   activeTab?: string;
   setActiveTab?: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function TabsTrigger({ value, children, activeTab, setActiveTab, className = '' }: TabsTriggerProps) {
+export function TabsTrigger({ value, children, activeTab, setActiveTab, className = '', disabled = false }: TabsTriggerProps) {
   const isActive = activeTab === value;
 
   return (
     <button
-      onClick={() => setActiveTab?.(value)}
+      onClick={() => !disabled && setActiveTab?.(value)}
+      disabled={disabled}
       className={`px-6 py-3 font-bold border-b-2 ${
-        isActive 
+        disabled
+          ? 'text-gray-400 border-transparent cursor-not-allowed opacity-50'
+          : isActive 
           ? 'text-blue-800 border-blue-800 bg-white' 
           : 'text-gray-700 border-transparent hover:text-blue-800'
       } ${className}`}

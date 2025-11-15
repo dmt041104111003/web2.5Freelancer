@@ -10,21 +10,21 @@ export const DisputeItem: React.FC<DisputeItemProps> = ({ dispute, resolvingKey,
   return (
     <Card variant="outlined" className="p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-blue-800 font-bold">Job #{dispute.jobId} — Milestone {dispute.milestoneIndex}</div>
+        <div className="text-blue-800 font-bold">Job #{dispute.jobId} — Cột mốc {dispute.milestoneIndex}</div>
         <div className="text-xs text-gray-600">{dispute.openedAt || ''}</div>
       </div>
-      <div className="text-sm text-gray-700 mb-2">Status: {dispute.status}</div>
-      {dispute.reason && <div className="text-sm text-gray-700 mb-3">Reason: {dispute.reason}</div>}
+      <div className="text-sm text-gray-700 mb-2">Trạng thái: {dispute.status}</div>
+      {dispute.reason && <div className="text-sm text-gray-700 mb-3">Lý do: {dispute.reason}</div>}
       {(dispute.posterEvidenceCid || dispute.freelancerEvidenceCid) && (
         <div className="mb-3 text-xs text-gray-700">
           {dispute.posterEvidenceCid && (
             <div>
-              Poster Evidence: <a className="text-blue-700 underline break-all" href={`https://ipfs.io/ipfs/${dispute.posterEvidenceCid.replace(/^enc:/,'')}`} target="_blank" rel="noreferrer">{dispute.posterEvidenceCid}</a>
+              Bằng chứng của Poster: <a className="text-blue-700 underline break-all" href={`https://ipfs.io/ipfs/${dispute.posterEvidenceCid.replace(/^enc:/,'')}`} target="_blank" rel="noreferrer">{dispute.posterEvidenceCid}</a>
             </div>
           )}
           {dispute.freelancerEvidenceCid && (
             <div>
-              Freelancer Evidence: <a className="text-blue-700 underline break-all" href={`https://ipfs.io/ipfs/${dispute.freelancerEvidenceCid.replace(/^enc:/,'')}`} target="_blank" rel="noreferrer">{dispute.freelancerEvidenceCid}</a>
+              Bằng chứng của Freelancer: <a className="text-blue-700 underline break-all" href={`https://ipfs.io/ipfs/${dispute.freelancerEvidenceCid.replace(/^enc:/,'')}`} target="_blank" rel="noreferrer">{dispute.freelancerEvidenceCid}</a>
             </div>
           )}
         </div>
@@ -37,7 +37,7 @@ export const DisputeItem: React.FC<DisputeItemProps> = ({ dispute, resolvingKey,
           disabled={dispute.votesCompleted || dispute.hasVoted || resolvingKey === `${dispute.disputeId}:poster`}
           onClick={onResolvePoster}
         >
-          {resolvingKey === `${dispute.disputeId}:poster` ? 'Voting...' : 'Vote for Poster'}
+          {resolvingKey === `${dispute.disputeId}:poster` ? 'Đang bỏ phiếu...' : 'Bỏ phiếu cho Poster'}
         </Button>
         <Button
           variant="outline"
@@ -46,12 +46,12 @@ export const DisputeItem: React.FC<DisputeItemProps> = ({ dispute, resolvingKey,
           disabled={dispute.votesCompleted || dispute.hasVoted || resolvingKey === `${dispute.disputeId}:freelancer`}
           onClick={onResolveFreelancer}
         >
-          {resolvingKey === `${dispute.disputeId}:freelancer` ? 'Voting...' : 'Vote for Freelancer'}
+          {resolvingKey === `${dispute.disputeId}:freelancer` ? 'Đang bỏ phiếu...' : 'Bỏ phiếu cho Freelancer'}
         </Button>
         {dispute.votesCompleted ? (
-          <span className="text-xs text-gray-600">Voting closed</span>
+          <span className="text-xs text-gray-600">Bỏ phiếu đã đóng</span>
         ) : dispute.hasVoted ? (
-          <span className="text-xs text-gray-600">You already voted</span>
+          <span className="text-xs text-gray-600">Bạn đã bỏ phiếu</span>
         ) : null}
       </div>
     </Card>

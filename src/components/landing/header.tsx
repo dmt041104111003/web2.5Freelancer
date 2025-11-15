@@ -46,10 +46,9 @@ export function Header() {
     try {
       await navigator.clipboard.writeText(account);
       setCopiedAddress(true);
-      toast.success('Wallet address copied to clipboard!');
+      toast.success('Đã sao chép địa chỉ ví!');
     } catch (err) {
-      console.error('Copy address error:', err);
-      toast.error('Unable to copy wallet address');
+      toast.error('Không thể sao chép địa chỉ ví');
     }
   };
 
@@ -157,12 +156,12 @@ export function Header() {
                     onClick={connectWallet}
                     disabled={isConnecting}
                   >
-                    {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                    {isConnecting ? 'Đang kết nối...' : 'Kết nối ví'}
                   </button>
                 ) : (
                   <div className="space-y-2">
                     <div className="text-sm p-3 bg-white border-2 border-gray-300">
-                      <div className="font-medium text-gray-700">Wallet address</div>
+                      <div className="font-medium text-gray-700">Địa chỉ ví</div>
                       <div 
                         className="text-gray-500 font-mono text-xs break-all cursor-pointer hover:bg-gray-50 px-1 py-1"
                         onClick={handleCopyAddress}
@@ -173,14 +172,14 @@ export function Header() {
                     </div>
                     <Link href="/auth/did-verification" onClick={() => setIsMobileMenuOpen(false)}>
                       <button className="w-full px-3 py-2 bg-white text-black border-2 border-black hover:bg-gray-100">
-                        DID verification
+                        Xác minh DID
                       </button>
                     </Link>
                     <button 
                       className="w-full px-3 py-2 bg-white text-black border-2 border-black hover:bg-gray-100"
                       onClick={disconnectWallet}
                     >
-                      Disconnect
+                      Ngắt kết nối
                     </button>
                   </div>
                 )}
@@ -193,7 +192,7 @@ export function Header() {
         <div className="fixed right-4 top-16 mt-2 w-64 bg-white border-2 border-blue-800 shadow-lg z-[60]">
           <div className="p-4 space-y-3">
             <div className="text-sm">
-              <div className="font-bold text-blue-800">Wallet address</div>
+              <div className="font-bold text-blue-800">Địa chỉ ví</div>
               <div 
                 className="text-gray-600 font-mono text-xs break-all cursor-pointer hover:bg-blue-50 px-2 py-2 border-2 border-blue-800 bg-blue-50"
                 onClick={handleCopyAddress}
@@ -203,15 +202,15 @@ export function Header() {
               </div>
             </div>
             <div className="text-sm">
-              <div className="font-bold text-blue-800">Network</div>
+              <div className="font-bold text-blue-800">Mạng</div>
               <div className="text-gray-700 font-medium">
-                {aptosNetwork || 'Unknown'}
+                {aptosNetwork || 'Không xác định'}
               </div>
             </div>
             <div className="pt-2 border-t-2 border-blue-800 space-y-1">
               <Link href="/auth/did-verification" onClick={() => setShowWalletMenu(false)}>
                 <button className="w-full px-3 py-2 bg-white text-black border-2 border-black hover:bg-gray-100 font-medium">
-                  DID verification
+                  Xác minh DID
                 </button>
               </Link>
            
@@ -219,7 +218,7 @@ export function Header() {
                 className="w-full px-3 py-2 bg-white text-black border-2 border-black hover:bg-gray-100 font-medium"
                 onClick={disconnectWallet}
               >
-                Disconnect
+                Ngắt kết nối
               </button>
             </div>
           </div>

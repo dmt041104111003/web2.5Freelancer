@@ -14,8 +14,8 @@ type DIDVerificationLayoutProps = {
 
 export default function DIDVerificationLayout({ 
   children, 
-  title = "Role registration",
-  subtitle = "Register your roles to use marketplace features"
+  title = "Đăng ký vai trò",
+  subtitle = "Đăng ký vai trò của bạn để sử dụng các tính năng marketplace"
 }: DIDVerificationLayoutProps) {
   const { account, connectWallet, isConnecting } = useWallet();
 
@@ -23,7 +23,7 @@ export default function DIDVerificationLayout({
     <Link href="/">
       <Button variant="outline" size={size} className="flex items-center gap-2">
         <ArrowLeft className="w-4 h-4" />
-        Back to home
+        Về trang chủ
       </Button>
     </Link>
   );
@@ -37,11 +37,11 @@ export default function DIDVerificationLayout({
             <div className="text-center py-20 bg-white rounded-lg shadow-sm">
               <div className="space-y-6">
                 <Wallet className="w-16 h-16 mx-auto text-gray-600" />
-                <h2 className="text-3xl font-bold text-blue-800">Wallet connection required</h2>
-                <p className="text-lg text-gray-700">Please connect your Petra wallet to continue</p>
+                <h2 className="text-3xl font-bold text-blue-800">Yêu cầu kết nối ví</h2>
+                <p className="text-lg text-gray-700">Vui lòng kết nối ví Petra để tiếp tục</p>
                 <div className="flex justify-center gap-4">
                   <Button variant="primary" size="lg" onClick={connectWallet} disabled={isConnecting}>
-                    {isConnecting ? 'Connecting...' : 'Connect Petra wallet'}
+                    {isConnecting ? 'Đang kết nối...' : 'Kết nối ví Petra'}
                   </Button>
                   <BackToHome size="lg" />
                 </div>
@@ -62,7 +62,7 @@ export default function DIDVerificationLayout({
           <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
             <h1 className="text-3xl font-bold text-blue-800 mb-2">{title}</h1>
             <p className="text-lg text-gray-700">{subtitle}</p>
-            <div className="mt-2 text-sm font-bold text-blue-800">Connected wallet: {account.slice(0, 6)}...{account.slice(-4)}</div>
+            <div className="mt-2 text-sm font-bold text-blue-800">Ví đã kết nối: {account.slice(0, 6)}...{account.slice(-4)}</div>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm">

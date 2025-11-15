@@ -40,13 +40,13 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
           value={jobTitle}
           onChange={(e) => setJobTitle(e.target.value)}
           placeholder="Ví dụ: Phát triển smart contract"
-          disabled={!canPostJobs}
+          disabled={!canPostJobs || isSubmitting}
           className={`w-full px-4 py-3 border-2 ${
             validationErrors.jobTitle 
               ? 'border-red-500 bg-red-50' 
               : 'border-gray-400'
           } ${
-            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+            !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
           }`}
         />
         {validationErrors.jobTitle && (
@@ -64,13 +64,13 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
           onChange={(e) => setJobDescription(e.target.value)}
           placeholder="Mô tả chi tiết về dự án, yêu cầu và mục tiêu..."
           rows={4}
-          disabled={!canPostJobs}
+          disabled={!canPostJobs || isSubmitting}
           className={`w-full px-4 py-3 border-2 resize-none ${
             validationErrors.jobDescription 
               ? 'border-red-500 bg-red-50' 
               : 'border-gray-400'
           } ${
-            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+            !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
           }`}
         />
         {validationErrors.jobDescription && (
@@ -89,12 +89,12 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
             onChange={(e) => setCurrentSkill(e.target.value)}
             placeholder="Thêm kỹ năng..."
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-            disabled={!canPostJobs}
+            disabled={!canPostJobs || isSubmitting}
             className={`flex-1 px-4 py-3 border border-gray-400 ${
-              !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+              !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
             }`}
           />
-          <Button type="button" onClick={addSkill} variant="outline" disabled={!canPostJobs}>
+          <Button type="button" onClick={addSkill} variant="outline" disabled={!canPostJobs || isSubmitting}>
             +
           </Button>
         </div>
@@ -106,10 +106,11 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
                 className="inline-flex items-center gap-2 px-3 py-1 bg-blue-800 text-white text-sm rounded"
               >
                 {skill}
-                <button
+                  <button
                   type="button"
                   onClick={() => removeSkill(index)}
-                  className="text-white hover:text-red-300"
+                  disabled={isSubmitting}
+                  className={`text-white hover:text-red-300 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   ×
                 </button>
@@ -129,16 +130,16 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
             value={jobDuration}
             onChange={(e) => setJobDuration(e.target.value)}
             placeholder="7"
-            disabled={!canPostJobs}
+            disabled={!canPostJobs || isSubmitting}
             className={`w-24 px-4 py-3 border border-gray-400 ${
-              !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+              !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
             }`}
           />
           <select 
-            disabled={!canPostJobs}
+            disabled={!canPostJobs || isSubmitting}
             title="Chọn đơn vị thời gian"
             className={`px-4 py-3 border border-gray-400 ${
-              !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+              !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
             }`}
           >
             <option>ngày</option>
@@ -169,9 +170,9 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
               value={currentMilestone.amount}
               onChange={(e) => setCurrentMilestone({...currentMilestone, amount: e.target.value})}
               placeholder="Số tiền (APT)"
-              disabled={!canPostJobs}
+              disabled={!canPostJobs || isSubmitting}
               className={`flex-1 min-w-[180px] px-4 py-3 border border-gray-400 ${
-                !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
               }`}
             />
             <input
@@ -179,18 +180,18 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
               value={currentMilestone.duration}
               onChange={(e) => setCurrentMilestone({...currentMilestone, duration: e.target.value})}
               placeholder="Thời gian"
-              disabled={!canPostJobs}
+              disabled={!canPostJobs || isSubmitting}
               className={`w-28 px-4 py-3 border border-gray-400 ${
-                !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
               }`}
             />
             <select
               value={currentMilestone.unit}
               onChange={(e) => setCurrentMilestone({...currentMilestone, unit: e.target.value})}
-              disabled={!canPostJobs}
+              disabled={!canPostJobs || isSubmitting}
               title="Chọn đơn vị thời gian cho milestone"
               className={`px-4 py-3 border border-gray-400 ${
-                !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
               }`}
             >
               <option value="giây">giây</option>
@@ -205,18 +206,18 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
               value={currentMilestone.reviewPeriod || ''}
               onChange={(e) => setCurrentMilestone({...currentMilestone, reviewPeriod: e.target.value})}
               placeholder="Review period"
-              disabled={!canPostJobs}
+              disabled={!canPostJobs || isSubmitting}
               className={`w-full sm:w-36 px-4 py-3 border border-gray-400 ${
-                !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
               }`}
             />
             <select
               value={currentMilestone.reviewUnit || 'ngày'}
               onChange={(e) => setCurrentMilestone({...currentMilestone, reviewUnit: e.target.value})}
-              disabled={!canPostJobs}
+              disabled={!canPostJobs || isSubmitting}
               title="Chọn đơn vị cho review period"
               className={`px-4 py-3 border border-gray-400 w-full sm:w-auto ${
-                !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
               }`}
             >
               <option value="giây">giây</option>
@@ -227,7 +228,7 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
               <option value="tháng">tháng</option>
             </select>
           </div>
-          <Button type="button" onClick={addMilestone} variant="outline" className="w-full" disabled={!canPostJobs}>
+          <Button type="button" onClick={addMilestone} variant="outline" className="w-full" disabled={!canPostJobs || isSubmitting}>
             + Thêm cột mốc
           </Button>
           {milestonesList.length > 0 && (
@@ -245,7 +246,8 @@ export const ManualJobForm: React.FC<ManualJobFormProps> = ({
                   <button
                     type="button"
                     onClick={() => removeMilestone(index)}
-                    className="text-red-600 hover:text-red-800"
+                    disabled={isSubmitting}
+                    className={`text-red-600 hover:text-red-800 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     ×
                   </button>

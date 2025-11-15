@@ -9,36 +9,30 @@ interface AvatarProps {
   className?: string;
 }
 
-// Blockies-style avatar implementation (like Eternl/Cardano wallets)
 function createBlockies(diameter: number, seed: number) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('width', diameter.toString());
   svg.setAttribute('height', diameter.toString());
   svg.setAttribute('viewBox', `0 0 ${diameter} ${diameter}`);
   
-  // Tạo màu từ seed (Cardano style)
   const hue = seed % 360;
-  const saturation = 70 + (seed % 20); // 70-90%
-  const lightness = 40 + (seed % 30);  // 40-70%
+  const saturation = 70 + (seed % 20);
+  const lightness = 40 + (seed % 30);
   const backgroundColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   
-  // Background
   const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   bg.setAttribute('width', diameter.toString());
   bg.setAttribute('height', diameter.toString());
   bg.setAttribute('fill', backgroundColor);
   svg.appendChild(bg);
   
-  // Tạo pattern 8x8 grid (blockies style)
   const gridSize = 8;
   const cellSize = diameter / gridSize;
   
   for (let x = 0; x < gridSize; x++) {
     for (let y = 0; y < gridSize; y++) {
-      // Tạo hash cho mỗi cell
       const cellSeed = (seed + x * 13 + y * 17) % 256;
       
-      // Chỉ vẽ cell nếu seed > 140 (45% chance)
       if (cellSeed > 140) {
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', (x * cellSize).toString());
@@ -49,7 +43,6 @@ function createBlockies(diameter: number, seed: number) {
         rect.setAttribute('opacity', '0.4');
         svg.appendChild(rect);
         
-        // Mirror cho symmetry (blockies style)
         if (x < 4) {
           const mirrorRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
           mirrorRect.setAttribute('x', ((gridSize - 1 - x) * cellSize).toString());
@@ -72,11 +65,9 @@ export function Avatar({ address, size = 40, className = '' }: AvatarProps) {
 
   useEffect(() => {
     if (address && avatarRef.current) {
-      // Tạo seed từ địa chỉ (Cardano/Eternl style)
       const seed = parseInt(address.slice(2, 10), 16) || 0;
       const icon = createBlockies(size, seed);
       
-      // Clear previous content
       avatarRef.current.innerHTML = '';
       avatarRef.current.appendChild(icon);
     }
@@ -94,7 +85,6 @@ export function Avatar({ address, size = 40, className = '' }: AvatarProps) {
   );
 }
 
-// Fallback avatar với text
 export function AvatarText({ address, name, size = 40, className = '' }: AvatarProps) {
   const hash = address.split('').reduce((a, b) => {
     a = ((a << 5) - a) + b.charCodeAt(0);
@@ -125,5 +115,4 @@ export function AvatarText({ address, name, size = 40, className = '' }: AvatarP
   );
 }
 
-// Export Avatar as default (Blockies-style like Eternl/Cardano)
 export { Avatar as AvatarSVG };

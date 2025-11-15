@@ -32,10 +32,9 @@ export async function POST(request: NextRequest) {
     const type = formData.get('type') as string || 'milestone_evidence';
 
     if (!file) {
-      return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Không có file được cung cấp' }, { status: 400 });
     }
 
-    // Upload to Pinata
     const pinataFormData = new FormData();
     pinataFormData.append('file', file);
     pinataFormData.append('pinataOptions', JSON.stringify({ cidVersion: 1 }));
@@ -59,10 +58,9 @@ export async function POST(request: NextRequest) {
     const ipfsHash = pinataData.IpfsHash;
     
     if (!ipfsHash) {
-      throw new Error('No IPFS hash returned from Pinata');
+      throw new Error('Pinata không trả về IPFS hash');
     }
 
-    // Encrypt CID
     const encCid = await encryptCid(ipfsHash);
 
     return NextResponse.json({
@@ -75,9 +73,8 @@ export async function POST(request: NextRequest) {
       type: file.type
     });
   } catch (error: unknown) {
-    console.error('[API] File upload error:', error);
     return NextResponse.json(
-      { success: false, error: (error as Error).message || 'Upload failed' },
+      { success: false, error: (error as Error).message || 'Tải lên thất bại' },
       { status: 500 }
     );
   }

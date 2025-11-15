@@ -72,13 +72,6 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
         const data = await res.json();
         const opt = data?.job?.dispute_id || data?.dispute_id;
         const exists = Array.isArray(opt?.vec) ? opt.vec.length > 0 : Boolean(opt);
-        console.log('[MilestonesList] Dispute check:', {
-          jobId,
-          dispute_id: opt,
-          exists,
-          jobState: data?.job?.state,
-          isPoster: account?.toLowerCase() === poster?.toLowerCase()
-        });
         setHasDisputeId(!!exists);
         const did = exists ? (Array.isArray(opt?.vec) ? Number(opt.vec[0]) : Number(opt)) : 0;
         let finalWinner: boolean | null = null;
@@ -123,8 +116,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
       });
       setTimeout(() => onUpdate?.(), 2000);
     } catch (err: any) {
-      console.error('[MilestonesList] Submit error:', err);
-      toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+      toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
     } finally {
       setSubmittingId(null);
     }
@@ -134,7 +126,6 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
     if (!account || !isPoster) return;
     try {
       setConfirmingId(milestoneId);
-      // Check review deadline before confirming
       try {
         const jobRes = await fetch(`/api/job/${jobId}`);
         if (jobRes.ok) {
@@ -160,8 +151,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
       toast.success(`Confirm milestone thành công! TX: ${txHash}`);
       setTimeout(() => onUpdate?.(), 2000);
     } catch (err: any) {
-      console.error('[MilestonesList] Confirm error:', err);
-      const errorMsg = err?.message || 'Unknown error';
+      const errorMsg = err?.message || 'Lỗi không xác định';
       if (errorMsg.includes('Review deadline has passed')) {
         toast.error('Đã hết thời gian review. Bạn không thể confirm milestone này nữa. Freelancer có thể claim timeout.');
       } else {
@@ -180,7 +170,6 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
         onClick: async () => {
           try {
             setRejectingId(milestoneId);
-            // Check review deadline before rejecting
             try {
               const jobRes = await fetch(`/api/job/${jobId}`);
               if (jobRes.ok) {
@@ -206,8 +195,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Reject milestone thành công! TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Reject error:', err);
-            const errorMsg = err?.message || 'Unknown error';
+            const errorMsg = err?.message || 'Lỗi không xác định';
             if (errorMsg.includes('Review deadline has passed')) {
               toast.error('Đã hết thời gian review. Bạn không thể reject milestone này nữa. Freelancer có thể claim timeout.');
             } else {
@@ -239,8 +227,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
       setHasDisputeId(true);
       setTimeout(() => onUpdate?.(), 2000);
     } catch (err: any) {
-      console.error('[MilestonesList] Open dispute error:', err);
-      toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+      toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
     } finally {
       setOpeningDisputeId(null);
     }
@@ -255,7 +242,6 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
     }
     try {
       setSubmittingEvidenceId(milestoneId);
-      // fetch dispute_id from job detail
       const jobRes = await fetch(`/api/job/${jobId}`);
       const jobData = await jobRes.json();
       const disputeOpt = jobData?.job?.dispute_id || jobData?.dispute_id;
@@ -268,8 +254,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
       toast.success(`Đã gửi evidence cho dispute! TX: ${txHash}`);
       setTimeout(() => onUpdate?.(), 1500);
     } catch (err: any) {
-      console.error('[MilestonesList] Add evidence error:', err);
-      toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+      toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
     } finally {
       setSubmittingEvidenceId(null);
     }
@@ -287,11 +272,10 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
         ? escrowHelpers.claimDisputePayment(jobId, milestoneId)
         : escrowHelpers.claimDisputeRefund(jobId, milestoneId);
       const txHash = await executeTransaction(payload);
-      toast.success(`Đã claim dispute ${isWinnerFreelancer ? 'payment' : 'refund'}! TX: ${txHash}`);
+      toast.success(`Đã claim dispute ${isWinnerFreelancer ? 'thanh toán' : 'hoàn tiền'}! TX: ${txHash}`);
       setTimeout(() => onUpdate?.(), 1500);
     } catch (err: any) {
-      console.error('[MilestonesList] Claim dispute error:', err);
-      toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+      toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
     }
   };
 
@@ -315,8 +299,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
               toast.success(`Claim timeout thành công! TX: ${txHash}`);
               setTimeout(() => onUpdate?.(), 2000);
             } catch (err: any) {
-              console.error('[MilestonesList] Claim timeout error:', err);
-              toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+              toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
             } finally {
               setClaimingId(null);
             }
@@ -338,8 +321,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
               toast.success(`Claim timeout thành công! Milestone đã được accepted và payment đã được gửi. TX: ${txHash}`);
               setTimeout(() => onUpdate?.(), 2000);
             } catch (err: any) {
-              console.error('[MilestonesList] Freelancer claim timeout error:', err);
-              toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+              toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
             } finally {
               setClaimingId(null);
             }
@@ -369,8 +351,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Đã gửi yêu cầu hủy job! TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Mutual cancel error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           } finally {
             setCancelling(false);
           }
@@ -399,8 +380,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Chấp nhận hủy job thành công! TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Accept mutual cancel error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           } finally {
             setAcceptingCancel(false);
           }
@@ -425,8 +405,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Đã từ chối hủy job. Job sẽ tiếp tục! TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Reject mutual cancel error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           } finally {
             setRejectingCancel(false);
           }
@@ -455,8 +434,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Đã gửi yêu cầu rút! Đang chờ poster xác nhận. TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Freelancer withdraw error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           } finally {
             setWithdrawing(false);
           }
@@ -485,8 +463,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Chấp nhận freelancer rút thành công! TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Accept freelancer withdraw error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           } finally {
             setAcceptingWithdraw(false);
           }
@@ -511,8 +488,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
             toast.success(`Đã từ chối freelancer rút. Job sẽ tiếp tục! TX: ${txHash}`);
             setTimeout(() => onUpdate?.(), 2000);
           } catch (err: any) {
-            console.error('[MilestonesList] Reject freelancer withdraw error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           } finally {
             setRejectingWithdraw(false);
           }
@@ -540,8 +516,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
       toast.success(`Rút escrow các milestone không tranh chấp thành công! TX: ${txHash}`);
       setTimeout(() => onUpdate?.(), 2000);
     } catch (err: any) {
-      console.error('[MilestonesList] Unlock non-disputed milestones error:', err);
-      toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+      toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
     } finally {
       setUnlockingNonDisputed(false);
     }
@@ -553,7 +528,7 @@ export const MilestonesList: React.FC<MilestonesListProps> = ({
 
   return (
     <Card variant="outlined" className="p-4 mt-4">
-      <h4 className="text-md font-bold text-blue-800 mb-3">Milestones ({milestones.length})</h4>
+      <h4 className="text-md font-bold text-blue-800 mb-3">Cột mốc ({milestones.length})</h4>
       <div className="space-y-3">
         {milestones.map((milestone, index) => {
           const isFirstMilestone = index === 0;

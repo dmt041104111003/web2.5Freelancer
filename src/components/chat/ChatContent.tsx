@@ -73,7 +73,6 @@ const ChatContentInner: React.FC = () => {
         toast.error(data.error || 'Lỗi khi accept phòng');
       }
     } catch (error) {
-      console.error('Error accepting room:', error);
       toast.error('Lỗi khi accept phòng');
     }
   };
@@ -101,7 +100,6 @@ const ChatContentInner: React.FC = () => {
         toast.error(data.error || 'Lỗi khi xóa tin nhắn');
       }
     } catch (error) {
-      console.error('Error deleting message:', error);
       toast.error('Lỗi khi xóa tin nhắn');
     }
   };
@@ -140,7 +138,6 @@ const ChatContentInner: React.FC = () => {
         setRooms(data.rooms);
       }
     } catch (error) {
-      console.error('Error loading rooms from Firebase:', error);
     }
   }, [currentUser.address]);
 
@@ -181,7 +178,6 @@ const ChatContentInner: React.FC = () => {
     setCreateRoomError('');
 
     try {
-      // fetch job meta to validate and generate deterministic room name
       const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs';
       const res = await fetch(`${gateway}/${newRoomJobCid.trim()}`);
       if (!res.ok) throw new Error('Invalid job cid');
@@ -232,7 +228,6 @@ const ChatContentInner: React.FC = () => {
         setCreateRoomError(roomData.error || 'Lỗi khi tạo phòng');
       }
     } catch (error) {
-      console.error('Create room error:', error);
       setCreateRoomError('Lỗi khi tạo phòng');
     } finally {
       setIsCreatingRoom(false);

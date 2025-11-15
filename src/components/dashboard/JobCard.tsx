@@ -6,11 +6,10 @@ import { MilestonesList } from './MilestonesList';
 import { toast } from 'sonner';
 import { JobCardProps } from '@/constants/escrow';
 
-const getStateDisplay = (state: any, applyDeadline?: number, hasFreelancer?: boolean): { text: string; classes: string } => {
+  const getStateDisplay = (state: any, applyDeadline?: number, hasFreelancer?: boolean): { text: string; classes: string } => {
   const stateStr = typeof state === 'string' ? state : 'Active';
   
-  // Check if apply deadline has passed
-  const applyDeadlineExpired = applyDeadline 
+  const applyDeadlineExpired = applyDeadline
     ? applyDeadline * 1000 < Date.now() 
     : false;
   const isExpiredPosted = stateStr === 'Posted' && applyDeadlineExpired && !hasFreelancer;
@@ -23,30 +22,30 @@ const getStateDisplay = (state: any, applyDeadline?: number, hasFreelancer?: boo
   }
   if (stateStr === 'Posted') {
     return {
-      text: 'Open',
+      text: 'Mở',
       classes: 'bg-green-100 text-green-800 border-green-300'
     };
   }
   if (stateStr === 'InProgress') {
     return {
-      text: 'In Progress',
+      text: 'Đang thực hiện',
       classes: 'bg-blue-100 text-blue-800 border-blue-300'
     };
   }
   if (stateStr === 'Completed') {
     return {
-      text: 'Completed',
+      text: 'Hoàn thành',
       classes: 'bg-gray-100 text-gray-800 border-gray-300'
     };
   }
   if (stateStr === 'Disputed') {
     return {
-      text: 'Disputed',
+      text: 'Tranh chấp',
       classes: 'bg-red-100 text-red-800 border-red-300'
     };
   }
   return {
-    text: stateStr || 'Active',
+    text: stateStr || 'Hoạt động',
     classes: 'bg-gray-100 text-gray-800 border-gray-300'
   };
 };
@@ -76,8 +75,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, account, activeTab, onUpd
               onUpdate();
             }, 2000);
           } catch (err: any) {
-            console.error('[JobCard] Withdraw error:', err);
-            toast.error(`Lỗi: ${err?.message || 'Unknown error'}`);
+            toast.error(`Lỗi: ${err?.message || 'Lỗi không xác định'}`);
           }
         }
       },
@@ -107,14 +105,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job, account, activeTab, onUpd
       <div className="space-y-2">
         <p className="text-xs text-gray-600 break-all">CID: {job.cid}</p>
         <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-          <div><span className="font-bold">Poster:</span> {formatAddress(job.poster)}</div>
+          <div><span className="font-bold">Người đăng:</span> {formatAddress(job.poster)}</div>
           <div><span className="font-bold">Freelancer:</span> {formatAddress(job.freelancer)}</div>
-          <div><span className="font-bold">Total:</span> {job.total_amount ? `${(job.total_amount / 100_000_000).toFixed(2)} APT` : '-'}</div>
-          <div><span className="font-bold">Milestones:</span> {job.milestones_count || 0}</div>
-          <div><span className="font-bold">Assigned:</span> {job.has_freelancer ? 'Yes' : 'No'}</div>
+          <div><span className="font-bold">Tổng:</span> {job.total_amount ? `${(job.total_amount / 100_000_000).toFixed(2)} APT` : '-'}</div>
+          <div><span className="font-bold">Cột mốc:</span> {job.milestones_count || 0}</div>
+          <div><span className="font-bold">Đã giao:</span> {job.has_freelancer ? 'Có' : 'Chưa'}</div>
           {job.apply_deadline && (
             <div className="col-span-2">
-              <span className="font-bold">Apply Deadline:</span> {
+              <span className="font-bold">Hạn đăng ký:</span> {
                 new Date(job.apply_deadline * 1000).toLocaleString('vi-VN')
               }
               {job.apply_deadline * 1000 < Date.now() && (

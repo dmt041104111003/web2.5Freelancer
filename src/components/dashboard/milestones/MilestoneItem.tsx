@@ -63,7 +63,6 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
   const prevMilestoneAccepted = prevStatusStr === 'Accepted';
   const canSubmit = (isFirstMilestone || prevMilestoneAccepted) && !isOverdue && hasDeadline;
   
-  // Review period info
   const duration = Number(milestone.duration || 0);
   const reviewPeriod = Number(milestone.review_period || 0);
   const reviewDeadline = Number(milestone.review_deadline || 0);

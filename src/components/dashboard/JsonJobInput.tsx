@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { JsonJobInputProps } from '@/constants/escrow';
 
-export const JsonJobInput: React.FC<JsonJobInputProps> = ({ onParse, canPostJobs }) => {
+export const JsonJobInput: React.FC<JsonJobInputProps> = ({ onParse, canPostJobs, isSubmitting = false }) => {
   const [jsonInput, setJsonInput] = useState('');
   const [jsonError, setJsonError] = useState('');
 
@@ -30,11 +30,11 @@ export const JsonJobInput: React.FC<JsonJobInputProps> = ({ onParse, canPostJobs
           onChange={(e) => setJsonInput(e.target.value)}
           placeholder={`{\n  "title": "Phát triển smart contract",\n  "description": "Mô tả dự án...",\n  "requirements": ["Solidity", "Move"],\n  "deadline": 604800,\n  "milestones": [\n    { "amount": "0.1", "duration": "300", "unit": "giây", "reviewPeriod": "300", "reviewUnit": "giây" },\n    { "amount": "0.1", "duration": "600", "unit": "giây", "reviewPeriod": "600", "reviewUnit": "giây" }\n  ]\n}`}
           rows={15}
-          disabled={!canPostJobs}
+          disabled={!canPostJobs || isSubmitting}
           className={`w-full px-4 py-3 border-2 font-mono text-sm resize-none ${
             jsonError ? 'border-red-500 bg-red-50' : 'border-gray-400'
           } ${
-            !canPostJobs ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+            !canPostJobs || isSubmitting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
           }`}
         />
         {jsonError && (
@@ -46,7 +46,7 @@ export const JsonJobInput: React.FC<JsonJobInputProps> = ({ onParse, canPostJobs
           type="button"
           onClick={handleParse}
           variant="outline"
-          disabled={!canPostJobs || !jsonInput.trim()}
+          disabled={!canPostJobs || !jsonInput.trim() || isSubmitting}
           className="flex-1 !bg-white !text-black !border-2 !border-black font-bold"
         >
           Parse và điền form
@@ -58,7 +58,7 @@ export const JsonJobInput: React.FC<JsonJobInputProps> = ({ onParse, canPostJobs
             setJsonError('');
           }}
           variant="outline"
-          disabled={!canPostJobs}
+          disabled={!canPostJobs || isSubmitting}
           className="!bg-white !text-black !border-2 !border-black font-bold"
         >
           Clear

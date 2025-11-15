@@ -24,7 +24,7 @@ export function Footer() {
               </span>
              </div>
                 <p className="text-gray-700 mb-4">
-               Decentralized freelancer platform with identity verification and automated escrow
+               Nền tảng freelancer phi tập trung với xác minh danh tính và escrow tự động
              </p>
             <div className="flex gap-4 items-center">
               <a 
@@ -56,7 +56,7 @@ export function Footer() {
           
     
           <div>
-            <h3 className="text-lg font-bold text-blue-800 mb-4">Product</h3>
+            <h3 className="text-lg font-bold text-blue-800 mb-4">Sản phẩm</h3>
             <ul className="space-y-2">
               {FOOTER_LINKS.product.map((link) => (
                 <li key={link.name}>
@@ -72,7 +72,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-blue-800 mb-4">Community</h3>
+            <h3 className="text-lg font-bold text-blue-800 mb-4">Cộng đồng</h3>
             <ul className="space-y-2">
               {FOOTER_LINKS.community.map((link) => (
                 <li key={link.name}>
@@ -88,7 +88,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-blue-800 mb-4">Legal</h3>
+            <h3 className="text-lg font-bold text-blue-800 mb-4">Pháp lý</h3>
             <ul className="space-y-2">
               {FOOTER_LINKS.legal.map((link) => (
                 <li key={link.name}>

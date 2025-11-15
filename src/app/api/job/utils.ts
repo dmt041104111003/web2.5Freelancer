@@ -3,26 +3,21 @@ import { CONTRACT_ADDRESS, APTOS_NODE_URL, APTOS_API_KEY } from "@/constants/con
 export const getTableHandle = async (): Promise<{ handle: string; nextJobId: number } | null> => {
 	try {
 		const resourceType = `${CONTRACT_ADDRESS}::escrow::EscrowStore`;
-		console.log(`[API] Fetching EscrowStore from ${CONTRACT_ADDRESS}`);
 		const res = await fetch(`${APTOS_NODE_URL}/v1/accounts/${CONTRACT_ADDRESS}/resource/${resourceType}`, {
 			headers: { "x-api-key": APTOS_API_KEY, "Authorization": `Bearer ${APTOS_API_KEY}` }
 		});
 		if (!res.ok) {
-			console.log(`[API] Failed to fetch EscrowStore: ${res.status} ${res.statusText}`);
 			const text = await res.text();
-			console.log(`[API] Response: ${text}`);
 			return null;
 		}
 		const data = await res.json();
 		const handle = data?.data?.table?.handle;
 		const nextJobId = data?.data?.next_job_id || 0;
-		console.log(`[API] EscrowStore data:`, JSON.stringify(data, null, 2));
 		return {
 			handle,
 			nextJobId: Number(nextJobId)
 		};
 	} catch (err) {
-		console.error(`[API] Error fetching EscrowStore:`, err);
 		return null;
 	}
 };
@@ -34,7 +29,6 @@ export const queryJobFromTable = async (tableHandle: string, jobId: number): Pro
 			value_type: `${CONTRACT_ADDRESS}::escrow::Job`,
 			key: String(jobId)
 		};
-		console.log(`[API] Querying job ${jobId} from table:`, JSON.stringify(requestBody, null, 2));
 		
 		const res = await fetch(`${APTOS_NODE_URL}/v1/tables/${tableHandle}/item`, {
 			method: "POST",
@@ -44,19 +38,14 @@ export const queryJobFromTable = async (tableHandle: string, jobId: number): Pro
 		
 		if (!res.ok) {
 			if (res.status === 404) {
-				console.log(`[API] Job ${jobId} not found (404)`);
 				return null;
 			}
 			const errorText = await res.text();
-			console.log(`[API] Failed to query job ${jobId}: ${res.status} ${res.statusText}`);
-			console.log(`[API] Error response:`, errorText);
 			return null;
 		}
 		const data = await res.json();
-		console.log(`[API] Successfully queried job ${jobId}:`, JSON.stringify(data, null, 2).substring(0, 500));
 		return data;
 	} catch (err) {
-		console.error(`[API] Error querying job ${jobId}:`, err);
 		return null;
 	}
 };

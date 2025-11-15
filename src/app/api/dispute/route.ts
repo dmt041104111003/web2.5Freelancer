@@ -101,30 +101,25 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const action = searchParams.get('action');
     const disputeIdParam = searchParams.get('dispute_id');
-    console.log('[API][dispute][GET] query', { action, dispute_id: disputeIdParam });
     if (!action || !disputeIdParam) {
-      return NextResponse.json({ error: 'action and dispute_id required' }, { status: 400 });
+      return NextResponse.json({ error: 'action và dispute_id là bắt buộc' }, { status: 400 });
     }
     const disputeId = parseInt(disputeIdParam);
     const handle = await getDisputeStoreHandle();
-    console.log('[API][dispute][GET] handle', handle);
-    if (!handle) return NextResponse.json({ error: 'DisputeStore not found' }, { status: 404 });
+    if (!handle) return NextResponse.json({ error: 'Không tìm thấy DisputeStore' }, { status: 404 });
     const dispute = await queryDisputeFromTable(handle, disputeId);
-    try { console.log('[API][dispute][GET] dispute', JSON.stringify(dispute)); } catch {}
-    if (!dispute) return NextResponse.json({ error: 'Dispute not found' }, { status: 404 });
+    if (!dispute) return NextResponse.json({ error: 'Không tìm thấy tranh chấp' }, { status: 404 });
 
     switch (action) {
       case 'get_reviewers':
         {
           const reviewers = parseAddressVector(dispute?.selected_reviewers);
-          console.log('[API][dispute][GET] selected_reviewers', reviewers);
           return NextResponse.json({ selected_reviewers: reviewers });
         }
       case 'get_evidence':
         {
           const poster = parseOptionString(dispute?.poster_evidence_cid) || '';
           const freelancer = parseOptionString(dispute?.freelancer_evidence_cid) || '';
-          console.log('[API][dispute][GET] evidence', { poster, freelancer });
           return NextResponse.json({
             poster_evidence_cid: poster,
             freelancer_evidence_cid: freelancer
@@ -133,7 +128,6 @@ export async function GET(req: Request) {
       case 'get_votes':
         {
           const voted = parseVotedAddresses(dispute?.votes || []);
-          console.log('[API][dispute][GET] votes', voted);
           return NextResponse.json({ voted_reviewers: voted });
         }
       case 'get_summary':
@@ -141,20 +135,18 @@ export async function GET(req: Request) {
           const reviewers = parseAddressVector(dispute?.selected_reviewers);
           const voted = parseVotedAddresses(dispute?.votes || []);
           const counts = parseVoteCounts(dispute?.votes || []);
-          let winner: null | boolean = null; // true=freelancer, false=poster
+          let winner: null | boolean = null;
           if (counts.total >= 2) {
             if (counts.forFreelancer > counts.forPoster) winner = true;
             else if (counts.forPoster > counts.forFreelancer) winner = false;
           }
-          console.log('[API][dispute][GET] summary', { counts, winner });
           return NextResponse.json({ reviewers, voted_reviewers: voted, counts, winner });
         }
       default:
-        return NextResponse.json({ error: 'Invalid action. Use: get_reviewers, get_evidence' }, { status: 400 });
+        return NextResponse.json({ error: 'Hành động không hợp lệ. Sử dụng: get_reviewers, get_evidence' }, { status: 400 });
     }
   } catch (e: any) {
-    console.error('[API][dispute][GET] error', e);
-    return NextResponse.json({ error: e?.message || 'Failed to fetch dispute data' }, { status: 500 });
+    return NextResponse.json({ error: e?.message || 'Không thể lấy dữ liệu tranh chấp' }, { status: 500 });
   }
 }
 

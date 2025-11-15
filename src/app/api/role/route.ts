@@ -10,15 +10,12 @@ const view = async (functionName: string, args: any[]): Promise<boolean> => {
 		});
 		if (!res.ok) {
 			const errorText = await res.text().catch(() => res.statusText);
-			console.error(`[API] View failed for ${functionName}:`, res.status, errorText);
 			return false;
 		}
 		const data = await res.json();
 		const result = Array.isArray(data) ? data[0] === true : data === true;
-		console.log(`[API] View ${functionName}:`, { args, data, result });
 		return result;
 	} catch (err) {
-		console.error(`[API] View error for ${functionName}:`, err);
 		return false;
 	}
 };
@@ -41,18 +38,14 @@ const getCid = async (address: string, kind: number): Promise<string | null> => 
 const getTableHandle = async (): Promise<string | null> => {
 	try {
 		const resourceType = `${CONTRACT_ADDRESS}::role::RoleStore`;
-		console.log(`[API] Fetching RoleStore resource from MODULE ADDRESS: ${CONTRACT_ADDRESS}`);
 		const res = await fetch(`${APTOS_NODE_URL}/v1/accounts/${CONTRACT_ADDRESS}/resource/${resourceType}`, { headers: { "x-api-key": APTOS_API_KEY, "Authorization": `Bearer ${APTOS_API_KEY}` } });
 		if (!res.ok) {
-			console.log(`[API] Resource not found at module address ${CONTRACT_ADDRESS}`);
 			return null;
 		}
 		const data = await res.json();
 		const handle = data?.data?.users?.handle || null;
-		console.log(`[API] Got table handle from MODULE ADDRESS ${CONTRACT_ADDRESS}: ${handle}`);
 		return handle;
 	} catch (err) {
-		console.error(`[API] Error fetching from module address:`, err);
 		return null;
 	}
 };
@@ -60,10 +53,7 @@ const getTableHandle = async (): Promise<string | null> => {
 const queryTableItem = async (handle: string, key: string | number, keyType: string, valueType: string): Promise<any> => {
 	try {
 		const url = `${APTOS_NODE_URL}/v1/tables/${handle}/item`;
-		console.log(`[API] Querying Table API: ${url}`);
-		console.log(`[API]    Key: ${key}, KeyType: ${keyType}, ValueType: ${valueType}`);
 		
-		// For numeric types (u8, u64, etc), send as number; for others, send as string
 		const formattedKey = keyType === "u8" || keyType === "u64" || keyType.startsWith("u") ? Number(key) : key;
 		
 		const res = await fetch(url, {
@@ -73,14 +63,11 @@ const queryTableItem = async (handle: string, key: string | number, keyType: str
 		});
 		if (!res.ok) {
 			const errorText = await res.text().catch(() => "");
-			console.log(`[API] Table query failed: ${res.status}`, errorText);
 			return null;
 		}
 		const result = await res.json();
-		console.log(`[API] Table query successful`);
 		return result;
 	} catch (err) {
-		console.error(`[API] Table query error:`, err);
 		return null;
 	}
 };
@@ -94,19 +81,12 @@ export async function GET(req: Request) {
 		const keyType = url.searchParams.get("keyType");
 		const valueType = url.searchParams.get("valueType");
 
-		// Debug: Query any table handle
 		if (debugHandle && key && keyType && valueType) {
 			const result = await queryTableItem(debugHandle, key, keyType, valueType);
 			return NextResponse.json({ handle: debugHandle, key, result });
 		}
 
-		if (!address) return NextResponse.json({ error: "Address required" }, { status: 400 });
-
-		// IMPORTANT: Data is stored at MODULE ADDRESS, not holder address
-		console.log(`[API] ========================================`);
-		console.log(`[API] Querying roles for HOLDER: ${address}`);
-		console.log(`[API] Data is stored at MODULE ADDRESS: ${CONTRACT_ADDRESS}`);
-		console.log(`[API] ========================================`);
+		if (!address) return NextResponse.json({ error: "Địa chỉ là bắt buộc" }, { status: 400 });
 
 		const handle = await getTableHandle();
 		let finalHasFreelancer = false;
@@ -115,10 +95,6 @@ export async function GET(req: Request) {
 		let userRoles: any = null;
 
 		if (handle) {
-			console.log(`[API] Got table handle: ${handle}`);
-			console.log(`[API] Table location: MODULE ADDRESS ${CONTRACT_ADDRESS}`);
-			console.log(`[API] Querying with KEY (holder address): ${address}`);
-			
 			userRoles = await queryTableItem(
 				handle,
 				address,
@@ -127,9 +103,6 @@ export async function GET(req: Request) {
 			);
 			
 			if (userRoles?.roles?.handle) {
-				console.log(`[API] Found userRoles in table at MODULE ${CONTRACT_ADDRESS}`);
-				console.log(`[API] Querying nested roles table with handle: ${userRoles.roles.handle}`);
-				
 				const rolesHandle = userRoles.roles.handle;
 				const [hasFreelancerRole, hasPosterRole, hasReviewerRole] = await Promise.all([
 					queryTableItem(rolesHandle, ROLE_KIND.FREELANCER, "u8", "bool"),
@@ -139,17 +112,7 @@ export async function GET(req: Request) {
 				finalHasFreelancer = hasFreelancerRole === true;
 				finalHasPoster = hasPosterRole === true;
 				finalHasReviewer = hasReviewerRole === true;
-				
-				console.log(`[API] Results from MODULE ${CONTRACT_ADDRESS}:`, { 
-					freelancer: finalHasFreelancer, 
-					poster: finalHasPoster, 
-					reviewer: finalHasReviewer 
-				});
-			} else {
-				console.log(`[API] No userRoles found for holder ${address} in table at MODULE ${CONTRACT_ADDRESS}`);
 			}
-		} else {
-			console.log(`[API] Failed to get table handle from MODULE ADDRESS ${CONTRACT_ADDRESS}`);
 		}
 
 		const roles = [];
@@ -175,7 +138,6 @@ export async function GET(req: Request) {
 
 		return NextResponse.json({ roles });
 	} catch (error: any) {
-		console.error(`[API] Error:`, error);
-		return NextResponse.json({ error: error?.message || "Failed to fetch roles" }, { status: 500 });
+		return NextResponse.json({ error: error?.message || "Không thể lấy vai trò" }, { status: 500 });
 	}
 }

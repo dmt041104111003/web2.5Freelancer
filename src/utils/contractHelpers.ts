@@ -1,8 +1,5 @@
 import { ESCROW, DISPUTE, ROLE, REPUTATION, ROLE_KIND } from '@/constants/contracts';
 
-/**
- * Build transaction payload for contract calls
- */
 export function buildTransactionPayload(
   functionName: string,
   args: any[],
@@ -16,19 +13,11 @@ export function buildTransactionPayload(
   };
 }
 
-/**
- * ESCROW module helpers
- */
 const OCTA = 100_000_000;
-const STAKE_AMOUNT = 1 * OCTA; // 1 APT
-const POSTER_FEE = 15 * OCTA / 10; // 1.5 APT
+const STAKE_AMOUNT = 1 * OCTA;
+const POSTER_FEE = 15 * OCTA / 10;
 
 export const escrowHelpers = {
-  /**
-   * Calculate total amount needed to create a job
-   * @param milestones Array of milestone amounts in octas
-   * @returns Total amount in octas (poster_deposit + stake + fee)
-   */
   calculateJobCreationCost: (milestones: number[]): number => {
     const posterDeposit = milestones.reduce((sum, m) => sum + m, 0);
     return posterDeposit + STAKE_AMOUNT + POSTER_FEE;
@@ -98,9 +87,6 @@ export const escrowHelpers = {
     buildTransactionPayload(ESCROW.CLAIM_DISPUTE_REFUND, [jobId, milestoneId]),
 };
 
-/**
- * DISPUTE module helpers
- */
 export const disputeHelpers = {
   openDispute: (jobId: number, milestoneId: number, evidenceCid: string) =>
     buildTransactionPayload(DISPUTE.OPEN_DISPUTE, [jobId, milestoneId, evidenceCid]),
@@ -112,10 +98,6 @@ export const disputeHelpers = {
     buildTransactionPayload(DISPUTE.REVIEWER_VOTE, [disputeId, voteChoice]),
 };
 
-/**
- * ROLE module helpers
- * Note: For FREELANCER and POSTER, CID is required. For REVIEWER, pass empty string or null.
- */
 export const roleHelpers = {
   registerFreelancer: (cid: string) =>
     buildTransactionPayload(ROLE.REGISTER_ROLE, [ROLE_KIND.FREELANCER, cid]),
@@ -127,14 +109,7 @@ export const roleHelpers = {
     buildTransactionPayload(ROLE.REGISTER_ROLE, [ROLE_KIND.REVIEWER, null]),
 };
 
-/**
- * REPUTATION module helpers
- */
 export const reputationHelpers = {
-  /**
-   * Query reputation points (UT) for an address
-   * Use API: GET /api/reputation?address={address}
-   */
   getReputationPoints: async (address: string): Promise<{ ut: number } | null> => {
     try {
       const res = await fetch(`/api/reputation?address=${address}`);

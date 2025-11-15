@@ -64,7 +64,6 @@ export const JobDetailContent: React.FC = () => {
     fetchJobDetails();
   }, [jobId]);
 
-  // Check freelancer role from table
   useEffect(() => {
     if (!account) {
       setHasFreelancerRole(false);
@@ -91,7 +90,6 @@ export const JobDetailContent: React.FC = () => {
       const { escrowHelpers } = await import('@/utils/contractHelpers');
       const payload = escrowHelpers.applyJob(Number(jobId));
       
-      // Sign and submit transaction
       const wallet = (window as any).aptos;
       if (!wallet) {
         throw new Error('Wallet not found. Please connect your wallet first.');
@@ -100,18 +98,16 @@ export const JobDetailContent: React.FC = () => {
       const tx = await wallet.signAndSubmitTransaction(payload);
       
       if (tx?.hash) {
-        toast.success(`Apply thành công! TX: ${tx.hash}`);
+        toast.success(`Ứng tuyển thành công! TX: ${tx.hash}`);
       } else {
-        toast.success('Apply transaction đã được gửi!');
+        toast.success('Giao dịch ứng tuyển đã được gửi!');
       }
       
-      // Reload job data to update state
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } catch (err: unknown) {
-      console.error('[JobDetailContent] Error applying:', err);
-      toast.error(`Lỗi khi apply: ${(err as Error)?.message || 'Unknown error'}`);
+      toast.error(`Lỗi khi ứng tuyển: ${(err as Error)?.message || 'Lỗi không xác định'}`);
     } finally {
       setApplying(false);
     }
@@ -121,7 +117,7 @@ export const JobDetailContent: React.FC = () => {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-700 text-lg">Loading job details...</p>
+        <p className="text-gray-700 text-lg">Đang tải chi tiết công việc...</p>
       </div>
     );
   }
@@ -129,7 +125,7 @@ export const JobDetailContent: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500 text-lg">Error: {error}</p>
+        <p className="text-red-500 text-lg">Lỗi: {error}</p>
       </div>
     );
   }
@@ -143,9 +139,9 @@ export const JobDetailContent: React.FC = () => {
           size="sm"
           className="mb-4"
         >
-          ← Back to Jobs
+          ← Quay lại danh sách công việc
         </Button>
-        <h1 className="text-3xl font-bold text-blue-800 mb-2">Job #{String(jobId)}</h1>
+        <h1 className="text-3xl font-bold text-blue-800 mb-2">Công việc #{String(jobId)}</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -222,7 +218,7 @@ export const JobDetailContent: React.FC = () => {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h3 className="font-bold text-lg text-gray-900">
-                            Milestone {index + 1}
+                            Cột mốc {index + 1}
                           </h3>
                           <span className={`inline-block px-2 py-1 text-xs font-bold border-2 rounded ${getStatusColor(statusStr)}`}>
                             {statusStr}

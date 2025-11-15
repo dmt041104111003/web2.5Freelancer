@@ -66,42 +66,32 @@ export function useDisputes(account?: string | null) {
 
       const myAddr = normalizeAddress(account);
 
-      // 1) Get all jobs
-      console.log('[Disputes][refresh] fetching jobs list');
       const jobsRes = await fetch('/api/job/list');
       const jobs = await jobsRes.json();
       const jobItems = Array.isArray(jobs) ? jobs : (Array.isArray(jobs?.jobs) ? jobs.jobs : []);
-      console.log('[Disputes][refresh] jobs count', jobItems.length);
 
       const results: DisputeData[] = [];
 
-      // 2) For each job, fetch full details to get dispute_id and find locked milestone
       for (const j of jobItems) {
         const id = Number(j?.id ?? j?.job_id ?? j?.jobId ?? 0);
         if (!id) continue;
-        console.log('[Disputes][refresh] fetch job detail', id);
         const detailRes = await fetch(`/api/job/${id}`);
         if (!detailRes.ok) continue;
         const detail = await detailRes.json();
         const disputeId = detail?.job?.dispute_id ?? detail?.dispute_id;
-        console.log('[Disputes][refresh] job', id, 'dispute_id raw =', disputeId);
         if (!disputeId || (Array.isArray(disputeId?.vec) && disputeId.vec.length === 0)) continue;
 
-        // 3) Get reviewers and votes for this dispute
         const did = Array.isArray(disputeId?.vec) ? Number(disputeId.vec[0]) : Number(disputeId);
         if (!did) continue;
-        console.log('[Disputes][refresh] query reviewers for dispute', did);
         const revRes = await fetch(`/api/dispute?action=get_reviewers&dispute_id=${did}`);
         if (!revRes.ok) continue;
         const rev = await revRes.json();
         const selected: string[] = Array.isArray(rev?.selected_reviewers) ? rev.selected_reviewers : [];
-        console.log('[Disputes][refresh] selected_reviewers for', did, selected);
         const isAssigned = selected
           .map((a) => normalizeAddress(a))
           .some((a) => a === myAddr);
         if (!isAssigned) continue;
 
-        // Votes & summary
         let hasVoted = false;
         let votesCompleted = false;
         const sumRes = await fetch(`/api/dispute?action=get_summary&dispute_id=${did}`);
@@ -120,17 +110,13 @@ export function useDisputes(account?: string | null) {
           }
         }
 
-        // 4) Find the locked milestone index
         const milestones: any[] = Array.isArray(detail?.job?.milestones) ? detail.job.milestones : [];
         let lockedIndex = -1;
         for (let i = 0; i < milestones.length; i++) {
           const st = String(milestones[i]?.status || '');
           if (st.toLowerCase().includes('locked')) { lockedIndex = i; break; }
         }
-        console.log('[Disputes][refresh] lockedIndex', lockedIndex);
         if (lockedIndex < 0) continue;
-
-        // 5) Fetch evidence
         const evRes = await fetch(`/api/dispute?action=get_evidence&dispute_id=${did}`);
         let posterEvidenceCid = '';
         let freelancerEvidenceCid = '';
@@ -144,9 +130,8 @@ export function useDisputes(account?: string | null) {
       }
 
       setDisputes(results);
-      console.log('[Disputes][refresh] results', results);
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Failed to load disputes');
+      setErrorMsg(e?.message || 'Không thể tải tranh chấp');
     } finally {
       setLoading(false);
     }
@@ -162,7 +147,7 @@ export function useDisputes(account?: string | null) {
 
   const openDispute = useCallback(async () => {
     if (!jobId || !milestoneIndex) {
-      setErrorMsg('Job ID and Milestone Index are required');
+      setErrorMsg('Job ID và Milestone Index là bắt buộc');
       return;
     }
     try {
@@ -172,13 +157,12 @@ export function useDisputes(account?: string | null) {
       const { disputeHelpers } = await import('@/utils/contractHelpers');
       const payload = disputeHelpers.openDispute(Number(jobId), Number(milestoneIndex), openReason || '');
       await wallet.signAndSubmitTransaction(payload as any);
-      // optimistic add
       const newItem: DisputeData = { jobId: Number(jobId), milestoneIndex: Number(milestoneIndex), disputeId: 0, status: 'open', reason: openReason, openedAt: new Date().toISOString() };
       const list = [newItem, ...disputes];
       setDisputes(list);
       localStorage.setItem('disputes_list', JSON.stringify(list));
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Failed to open dispute');
+      setErrorMsg(e?.message || 'Không thể mở tranh chấp');
     } finally {
       setLoading(false);
     }
@@ -191,9 +175,8 @@ export function useDisputes(account?: string | null) {
       const { disputeHelpers } = await import('@/utils/contractHelpers');
       const payload = disputeHelpers.reviewerVote(disputeIdNum, false);
       await wallet.signAndSubmitTransaction(payload as any);
-      // keep list; backend resolves automatically when sufficient votes
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Failed to resolve');
+      setErrorMsg(e?.message || 'Không thể giải quyết');
     } finally {
       setResolving(null);
     }
@@ -206,15 +189,12 @@ export function useDisputes(account?: string | null) {
       const { disputeHelpers } = await import('@/utils/contractHelpers');
       const payload = disputeHelpers.reviewerVote(disputeIdNum, true);
       await wallet.signAndSubmitTransaction(payload as any);
-      // keep list; backend resolves automatically when sufficient votes
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Failed to resolve');
+      setErrorMsg(e?.message || 'Không thể giải quyết');
     } finally {
       setResolving(null);
     }
   }, []);
-
-  // withdrawFees removed in new dispute flow
 
   return {
     loading,

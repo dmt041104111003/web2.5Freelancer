@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
 		}
 	}
 	
-	if (!resolvedCid) return NextResponse.json({ success: false, error: 'cid required' }, { status: 400 });
+	if (!resolvedCid) return NextResponse.json({ success: false, error: 'cid là bắt buộc' }, { status: 400 });
 	
 	const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs';
 	const res = await fetch(`${gateway}/${resolvedCid}`, { method: 'GET' });
-	if (!res.ok) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+	if (!res.ok) return NextResponse.json({ success: false, error: 'Không tìm thấy' }, { status: 404 });
 	
 	const data = await res.json();
 	

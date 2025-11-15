@@ -102,8 +102,7 @@ export async function GET(request: NextRequest) {
       });
     });
   } catch (error) {
-    console.error('Error fetching data:', error);
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
+    return NextResponse.json({ error: 'Không thể lấy dữ liệu' }, { status: 500 });
   }
 }
 
@@ -183,10 +182,9 @@ export async function POST(request: NextRequest) {
               room: { id: newRoomId, ...newRoom }
             }));
           }).catch((error) => {
-            console.error('Error creating room:', error);
             resolve(NextResponse.json({ 
               success: false, 
-              error: `Failed to create room: ${error.message}` 
+              error: `Không thể tạo phòng: ${error.message}` 
             }, { status: 500 }));
           });
         });
@@ -223,10 +221,9 @@ export async function POST(request: NextRequest) {
               message: 'Room đã được accept' 
             }));
           }).catch((error) => {
-            console.error('Error accepting room:', error);
             resolve(NextResponse.json({ 
               success: false, 
-              error: `Failed to accept room: ${error.message}` 
+              error: `Không thể chấp nhận phòng: ${error.message}` 
             }, { status: 500 }));
           });
         });
@@ -234,7 +231,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!text || !sender || !senderId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Thiếu các trường bắt buộc' }, { status: 400 });
     }
 
     const messagesRef = ref(database, `chats/${roomId || 'general'}/messages`);
@@ -251,8 +248,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error sending message:', error);
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+    return NextResponse.json({ error: 'Không thể gửi tin nhắn' }, { status: 500 });
   }
 }
 
@@ -261,16 +257,15 @@ export async function DELETE(request: NextRequest) {
     const { messageId, roomId } = await request.json();
 
     if (!messageId || !roomId) {
-      return NextResponse.json({ error: 'Message ID and Room ID are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Message ID và Room ID là bắt buộc' }, { status: 400 });
     }
 
     const messageRef = ref(database, `chats/${roomId}/messages/${messageId}`);
     
     await remove(messageRef);
 
-    return NextResponse.json({ success: true, message: 'Message deleted successfully' });
+    return NextResponse.json({ success: true, message: 'Đã xóa tin nhắn thành công' });
   } catch (error) {
-    console.error('Error deleting message:', error);
-    return NextResponse.json({ error: 'Failed to delete message' }, { status: 500 });
+    return NextResponse.json({ error: 'Không thể xóa tin nhắn' }, { status: 500 });
   }
 }

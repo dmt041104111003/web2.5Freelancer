@@ -21,7 +21,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['MS Sans Serif', 'Segoe UI', 'system-ui', 'sans-serif'],
+        sans: ['Gluten', 'cursive', 'system-ui', 'sans-serif'],
       },
     },
   },

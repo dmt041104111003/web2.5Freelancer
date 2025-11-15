@@ -93,7 +93,6 @@ export const ProjectsTab: React.FC = () => {
 
       setJobs(jobsWithMilestones);
     } catch (err) {
-      console.error('[ProjectsTab] Error fetching jobs:', err);
       setJobs([]);
     } finally {
       setLoading(false);

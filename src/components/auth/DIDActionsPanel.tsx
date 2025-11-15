@@ -26,11 +26,9 @@ export default function DIDActionsPanel() {
     fetch(`/api/role?address=${encodeURIComponent(account)}`)
       .then(res => res.json())
       .then(data => {
-        console.log('Roles data:', data);
         setRoles(data.roles || []);
       })
       .catch(err => {
-        console.error('Error fetching roles:', err);
         setRoles([]);
       })
       .finally(() => setLoadingRoles(false));
@@ -43,7 +41,6 @@ export default function DIDActionsPanel() {
     try {
       let cid = '';
       
-      // Upload to IPFS first if needed (for freelancer/poster with description)
       if ((role === 'freelancer' || role === 'poster') && desc.trim()) {
         const ipfsRes = await fetch('/api/ipfs/upload', {
           method: 'POST',
@@ -51,12 +48,11 @@ export default function DIDActionsPanel() {
           body: JSON.stringify({ type: 'profile', about: desc })
         });
         const ipfsData = await ipfsRes.json();
-        if (!ipfsData.success) throw new Error(ipfsData.error || 'IPFS upload failed');
+        if (!ipfsData.success) throw new Error(ipfsData.error || 'Tải lên IPFS thất bại');
         cid = ipfsData.encCid || ipfsData.ipfsHash || '';
-        if (!cid) throw new Error('CID required for freelancer and poster');
+        if (!cid) throw new Error('CID là bắt buộc cho freelancer và poster');
       }
       
-      // Build transaction payload using helper
       const { roleHelpers } = await import('@/utils/contractHelpers');
       
       let payload;
@@ -67,7 +63,7 @@ export default function DIDActionsPanel() {
       } else if (role === 'reviewer') {
         payload = roleHelpers.registerReviewer();
       } else {
-        throw new Error('Invalid role');
+        throw new Error('Vai trò không hợp lệ');
       }
       
       await window.aptos.signAndSubmitTransaction(payload);
@@ -90,13 +86,13 @@ export default function DIDActionsPanel() {
 
   return (
     <Card variant="outlined" className="space-y-4 mt-6 bg-white p-4">
-      <div className="text-lg font-bold text-blue-800">Register Roles</div>
+      <div className="text-lg font-bold text-blue-800">Đăng ký vai trò</div>
       <div className="text-sm text-gray-700">
-        Wallet: {account ? `${account.slice(0,6)}...${account.slice(-4)}` : 'Not connected'}
+        Ví: {account ? `${account.slice(0,6)}...${account.slice(-4)}` : 'Chưa kết nối'}
       </div>
       
       {loadingRoles ? (
-        <div className="text-xs text-gray-500">Đang tải roles...</div>
+        <div className="text-xs text-gray-500">Đang tải vai trò...</div>
       ) : roles.length > 0 ? (
         <div className="my-2">
           {roles.map(r => (
@@ -106,12 +102,12 @@ export default function DIDActionsPanel() {
           ))}
         </div>
       ) : (
-        <div className="text-xs text-gray-500">Chưa đăng ký role nào</div>
+        <div className="text-xs text-gray-500">Chưa đăng ký vai trò nào</div>
       )}
       
       <div className="space-y-3">
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-1">Role</label>
+          <label className="block text-sm font-bold text-gray-900 mb-1">Vai trò</label>
           <select
             className="w-full px-3 py-2 border border-gray-400 bg-white text-sm"
             value={role}
@@ -122,7 +118,7 @@ export default function DIDActionsPanel() {
               }
             }}
           >
-            <option value="">Select role...</option>
+            <option value="">Chọn vai trò...</option>
             <option value="freelancer">Freelancer</option>
             <option value="poster">Poster</option>
             <option value="reviewer">Reviewer</option>
@@ -131,13 +127,13 @@ export default function DIDActionsPanel() {
         
         {role !== 'reviewer' && (
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-1">Description</label>
+            <label className="block text-sm font-bold text-gray-900 mb-1">Mô tả</label>
             <textarea
               className="w-full px-3 py-2 border border-gray-400 bg-white text-sm"
               rows={3}
               value={desc}
               onChange={e => setDesc(e.target.value)}
-              placeholder="About you / skills..."
+              placeholder="Giới thiệu về bạn / kỹ năng..."
             />
           </div>
         )}
@@ -149,7 +145,7 @@ export default function DIDActionsPanel() {
           onClick={handleRegister}
           disabled={loading || !role}
         >
-          {loading ? 'Loading...' : 'Register Role'}
+          {loading ? 'Đang xử lý...' : 'Đăng ký vai trò'}
         </Button>
       </div>
       
