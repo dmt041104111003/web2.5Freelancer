@@ -71,7 +71,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, roomId = '
     if (!text.trim()) return;
 
     try {
-      const response = await fetch('/api/chat/messages', {
+      const response = await fetch('/api/chat/messages/post', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

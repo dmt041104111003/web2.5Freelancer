@@ -46,7 +46,7 @@ const ChatContentInner: React.FC = () => {
 
   const handleAcceptRoom = async (roomId: string) => {
     try {
-      const response = await fetch('/api/chat/messages', {
+      const response = await fetch('/api/chat/messages/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,7 +73,7 @@ const ChatContentInner: React.FC = () => {
     try {
       const actualRoomId = selectedRoom || 'general';
       
-      const response = await fetch('/api/chat/messages', {
+      const response = await fetch('/api/chat/messages/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ const ChatContentInner: React.FC = () => {
     const finalName = `${shortId} ${newName.trim()}`;
     
     try {
-      const response = await fetch('/api/chat/messages', {
+      const response = await fetch('/api/chat/messages/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -132,7 +132,7 @@ const ChatContentInner: React.FC = () => {
 
   const handleDeleteRoom = async (roomId: string) => {
     try {
-      const response = await fetch('/api/chat/messages', {
+      const response = await fetch('/api/chat/messages/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -243,7 +243,7 @@ const ChatContentInner: React.FC = () => {
         creatorAddress: account,
         participantAddress: participantAddr
       };
-      const roomResponse = await fetch('/api/chat/messages', {
+      const roomResponse = await fetch('/api/chat/messages/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(roomPayload)
